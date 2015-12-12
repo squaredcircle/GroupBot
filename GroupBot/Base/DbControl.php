@@ -73,6 +73,25 @@ class DbControl
         return $query1->execute() && $query2->execute();
     }
 
+    public function isUserLogged($user_str, $chat_id)
+    {
+        $sql = 'SELECT user_id
+                FROM stats
+                WHERE chat_id = :chat_id AND
+                (user_firstname = :user_str OR user_secondname = :user_str OR username = :user_str)';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':chat_id', $chat_id);
+        $query->bindValue(':user_str', $user_str);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return $query->fetch()['user_id'];
+        } else {
+            return false;
+        }
+    }
+
     public function getUserCommandLogsInChat($chat_id, $user_id)
     {
         $sql = 'SELECT command, uses, uses_today, last_used

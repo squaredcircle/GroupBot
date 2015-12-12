@@ -16,7 +16,7 @@ class Telegram
 		$this->talkForced(SHITPOSTING_ID, $text);
 	}
 
-	public function IsaacCoinBroadcast($text)
+	public function CoinBroadcast($text)
 	{
 		$this->apiRequest("sendMessage", array('chat_id' => '@IsaacCoin', "text" => $text, "parse_mode" => "Markdown"));
 	}
@@ -189,7 +189,7 @@ class Telegram
 			$response = json_decode($response, true);
 			if (isset($response['description'])) 
 			{
-				error_log("Request was successfull: {$response['description']}\n");
+				error_log("Request was successful: {$response['description']}\n");
 			}
 			$response = $response['result'];
 		}

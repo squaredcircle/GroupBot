@@ -41,10 +41,15 @@ class Logging
         $this->DbControl->updateCommandLogs($this->Message->command, $this->Message->Chat->id, $this->Message->User->id);
     }
 
-    public function getAllUserLogsForChat()
+    public function checkIfUserIsLogged($user_str)
     {
-        $posts = $this->DbControl->getUserPostLogsInChat($this->Message->Chat->id, $this->Message->User->id);
-        $commands = $this->DbControl->getUserCommandLogsInChat($this->Message->Chat->id, $this->Message->User->id);
+        return $this->DbControl->isUserLogged($user_str, $this->Message->Chat->id);
+    }
+
+    public function getAllUserLogsForChat($user_id)
+    {
+        $posts = $this->DbControl->getUserPostLogsInChat($this->Message->Chat->id, $user_id);
+        $commands = $this->DbControl->getUserCommandLogsInChat($this->Message->Chat->id, $user_id);
 
         return new LogsUser($this->Message->Chat->id, $posts, $commands);
     }

@@ -52,7 +52,7 @@ class GroupBot
 
 	private function runCommand($cmd)
 	{
-		foreach(['t_', 'i_', 's_', 'q_'] as $i)
+		foreach(['t_', 'i_', 's_', 'q_', 'b_'] as $i)
 		{
 			$command = $i . $cmd;
 			$class = "GroupBot\\Command\\" . $command;

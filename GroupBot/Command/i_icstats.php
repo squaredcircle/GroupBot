@@ -19,12 +19,13 @@ class i_icstats extends Command
 
         $out = "";
 
-        $out .= "There are " . $ic->moneyControl->getTotalMoney(true) . " Isaac Coins in existance.\n";
-        $out .= "There are " . $ic->moneyControl->getTotalTransactions() . " logged transactions\n";
-        $out .= "There are " . $ic->loginControl->getTotalUsers() . " registered users\n\n";
-        $out .= "The transaction tax to Israel is at " . TRANSACTION_TAX * 100 . "%.\n";
-        $out .= "The daily tax to Israel is at " . PERIODIC_TAX * 100 . "%\n";
-        $out .= "The daily tax is collected at 12 noon";
+        $out .= "There are:"
+            . "\n`   `•` " . $ic->Check->getTotalMoneyExisting(true) . "` *Isaac Coins* in existence"
+            . "\n`   `•` " . $ic->Check->getTotalTransactions() . "` logged transactions"
+            . "\n`   `•` " . $ic->UserControl->getTotalUsers() . "` registered users"
+            . "\n*Israel* is collecting:"
+            . "\n`   `• " . "a transaction tax of `" . TRANSACTION_TAX * 100 . "%`."
+            . "\n`   `• " . "a daily tax of `" . PERIODIC_TAX * 100 . "%` at `12 noon`";
 
         $this->Telegram->talk($this->Message->Chat->id,$out);
     }

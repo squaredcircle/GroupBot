@@ -37,8 +37,12 @@ class LogsUser
         $this->lastpost = $data['lastpost'];
         $this->lastpost_date = $data['lastpost_date'];
 
-        foreach ($cmdata as $cmd) {
-            $this->LogsCommand[$cmd['command']] = new LogCommand($cmd);
+        if (!empty($cmdata)) {
+            foreach ($cmdata as $cmd) {
+                $this->LogsCommand[$cmd['command']] = new LogCommand($cmd);
+            }
+        } else {
+            $this->LogsCommand[''] = new LogCommand(array('command' => '', 'uses' => '', 'uses_today' => '', 'last_used' => ''));
         }
     }
 }

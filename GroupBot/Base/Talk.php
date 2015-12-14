@@ -9,6 +9,7 @@
 
 namespace GroupBot\Base;
 
+use GroupBot\Enums\MessageType;
 use GroupBot\Types\Message;
 
 class Talk
@@ -71,11 +72,36 @@ class Talk
         return false;
     }
 
+    private function processChannelChange()
+    {
+        require(__DIR__ . '/../libraries/dictionary.php');
+
+        switch ($this->Message->MessageType) {
+            case MessageType::NewChatTitle:
+                $message = $ratings[mt_rand(0,10)];
+                break;
+            case MessageType::NewChatPhoto:
+                $message = $ratings[mt_rand(0,10)];
+                break;
+            case MessageType::NewChatParticipant:
+                $message = 'hi new guy';
+                break;
+            case MessageType::LeftChatParticipant:
+                $message = 'such is life, brahs';
+                break;
+            case MessageType::DeleteChatPhoto:
+                $message = 'why, fam?';
+                break;
+        }
+        if (isset($message)) $this->Telegram->talk($this->Message->Chat->id, $message);
+    }
+
     public function processMessage()
     {
         require(__DIR__ . '/../libraries/dictionary.php');
 
         if ($this->dictMatch($dict_interjections)) return true;
+        if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
         if ($this->isShitBotMentioned())
         {

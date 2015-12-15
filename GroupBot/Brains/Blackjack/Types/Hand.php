@@ -95,7 +95,7 @@ class Hand
                 $value += $Card->value;
         }
 
-        if (($aces > 1) && (21 >= $value + 11 + ($aces - 1)))
+        if (($aces > 0) && (21 >= $value + 11 + ($aces - 1)))
             return $value + 11 + ($aces - 1);
         else
             return $value + $aces;

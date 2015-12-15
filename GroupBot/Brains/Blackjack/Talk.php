@@ -46,9 +46,9 @@ class Talk
     public function start_game(Game $Game)
     {
         $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
-        $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString());
+        $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         foreach ($Game->Players as $Player) {
-            $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString());
+            $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
         }
         if ($Game->getNumberOfPlayers() > 1) {
             $this->addMessage($Game->getCurrentPlayer()->user_name . " goes first.");
@@ -74,7 +74,7 @@ class Talk
         } elseif ($Player->State == PlayerState::Bust) {
             $this->addMessage($this->user_name . " is bust.");
         }
-        $out = $this->user_name . "'s cards: " . $Player->Hand->getHandString();
+        $out = $this->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")";
         $this->addMessage($out);
     }
 
@@ -87,9 +87,9 @@ class Talk
     {
         if ($Game->getNumberOfPlayers() > 1) {
             $this->addMessage('All players have stood or are bust. The dealer draws cards:');
-            $this->addMessage($Dealer->Hand->getHandString());
+            $this->addMessage($Dealer->Hand->getHandString()  . " (" . $Dealer->Hand->Value . ")");
         } else {
-            $this->addMessage('The dealer draws cards ' . $Dealer->Hand->getHandString());
+            $this->addMessage('The dealer draws cards ' . $Dealer->Hand->getHandString() . " (" . $Dealer->Hand->Value . ")");
         }
 
         if ($Dealer->State == PlayerState::Bust) {

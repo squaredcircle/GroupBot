@@ -62,6 +62,11 @@ class Talk
         $this->addMessage($this->user_name . " stands.");
     }
 
+    public function blackjack()
+    {
+        $this->addMessage($this->user_name . " has blackjack!");
+    }
+
     public function hit(Player $Player)
     {
         if ($Player->State == PlayerState::Hit) {
@@ -78,12 +83,19 @@ class Talk
         $this->addMessage("It is now " . $Player->user_name . "'s turn.");
     }
 
-    public function dealer_done(Player $Dealer)
+    public function dealer_done(Game $Game, Player $Dealer)
     {
-        $this->addMessage('All players have stood or are bust. The dealer draws cards:');
-        $this->addMessage($Dealer->Hand->getHandString());
-        if ($Dealer->State == new PlayerState(PlayerState::Bust)) {
+        if ($Game->getNumberOfPlayers() > 1) {
+            $this->addMessage('All players have stood or are bust. The dealer draws cards:');
+            $this->addMessage($Dealer->Hand->getHandString());
+        } else {
+            $this->addMessage('The dealer draws cards ' . $Dealer->Hand->getHandString());
+        }
+
+        if ($Dealer->State == PlayerState::Bust) {
             $this->addMessage('The dealer is bust.');
+        } elseif ($Dealer->State == PlayerState::Stand) {
+            $this->addMessage('The dealer stands.');
         }
     }
 

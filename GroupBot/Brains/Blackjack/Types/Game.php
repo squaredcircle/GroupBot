@@ -96,6 +96,7 @@ class Game
             $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers());
             $Player->Hand->addCard($this->Deck->dealCard());
             $Player->Hand->addCard($this->Deck->dealCard());
+            if ($Player->Hand->isBlackjack()) $Player->State = new PlayerState(PlayerState::BlackJack);
             $this->Players[] = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
             return true;

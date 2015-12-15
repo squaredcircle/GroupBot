@@ -39,6 +39,9 @@ class Blackjack
             $Game = $this->DbControl->getGame();
             $Game->addDealer();
             $Game->addPlayer($this->user_id, $this->user_name);
+            if ($Game->getCurrentPlayer()->State == PlayerState::BlackJack) {
+                $this->Talk->blackjack();
+            }
             $this->Talk->join_game();
         }
         return $Game;
@@ -129,7 +132,11 @@ class Blackjack
             $Dealer->Hand->addCard($this->Game->Deck->dealCard());
         } while (!$Dealer->Hand->isDealerDone());
 
-        $this->Talk->dealer_done($Dealer);
+        if ($Dealer->Hand->isBust()) $Dealer->State =  new PlayerState(PlayerState::Bust);
+        elseif ($Dealer->Hand->isTwentyOne()) $Dealer->State =  new PlayerState(PlayerState::TwentyOne);
+        else $Dealer->State = new PlayerState(PlayerState::Stand);
+
+        $this->Talk->dealer_done($this->Game, $Dealer);
 
         foreach ($this->Game->Players as $Player)
         {

@@ -89,10 +89,10 @@ class Hand
         $value = 0;
 
         foreach ($this->Cards as $Card) {
-            if ($Card->rank == 1)
+            if ($Card->value == 'A')
                 $aces++;
             else
-                $value += $Card->rank;
+                $value += $Card->value;
         }
 
         if (($aces > 1) && (21 >= $value + 11 + ($aces - 1)))

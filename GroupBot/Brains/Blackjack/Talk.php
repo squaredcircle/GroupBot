@@ -106,7 +106,7 @@ class Talk
         } elseif ($multiplier == 0) {
             $this->addMessage($Player->user_name . " regains their bet.");
         } elseif ($multiplier < 0) {
-            $this->addMessage($Player->user_name . " looses their bet.");
+            $this->addMessage($Player->user_name . " loses their bet.");
         }
     }
 

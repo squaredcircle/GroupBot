@@ -12,14 +12,14 @@ namespace GroupBot\Brains\Blackjack\Types;
 class Card
 {
     public $rank;
-    public $suite;
+    public $suit;
 
     public $value;
 
-    public function __construct($rank, $suite)
+    public function __construct($rank, $suit)
     {
         $this->rank = $rank;
-        $this->suite = $suite;
+        $this->suit = $suit;
         $this->updateValue();
     }
 

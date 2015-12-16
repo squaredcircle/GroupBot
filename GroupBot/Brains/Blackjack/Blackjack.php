@@ -28,11 +28,11 @@ class Blackjack
         $this->DbControl = new Control($chat_id);
         $this->Talk = new Talk($this->user_name);
 
-        $this->Game = $this->loadOrCreateGame();
+        $this->Game = $this->loadOrCreateGame($Move);
         $this->processPlayerMove($Move);
     }
 
-    private function loadOrCreateGame()
+    private function loadOrCreateGame(PlayerMove $Move)
     {
         if (!$Game = $this->DbControl->getGame()) {
             $this->DbControl->insert_game();
@@ -42,7 +42,7 @@ class Blackjack
             if ($Game->getCurrentPlayer()->State == PlayerState::BlackJack) {
                 $this->Talk->blackjack();
             }
-            $this->Talk->join_game();
+            if ($Move == PlayerMove::JoinGame) $this->Talk->join_game();
         }
         return $Game;
     }
@@ -100,7 +100,7 @@ class Blackjack
         $this->Game->savePlayer();
         if ($this->cyclePlayer()) {
             $this->Game->saveGame();
-            $this->Talk->next_turn($this->Game->getCurrentPlayer());
+            $this->Talk->next_turn($this->Game);
         } else {
             $this->finaliseGame();
             $this->Game->endGame();
@@ -109,20 +109,16 @@ class Blackjack
 
     private function cyclePlayer()
     {
-        if (!$this->Game->areTurnsOver()) {
-            $turn = $this->Game->turn;
-            $turn = (++$turn) % $this->Game->getNumberOfPlayers();
-
-            do {
-                if ($this->Game->Players[$turn]->State == PlayerState::Join
-                    || $this->Game->Players[$turn]->State == PlayerState::Hit) {
-                    $this->Game->turn = $turn;
-                    return true;
-                }
-                $turn = (++$turn) % $this->Game->getNumberOfPlayers();
-            } while ($turn != $this->Game->turn);
+        $Player = $this->Game->getCurrentPlayer();
+        if ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
+            return true;
         }
-        return false;
+
+        if (++$this->Game->turn == $this->Game->getNumberOfPlayers()) {
+            return false;
+        }
+
+        return true;
     }
 
     private function finaliseGame()

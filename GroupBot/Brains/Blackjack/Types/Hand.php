@@ -41,9 +41,16 @@ class Hand
     {
         $out = '';
         foreach ($this->Cards as $Card) {
-            $out .= $Card->rank . $Card->suite . ", ";
+            $out .= $Card->rank . $Card->suit . ", ";
         }
         return substr($out, 0, -2);
+    }
+
+    public function countCardInstances(Card $Card)
+    {
+        $map = function(Card $c) {return $c->rank . $c->suit;};
+        $count = array_count_values(array_map($map, $this->Cards));
+        return $count[$Card->rank . $Card->suit];
     }
 
     public function hasCard(Card $Card)

@@ -41,11 +41,13 @@ class Talk
     public function join_game()
     {
         $this->addMessage($this->user_name . " has joined the game.");
+        $this->addMessage("Others can also join the game with /blackjack");
+        $this->addMessage("You can start the game by using /blackjack again");
     }
 
     public function start_game(Game $Game)
     {
-        $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
+        if ($Game->getNumberOfPlayers() > 1) $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
         $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         foreach ($Game->Players as $Player) {
             $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
@@ -55,6 +57,7 @@ class Talk
         } else {
             $this->addMessage("Please place your move.");
         }
+        $this->addMessage("You can /hit or /stand");
     }
 
     public function stand()
@@ -78,9 +81,14 @@ class Talk
         $this->addMessage($out);
     }
 
-    public function next_turn(Player $Player)
+    public function next_turn(Game $Game)
     {
-        $this->addMessage("It is now " . $Player->user_name . "'s turn.");
+        if ($Game->getNumberOfPlayers() > 1) {
+            $this->addMessage("It is now " . $Game->getCurrentPlayer()->user_name . "'s turn.");
+        } else {
+            $this->addMessage("Please place your move.");
+        }
+        $this->addMessage("You can /hit or /stand");
     }
 
     public function dealer_done(Game $Game, Player $Dealer)

@@ -63,16 +63,6 @@ class Game
         return count($this->Players);
     }
 
-    public function areTurnsOver()
-    {
-        foreach ($this->Players as $Player) {
-            if ($Player->State == PlayerState::Hit || $Player->State == PlayerState::Join) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public function startGame()
     {
         $this->turn = 0;
@@ -128,7 +118,7 @@ class Game
                 $Hand->addCard($Card);
             }
         }
-        $Deck = new Deck($Hand);
+        $Deck = new Deck(4, $Hand);
         return $Deck;
     }
 }

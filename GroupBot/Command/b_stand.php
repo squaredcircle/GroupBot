@@ -9,18 +9,13 @@ namespace GroupBot\Command;
 
 use GroupBot\Brains\Blackjack\Blackjack;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
-use GroupBot\Enums\ChatType;
 use GroupBot\Types\Command;
 
-class b_blackjack extends Command
+class b_stand extends Command
 {
-    public function b_blackjack()
+    public function b_stand()
     {
-        if ($this->Message->Chat->type == ChatType::Individual) {
-            $Move = new PlayerMove(PlayerMove::StartGame);
-        } else {
-            $Move = new PlayerMove(PlayerMove::JoinGame);
-        }
+        $Move = new PlayerMove(PlayerMove::Stand);
 
         $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move);
         if ($Blackjack->Talk->areMessages()) {

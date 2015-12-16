@@ -40,22 +40,22 @@ class Convert
 
         switch (floor($card / 13)) {
             case 0:
-                $suite = '♠';
+                $suit = '♠';
                 break;
             case 1:
-                $suite = '♥';
+                $suit = '♥';
                 break;
             case 2:
-                $suite = '♦';
+                $suit = '♦';
                 break;
             case 3:
-                $suite = '♣';
+                $suit = '♣';
                 break;
             default:
-                $suite = '';
+                $suit = '';
         }
 
-        return new Card($rank, $suite);
+        return new Card($rank, $suit);
     }
 
     public function cardToString(Card $Card)
@@ -77,24 +77,24 @@ class Convert
                 $rank = $Card->rank - 1;
         }
 
-        switch ($Card->suite) {
+        switch ($Card->suit) {
             case '♠':
-                $suite = 0;
+                $suit = 0;
                 break;
             case '♥':
-                $suite = 1;
+                $suit = 1;
                 break;
             case '♦':
-                $suite = 2;
+                $suit = 2;
                 break;
             case '♣':
-                $suite = 3;
+                $suit = 3;
                 break;
             default:
                 return false;
         }
 
-        return $suite * 13 + $rank;
+        return $suit * 13 + $rank;
     }
 
     public function handFromString($cards)

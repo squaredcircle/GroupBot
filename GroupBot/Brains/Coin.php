@@ -10,6 +10,7 @@ namespace GroupBot\Brains;
 
 
 use Coin\Auth\TelegramLink;
+use GroupBot\Base\Telegram;
 
 class Coin
 {
@@ -17,7 +18,6 @@ class Coin
 
     public function __construct()
     {
-        require(COIN_CLASS);
         $this->ic =  new \Coin\Base\Coin(true);
     }
 
@@ -46,6 +46,16 @@ class Coin
         if ($this->checkIfUserLinked($user_id)) {
             $user_sending = $this->ic->TelegramLink->getUserFromTelegramId($user_id);
             $this->ic->MoneyControl->performTransaction($user_sending, $user_receiving, $amount, $Telegram);
+            return true;
+        }
+        return false;
+    }
+
+    public function taxationBodyTransact($user_id, $amount, Telegram $Telegram)
+    {
+        if ($this->checkIfUserLinked($user_id)) {
+            $user_receiving = $this->ic->TelegramLink->getUserFromTelegramId($user_id);
+            $this->ic->MoneyControl->performTransaction(TAXATION_BODY, $user_receiving, $amount, $Telegram);
             return true;
         }
         return false;

@@ -30,10 +30,10 @@ class SQL
         return $query->execute();
     }
 
-    public function insert_player($game_id, $user_id, $user_name, $card_str, $player_state, $player_no)
+    public function insert_player($game_id, $user_id, $user_name, $card_str, $player_state, $player_no, $bet)
     {
-        $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no)
-                VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no)';
+        $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no, bet)
+                VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no, :bet)';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':user_id', $user_id);
@@ -42,14 +42,15 @@ class SQL
         $query->bindValue(':cards', $card_str);
         $query->bindValue(':state', $player_state);
         $query->bindValue(':player_no', $player_no);
+        $query->bindValue(':bet', $bet);
 
         return $query->execute();
     }
 
-    public function updatePlayer($user_id, $game_id, $card_str, $player_state)
+    public function updatePlayer($user_id, $game_id, $card_str, $player_state, $bet)
     {
         $sql = 'UPDATE bj_players
-                SET cards = :cards, state = :state
+                SET cards = :cards, state = :state, bet = :bet
                 WHERE user_id = :user_id AND game_id = :game_id';
 
         $query = $this->db->prepare($sql);
@@ -57,6 +58,7 @@ class SQL
         $query->bindValue(':game_id', $game_id);
         $query->bindValue(':cards', $card_str);
         $query->bindValue(':state', $player_state);
+        $query->bindValue(':bet', $bet);
 
         return $query->execute();
     }
@@ -102,7 +104,7 @@ class SQL
 
     public function select_players($game_id)
     {
-        $sql = 'SELECT user_id, user_name, cards, state, player_no FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
+        $sql = 'SELECT user_id, user_name, cards, state, player_no, bet FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':game_id', $game_id);

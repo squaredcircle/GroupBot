@@ -2,10 +2,12 @@
 
 namespace GroupBot\Brains\Blackjack;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Blackjack\Database\Control;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
 use GroupBot\Brains\Blackjack\Types\Player;
+use GroupBot\Brains\Coin;
 use GroupBot\Types\User;
 
 class Blackjack
@@ -16,10 +18,9 @@ class Blackjack
 
     private $Game;
     private $DbControl;
-
     public $Talk;
 
-    public function __construct(User $User, $chat_id, PlayerMove $Move)
+    public function __construct(User $User, $chat_id, PlayerMove $Move, $bet)
     {
         $this->chat_id = $chat_id;
         $this->user_id = $User->id;
@@ -28,26 +29,26 @@ class Blackjack
         $this->DbControl = new Control($chat_id);
         $this->Talk = new Talk($this->user_name);
 
-        $this->Game = $this->loadOrCreateGame($Move);
-        $this->processPlayerMove($Move);
+        $this->Game = $this->loadOrCreateGame($Move, $bet);
+        $this->processPlayerMove($Move, $bet);
     }
 
-    private function loadOrCreateGame(PlayerMove $Move)
+    private function loadOrCreateGame(PlayerMove $Move, $bet)
     {
         if (!$Game = $this->DbControl->getGame()) {
             $this->DbControl->insert_game();
             $Game = $this->DbControl->getGame();
             $Game->addDealer();
-            $Game->addPlayer($this->user_id, $this->user_name);
-            if ($Game->getCurrentPlayer()->State == PlayerState::BlackJack) {
+            $Game->addPlayer($this->user_id, $this->user_name, $bet);
+            if ($Game->Players[0]->State == PlayerState::BlackJack) {
                 $this->Talk->blackjack();
             }
-            if ($Move == PlayerMove::JoinGame) $this->Talk->join_game();
+            if ($Move == PlayerMove::JoinGame) $this->Talk->join_game($bet);
         }
         return $Game;
     }
 
-    private function processPlayerMove(PlayerMove $Move)
+    private function processPlayerMove(PlayerMove $Move, $bet)
     {
         if ($this->Game->isGameStarted())
         {
@@ -59,8 +60,8 @@ class Blackjack
         elseif (!$this->Game->isPlayerInGame($this->user_id))
         {
             if ($Move == PlayerMove::JoinGame) {
-                $this->Game->addPlayer($this->user_id, $this->user_name);
-                $this->Talk->join_game();
+                $this->Game->addPlayer($this->user_id, $this->user_name, $bet);
+                $this->Talk->join_game($bet);
             }
         }
         elseif ($this->Game->isPlayerInGame($this->user_id))
@@ -180,6 +181,19 @@ class Blackjack
     private function payPlayer(Player $Player, $multiplier)
     {
         $this->Talk->player_result($Player, $multiplier);
-    }
+        if ($multiplier != 0) {
+            $Telegram = new Telegram();
+            $Coin = new Coin();
 
+            if ($multiplier > 0) {
+                if ($Coin->getBalanceByUserName(TAXATION_BODY) > $multiplier * $Player->bet) {
+                    $Coin->taxationBodyTransact($Player->user_id, $multiplier * $Player->bet, $Telegram);
+                } else {
+                    $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam... \nsorry.");
+                }
+            } elseif ($multiplier < 0) {
+                $Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($multiplier * $Player->bet), $Telegram);
+            }
+        }
+    }
 }

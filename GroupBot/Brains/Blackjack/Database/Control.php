@@ -38,7 +38,8 @@ class Control
             $Player->user_name,
             $this->Convert->handToString($Player->Hand),
             $this->Convert->stateToString($Player->State),
-            $Player->player_no
+            $Player->player_no,
+            $Player->bet
         );
     }
 
@@ -48,7 +49,8 @@ class Control
             $Player->user_id,
             $game_id,
             $this->Convert->handToString($Player->Hand),
-            $this->Convert->stateToString($Player->State)
+            $this->Convert->stateToString($Player->State),
+            $Player->bet
         );
     }
 
@@ -77,7 +79,7 @@ class Control
         $Players = array();
         if (!empty($players)) {
             foreach ($players as $player) {
-                $Players[] = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no']);
+                $Players[] = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet']);
             }
         }
 

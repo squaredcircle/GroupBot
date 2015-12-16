@@ -11,11 +11,11 @@ use GroupBot\Brains\Blackjack\Blackjack;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Types\Command;
 
-class b_hit extends Command
+class b_bjstart extends Command
 {
-    public function b_hit()
+    public function b_bjstart()
     {
-        $Move = new PlayerMove(PlayerMove::Hit);
+        $Move = new PlayerMove(PlayerMove::StartGame);
 
         $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move, NULL);
         if ($Blackjack->Talk->areMessages()) {

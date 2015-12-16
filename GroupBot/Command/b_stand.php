@@ -17,7 +17,7 @@ class b_stand extends Command
     {
         $Move = new PlayerMove(PlayerMove::Stand);
 
-        $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move);
+        $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move, NULL);
         if ($Blackjack->Talk->areMessages()) {
             $this->Telegram->talk($this->Message->Chat->id, $Blackjack->Talk->getMessages());
             return true;

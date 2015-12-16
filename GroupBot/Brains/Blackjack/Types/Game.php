@@ -71,7 +71,7 @@ class Game
     public function addDealer()
     {
         if (!$this->isGameStarted()) {
-            $Player = new Player('0', 'Dealer', NULL, new PlayerState(PlayerState::Dealer), -1);
+            $Player = new Player('0', 'Dealer', NULL, new PlayerState(PlayerState::Dealer), -1, 0);
             $Player->Hand->addCard($this->Deck->dealCard());
             $this->Dealer = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
@@ -80,10 +80,10 @@ class Game
         return false;
     }
 
-    public function addPlayer($user_id, $user_name)
+    public function addPlayer($user_id, $user_name, $bet)
     {
         if (!$this->isGameStarted()) {
-            $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers());
+            $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet);
             $Player->Hand->addCard($this->Deck->dealCard());
             $Player->Hand->addCard($this->Deck->dealCard());
             if ($Player->Hand->isBlackjack()) $Player->State = new PlayerState(PlayerState::BlackJack);

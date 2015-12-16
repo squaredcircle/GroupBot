@@ -38,16 +38,26 @@ class Talk
         return $this->Messages;
     }
 
-    public function join_game()
+    public function join_game($bet)
     {
-        $this->addMessage($this->user_name . " has joined the game.");
+        $out = $this->user_name . " has joined the game";
+        if ($bet > 0) {
+            $out .= " with a bet of " . $bet . " coin.";
+        } else {
+            $out .= ".";
+        }
+        $this->addMessage($out);
         $this->addMessage("Others can also join the game with /blackjack");
-        $this->addMessage("You can start the game by using /blackjack again");
+        $this->addMessage("You can start the game with /bjstart");
     }
 
     public function start_game(Game $Game)
     {
-        if ($Game->getNumberOfPlayers() > 1) $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
+        if ($Game->getNumberOfPlayers() > 1) {
+            $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
+        } else {
+            $this->addMessage("You're betting " . $Game->getCurrentPlayer()->bet . " coin.");
+        }
         $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         foreach ($Game->Players as $Player) {
             $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
@@ -110,11 +120,11 @@ class Talk
     public function player_result(Player $Player, $multiplier)
     {
         if ($multiplier > 0) {
-            $this->addMessage($Player->user_name . " wins " . $multiplier . "x their bet.");
+            $this->addMessage($Player->user_name . " wins " . $multiplier * $Player->bet . " coin!");
         } elseif ($multiplier == 0) {
-            $this->addMessage($Player->user_name . " regains their bet.");
+            $this->addMessage($Player->user_name . " regains their bet of " . $Player->bet . ".");
         } elseif ($multiplier < 0) {
-            $this->addMessage($Player->user_name . " loses their bet.");
+            $this->addMessage($Player->user_name . " loses their bet of " . $Player->bet . ".");
         }
     }
 

@@ -8,8 +8,10 @@
 
 namespace GroupBot\Brains\Blackjack\Types;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Blackjack\Database\Control;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
+use GroupBot\Brains\Coin;
 
 class Game
 {
@@ -89,6 +91,13 @@ class Game
             if ($Player->Hand->isBlackjack()) $Player->State = new PlayerState(PlayerState::BlackJack);
             $this->Players[] = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
+
+
+            if ($bet > 0) {
+                $Coin = new Coin();
+                $Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($Player->bet), new Telegram());
+            }
+
             return true;
         }
         return false;

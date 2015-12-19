@@ -40,9 +40,6 @@ class Blackjack
             $Game = $this->DbControl->getGame();
             $Game->addDealer();
             $Game->addPlayer($this->user_id, $this->user_name, $bet);
-            if ($Game->Players[0]->State == PlayerState::BlackJack) {
-                $this->Talk->blackjack();
-            }
             if ($Move == PlayerMove::JoinGame) $this->Talk->join_game($bet);
         }
         return $Game;
@@ -97,7 +94,10 @@ class Blackjack
 
                     break;
             }
+        } elseif ($Player->State == PlayerState::BlackJack) {
+            $this->Talk->blackjack();
         }
+
         $this->Game->savePlayer();
         if ($this->cyclePlayer()) {
             $this->Game->saveGame();
@@ -181,18 +181,23 @@ class Blackjack
     private function payPlayer(Player $Player, $multiplier)
     {
         $this->Talk->player_result($Player, $multiplier);
-        if ($multiplier != 0) {
-            $Telegram = new Telegram();
-            $Coin = new Coin();
+        $Telegram = new Telegram();
+        $Coin = new Coin();
 
-            if ($multiplier > 0) {
-                if ($Coin->getBalanceByUserName(TAXATION_BODY) > $multiplier * $Player->bet) {
-                    $Coin->taxationBodyTransact($Player->user_id, $multiplier * $Player->bet, $Telegram);
-                } else {
-                    $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam... \nsorry.");
-                }
-            } elseif ($multiplier < 0) {
-                $Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($multiplier * $Player->bet), $Telegram);
+        if ($multiplier > 0) {
+            if ($Coin->getBalanceByUserName(TAXATION_BODY) > (1 + $multiplier) * $Player->bet) {
+                $Coin->taxationBodyTransact($Player->user_id, (1 + $multiplier) * $Player->bet, $Telegram);
+            } elseif ($Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
+                $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam, but it can at least return your bet.");
+                $Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
+            } else {
+                $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
+            }
+        } elseif ($multiplier == 0) {
+            if ($Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
+                $Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
+            } else {
+                $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
             }
         }
     }

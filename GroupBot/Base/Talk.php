@@ -28,12 +28,27 @@ class Talk
         return isset($this->Message->text) && (stripos($this->Message->text, BOT_FRIENDLY_NAME) !== false);
     }
 
-    private function dictMatch($phrases)
+    private function dictMatch($phrases, $exclusions = NULL)
     {
-        $keys = array_keys($phrases);
-        foreach ($keys as $i) {
-            if (stripos($this->Message->text, $i) !== false) {
-                $this->Telegram->talk($this->Message->Chat->id, $phrases[$i]);
+        foreach (array_keys($phrases) as $phrase) {
+            if (stripos($this->Message->text, $phrase) !== false)
+            {
+                if (isset($exclusions) && array_key_exists($phrase, $exclusions))
+                {
+                    $excluded_phrases = $exclusions[$phrase];
+                    if (is_array($excluded_phrases)) {
+                        foreach ($excluded_phrases as $exclude) {
+                            if (stripos($this->Message->text, $exclude) !== false) {
+                                continue 2;
+                            }
+                        }
+                    } else {
+                        if (stripos($this->Message->text, $exclusions[$phrase]) !== false) {
+                            continue;
+                        }
+                    }
+                }
+                $this->Telegram->talk($this->Message->Chat->id, $phrases[$phrase]);
                 return true;
             }
         }
@@ -100,7 +115,7 @@ class Talk
     {
         require(__DIR__ . '/../libraries/dictionary.php');
 
-        if ($this->dictMatch($dict_interjections)) return true;
+        if ($this->dictMatch($dict_interjections, $dict_interjections_exclusions)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
         if ($this->isShitBotMentioned())
@@ -109,7 +124,8 @@ class Talk
             if ($this->dictUsers($dict_user_replies)) return true;
             if ($this->dictMatch($dict_replies)) return true;
 
-            $this->Telegram->reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
+            if (str_word_count($this->Message->text) < 6)
+                $this->Telegram->reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
         }
         return true;
     }

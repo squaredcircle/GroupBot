@@ -18,7 +18,9 @@ class Game
     public $Players = array();
     public $Dealer;
     public $Deck;
+    public $betting_pool;
 
+    private $Coin;
     private $DbControl;
     private $chat_id;
     private $game_id;
@@ -27,8 +29,12 @@ class Game
     public function __construct($chat_id, $game_id, $turn, $Players = NULL)
     {
         $this->DbControl = new Control($chat_id);
+        $this->Coin = new Coin();
+
+        $this->betting_pool = 0;
         $this->chat_id = $chat_id;
         $this->game_id = $game_id;
+
         $this->turn = $turn;
         if (isset($Players)) {
             foreach ($Players as $key => $player) {
@@ -36,6 +42,7 @@ class Game
                     $this->Dealer = $player;
                     unset($Players[$key]);
                 }
+                $this->betting_pool += $player->bet;
             }
             $this->Players = array_values($Players);
         }
@@ -60,6 +67,15 @@ class Game
         return $this->Players[$this->turn];
     }
 
+    public function getPlayer($no)
+    {
+        foreach ($this->Players as $Player) {
+            if ($Player->player_no == $no) {
+                return $Player;
+            }
+        }
+    }
+
     public function getNumberOfPlayers()
     {
         return count($this->Players);
@@ -67,13 +83,21 @@ class Game
 
     public function startGame()
     {
-        $this->turn = 0;
+        $this->turn = -1;
+
+        do {
+            if (++$this->turn == $this->getNumberOfPlayers()) {
+                return false;
+            }
+        } while ($this->getCurrentPlayer()->State == PlayerState::BlackJack);
+
+        return true;
     }
 
     public function addDealer()
     {
         if (!$this->isGameStarted()) {
-            $Player = new Player('0', 'Dealer', NULL, new PlayerState(PlayerState::Dealer), -1, 0);
+            $Player = new Player('0', 'Dealer', NULL, new PlayerState(PlayerState::Dealer), -1, 0, false, 0);
             $Player->Hand->addCard($this->Deck->dealCard());
             $this->Dealer = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
@@ -82,30 +106,51 @@ class Game
         return false;
     }
 
-    public function addPlayer($user_id, $user_name, $bet)
+    public function addPlayer($user_id, $user_name, $bet, $free_bet, $split)
     {
         if (!$this->isGameStarted()) {
-            $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet);
+            $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet, $free_bet, $split);
             $Player->Hand->addCard($this->Deck->dealCard());
             $Player->Hand->addCard($this->Deck->dealCard());
+
+            if ($Player->Hand->isBlackjack()) $Player->State = new PlayerState(PlayerState::BlackJack);
+
+            $this->Players[] = $Player;
+            $this->DbControl->insert_player($Player, $this->game_id);
+
+            if ($bet > 0 && !$free_bet) $this->Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($bet), new Telegram());
+
+            return true;
+        } elseif ($split == 2) {
+            foreach ($this->Players as $Player) {
+                if ($Player->player_no > $this->getCurrentPlayer()->player_no) {
+                    $Player->player_no++;
+                }
+            }
+            $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join),
+                $this->getCurrentPlayer()->player_no + 1, $bet, $free_bet, 2);
+
+            $Card = $this->getCurrentPlayer()->Hand->Cards[1];
+            $this->getCurrentPlayer()->Hand->removeCard($Card);
+            $Player->Hand->addCard($Card);
+            $Player->Hand->addCard($this->Deck->dealCard());
+
             if ($Player->Hand->isBlackjack()) $Player->State = new PlayerState(PlayerState::BlackJack);
             $this->Players[] = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
 
-
-            if ($bet > 0) {
-                $Coin = new Coin();
-                $Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($Player->bet), new Telegram());
-            }
+            if ($bet > 0) $this->Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($bet), new Telegram());
 
             return true;
         }
         return false;
     }
 
-    public function savePlayer()
+    public function savePlayer(Player $Player = NULL)
     {
-        $Player = $this->getCurrentPlayer();
+        if (!isset($Player)) {
+            $Player = $this->getCurrentPlayer();
+        }
         $this->DbControl->updatePlayer($Player, $this->game_id);
     }
 

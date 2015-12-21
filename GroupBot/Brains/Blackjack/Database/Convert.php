@@ -140,6 +140,8 @@ class Convert
             case "21":
                 return new PlayerState(PlayerState::TwentyOne);
                 break;
+            case "surr":
+                return new PlayerState(PlayerState::Surrender);
             case "deal":
                 return new PlayerState(PlayerState::Dealer);
                 break;
@@ -167,6 +169,9 @@ class Convert
                 break;
             case PlayerState::TwentyOne:
                 return "21";
+                break;
+            case PlayerState::Surrender:
+                return "surr";
                 break;
             case PlayerState::Dealer:
                 return "deal";

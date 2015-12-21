@@ -17,5 +17,6 @@ class PlayerState extends \SplEnum
     const Bust = 4;
     const TwentyOne = 5;
     const BlackJack = 6;
-    const Dealer = 7;
+    const Surrender = 7;
+    const Dealer = 8;
 }

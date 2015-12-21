@@ -39,7 +39,9 @@ class Control
             $this->Convert->handToString($Player->Hand),
             $this->Convert->stateToString($Player->State),
             $Player->player_no,
-            $Player->bet
+            $Player->bet,
+            $Player->free_bet,
+            $Player->split
         );
     }
 
@@ -50,7 +52,8 @@ class Control
             $game_id,
             $this->Convert->handToString($Player->Hand),
             $this->Convert->stateToString($Player->State),
-            $Player->bet
+            $Player->bet,
+            $Player->split
         );
     }
 
@@ -79,8 +82,13 @@ class Control
         $Players = array();
         if (!empty($players)) {
             foreach ($players as $player) {
-                $Players[] = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet']);
+                $Players[] = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet'], $player['free_bet'], $player['split']);
             }
+
+            usort($Players, function($a, $b) {
+                if ($a->player_no == $b->player_no) return 0;
+                return $a->player_no < $b->player_no ? -1 : 1;
+            });
         }
 
         return $Players;

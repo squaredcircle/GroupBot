@@ -59,6 +59,11 @@ class Hand
         return in_array($Card, $this->Cards);
     }
 
+    public function canSplit()
+    {
+        return (count($this->Cards) == 2 && $this->Cards[0]->value == $this->Cards[1]->value);
+    }
+
     public function hasCards()
     {
         return !empty($this->Cards);

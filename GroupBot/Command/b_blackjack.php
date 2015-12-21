@@ -23,20 +23,7 @@ class b_blackjack extends Command
             $Move = new PlayerMove(PlayerMove::JoinGame);
         }
 
-        $bet = 0;
-        if ($this->isParam() && is_numeric($this->getParam()) && $this->getParam() > 0) {
-            $Coin = new Coin();
-            $balance = $Coin->getBalanceByUserId($this->Message->User->id);
-            $bet = round($this->getParam(),2);
-
-            if ($bet >= round($balance,2)) {
-                $this->Telegram->talk($this->Message->Chat->id, "you don't have that much coin, brah");
-                return false;
-            } elseif ($Coin->getBalanceByUserName(TAXATION_BODY) < 1.5 * $bet) {
-                $this->Telegram->talk($this->Message->Chat->id, TAXATION_BODY . " can't accept a bet that high right now, fam");
-                return false;
-            }
-        }
+        $bet = $this->isParam() ? $this->getParam() : 0;
 
         $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move, $bet);
         if ($Blackjack->Talk->areMessages()) {

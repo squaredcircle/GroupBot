@@ -15,9 +15,12 @@ class Blackjack
     protected $chat_id;
     protected $user_id;
     protected $user_name;
+    protected $bet;
+    protected $free_bet;
 
     private $Game;
     private $DbControl;
+    private $Coin;
     public $Talk;
 
     public function __construct(User $User, $chat_id, PlayerMove $Move, $bet)
@@ -25,27 +28,70 @@ class Blackjack
         $this->chat_id = $chat_id;
         $this->user_id = $User->id;
         $this->user_name = $User->first_name;
+        $this->bet = $bet;
+        $this->free_bet = false;
 
         $this->DbControl = new Control($chat_id);
         $this->Talk = new Talk($this->user_name);
+        $this->Coin = new Coin();
 
-        $this->Game = $this->loadOrCreateGame($Move, $bet);
-        $this->processPlayerMove($Move, $bet);
+        if (!$this->Game = $this->loadOrCreateGame($Move)) return false;
+        $this->processPlayerMove($Move);
     }
 
-    private function loadOrCreateGame(PlayerMove $Move, $bet)
+    private function loadOrCreateGame(PlayerMove $Move)
     {
         if (!$Game = $this->DbControl->getGame()) {
+            if (!$this->checkPlayerBet()) return false;
             $this->DbControl->insert_game();
             $Game = $this->DbControl->getGame();
             $Game->addDealer();
-            $Game->addPlayer($this->user_id, $this->user_name, $bet);
-            if ($Move == PlayerMove::JoinGame) $this->Talk->join_game($bet);
+            $Game->addPlayer($this->user_id, $this->user_name, $this->bet, $this->free_bet, 0);
+            if ($Move == PlayerMove::JoinGame) $this->Talk->join_game($this->bet);
         }
         return $Game;
     }
 
-    private function processPlayerMove(PlayerMove $Move, $bet)
+    private function checkPlayerBet()
+    {
+        $balance = $this->Coin->getBalanceByUserId($this->user_id);
+        $betting_pool = isset($this->Game) ? $this->Game->betting_pool : 0;
+        $this->bet;
+
+        if (!(is_numeric($this->bet) && $this->bet >= 0 && $this->bet == round($this->bet, 2))) {
+            $this->Talk->bet_invalid();
+            return false;
+        } elseif ($balance < 1 && $this->bet <= 1) {
+            if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > $betting_pool + 1.5) {
+                $this->Talk->bet_free();
+                $this->bet = 1;
+                $this->free_bet = true;
+                return true;
+            } else {
+                $this->Talk->bet_free_failed();
+                return false;
+            }
+        } elseif ($this->bet == 0) {
+            if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > $betting_pool + 1.5) {
+                $this->bet = 1;
+                $this->Talk->bet_mandatory();
+            } else {
+                $this->Talk->bet_mandatory_failed();
+            }
+            return true;
+        } elseif ($this->bet >= $balance) {
+            $this->Talk->bet_too_high($balance);
+            return false;
+        }
+
+        if ($this->Coin->getBalanceByUserName(TAXATION_BODY) < $betting_pool + 1.5 * $this->bet) {
+            $this->Talk->bet_too_high_for_dealer();
+            return false;
+        }
+        return true;
+    }
+
+    private function processPlayerMove(PlayerMove $Move)
     {
         if ($this->Game->isGameStarted())
         {
@@ -57,8 +103,9 @@ class Blackjack
         elseif (!$this->Game->isPlayerInGame($this->user_id))
         {
             if ($Move == PlayerMove::JoinGame) {
-                $this->Game->addPlayer($this->user_id, $this->user_name, $bet);
-                $this->Talk->join_game($bet);
+                if (!$this->checkPlayerBet()) return false;
+                $this->Game->addPlayer($this->user_id, $this->user_name, $this->bet, $this->free_bet, 0);
+                $this->Talk->join_game($this->bet);
             }
         }
         elseif ($this->Game->isPlayerInGame($this->user_id))
@@ -77,7 +124,9 @@ class Blackjack
     {
         $Player = $this->Game->getCurrentPlayer();
 
-        if ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
+        if ($Player->State == PlayerState::BlackJack) {
+            $this->Talk->blackjack();
+        } elseif ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
             switch ($Move) {
                 case PlayerMove::Stand:
                     $Player->State =  new PlayerState(PlayerState::Stand);
@@ -85,17 +134,70 @@ class Blackjack
                     break;
                 case PlayerMove::Hit:
                     $Player->Hand->addCard($this->Game->Deck->dealCard());
-
-                    if ($Player->Hand->isBust()) $Player->State =  new PlayerState(PlayerState::Bust);
-                    elseif ($Player->Hand->isTwentyOne()) $Player->State =  new PlayerState(PlayerState::TwentyOne);
-                    else $Player->State = new PlayerState(PlayerState::Hit);
-
+                    $this->setPlayerState(PlayerState::Hit);
                     $this->Talk->hit($Player);
-
+                    break;
+                case PlayerMove::DoubleDown:
+                    if ($this->Coin->getBalanceByUserId($this->user_id) > $Player->bet) {
+                        if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > $this->Game->betting_pool + $Player->bet) {
+                            $this->Coin->performTransaction($Player->user_id, TAXATION_BODY, $Player->bet, new Telegram());
+                            $Player->bet = $Player->bet * 2;
+                            $Player->Hand->addCard($this->Game->Deck->dealCard());
+                            $this->setPlayerState(PlayerState::Stand);
+                            $this->Talk->double_down($Player);
+                        } else {
+                            $this->Talk->double_down_dealer_not_enough_money();
+                            return false;
+                        }
+                    } else {
+                        $this->Talk->double_down_not_enough_money($Player);
+                        return false;
+                    }
+                    break;
+                case PlayerMove::Split:
+                    if ($Player->State != PlayerState::Join) {
+                        $this->Talk->split_wrong_turn();
+                        return false;
+                    } elseif ($Player->Hand->canSplit()) {
+                        if ($Player->split == 0) {
+                            if ($this->Coin->getBalanceByUserId($this->user_id) > $Player->bet) {
+                                if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > $this->Game->betting_pool + $Player->bet) {
+                                    $this->Game->addPlayer($this->user_id, $this->user_name, $Player->bet, false, 2);
+                                    $Player->Hand->addCard($this->Game->Deck->dealCard());
+                                    $this->setPlayerState(PlayerState::Hit);
+                                    $Player->split = 1;
+                                    $this->Talk->split($Player, $this->Game->getPlayer($Player->player_no + 1));
+                                } else {
+                                    $this->Talk->split_dealer_not_enough_money();
+                                    return false;
+                                }
+                            } else {
+                                $this->Talk->split_not_enough_money($Player);
+                                return false;
+                            }
+                        } else {
+                            $this->Talk->split_only_once();
+                            return false;
+                        }
+                    } else {
+                        $this->Talk->split_wrong_cards();
+                        return false;
+                    }
+                    break;
+                case PlayerMove::Surrender:
+                    if ($Player->free_bet) {
+                        $Player->State = new PlayerState(PlayerState::Surrender);
+                        $this->Talk->surrender_free($Player);
+                    } elseif ($Player->State == PlayerState::Join) {
+                        $this->Coin->taxationBodyTransact($this->user_id, $Player->bet * 0.5, new Telegram());
+                        $Player->State = new PlayerState(PlayerState::Surrender);
+                        $this->Talk->surrender($Player);
+                    } else {
+                        $this->Talk->surrender_wrong_turn();
+                        return false;
+                    }
                     break;
             }
-        } elseif ($Player->State == PlayerState::BlackJack) {
-            $this->Talk->blackjack();
         }
 
         $this->Game->savePlayer();
@@ -108,6 +210,15 @@ class Blackjack
         }
     }
 
+    private function setPlayerState($DefaultPlayerState)
+    {
+        $Player = $this->Game->getCurrentPlayer();
+
+        if ($Player->Hand->isBust()) $Player->State =  new PlayerState(PlayerState::Bust);
+        elseif ($Player->Hand->isTwentyOne()) $Player->State =  new PlayerState(PlayerState::TwentyOne);
+        else $Player->State = new PlayerState($DefaultPlayerState);
+    }
+
     private function cyclePlayer()
     {
         $Player = $this->Game->getCurrentPlayer();
@@ -115,9 +226,11 @@ class Blackjack
             return true;
         }
 
-        if (++$this->Game->turn == $this->Game->getNumberOfPlayers()) {
-            return false;
-        }
+        do {
+            if (++$this->Game->turn == $this->Game->getNumberOfPlayers()) {
+                return false;
+            }
+        } while ($this->Game->getCurrentPlayer()->State == PlayerState::BlackJack);
 
         return true;
     }
@@ -182,20 +295,19 @@ class Blackjack
     {
         $this->Talk->player_result($Player, $multiplier);
         $Telegram = new Telegram();
-        $Coin = new Coin();
 
         if ($multiplier > 0) {
-            if ($Coin->getBalanceByUserName(TAXATION_BODY) > (1 + $multiplier) * $Player->bet) {
-                $Coin->taxationBodyTransact($Player->user_id, (1 + $multiplier) * $Player->bet, $Telegram);
-            } elseif ($Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
+            if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > (1 + $multiplier) * $Player->bet) {
+                $this->Coin->taxationBodyTransact($Player->user_id, (1 + $multiplier) * $Player->bet, $Telegram);
+            } elseif ($this->Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
                 $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam, but it can at least return your bet.");
-                $Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
+                $this->Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
             } else {
                 $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
             }
-        } elseif ($multiplier == 0) {
-            if ($Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
-                $Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
+        } elseif ($multiplier == 0 && !$Player->free_bet) {
+            if ($this->Coin->getBalanceByUserName(TAXATION_BODY) > abs($Player->bet)) {
+                $this->Coin->taxationBodyTransact($Player->user_id, abs($Player->bet), $Telegram);
             } else {
                 $Telegram->talk($this->chat_id, TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
             }

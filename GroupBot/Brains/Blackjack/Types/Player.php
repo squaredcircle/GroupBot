@@ -13,6 +13,7 @@ use GroupBot\Brains\Blackjack\Enums\PlayerState;
 
 class Player
 {
+    public $db_id;
     public $user_id;
     public $user_name;
     public $Hand;
@@ -32,6 +33,11 @@ class Player
         $this->bet = $bet;
         $this->free_bet = $free_bet;
         $this->split = $split;
+    }
+
+    public function setDbId($id)
+    {
+        $this->db_id = $id;
     }
 
     public function isSplit()

@@ -14,7 +14,7 @@ class q_zalgomin extends Command
 {
     public function q_zalgomin()
     {
-        $zalgo = new Zalgo('twitter');
+        $zalgo = new Zalgo('min');
         $out = $zalgo->speak($this->Message->text);
 
         $this->Telegram->talk($this->Message->Chat->id, $out);

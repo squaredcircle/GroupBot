@@ -58,21 +58,7 @@ class Zalgo
             $element = json_decode('"\u'.bin2hex(pack('n', $element)).'"');
         });
 
-      //  array_walk_recursive($this->dictionary, function(&$element) {
-       //     $element = $this->emoji($element);
-       // });
-
-        $this->setMood($mood);
-    }
-
-    private function emoji($string)
-    {
-        return iconv('UCS-4LE', 'UTF-8', pack('V', intval($string, 0)));
-    }
-
-    public function setMood($mood)
-    {
-        if ($mood == 'soothed' || $mood == 'enraged' || $mood == 'twitter')
+        if ($mood == 'min' || $mood == 'less' || $mood == 'max')
             $this->mood = $mood;
     }
 
@@ -104,21 +90,21 @@ class Zalgo
     private function getZalgoLevels()
     {
         switch($this->mood) {
-            case 'soothed':
+            case 'less':
                 return [
                     'up' => mt_rand(0, 8),
                     'down' => mt_rand(0, 8),
                     'mid' => mt_rand(0, 2),
                 ];
                 break;
-            case 'enraged':
+            case 'max':
                 return [
                     'up' => mt_rand(0, 16) + 3,
                     'down' => mt_rand(0, 64) + 3,
                     'mid' => mt_rand(0, 4) + 1,
                 ];
                 break;
-            case 'twitter':
+            case 'min':
                 return [
                     'up' => mt_rand(0, 1),
                     'down' => mt_rand(0, 1),
@@ -135,43 +121,8 @@ class Zalgo
         }
     }
 
-    private function twitterShort($phrase)
-    {
-        if (mb_strlen($this->out) <= 140) {
-            return $this->out;
-        }
-        /**
-         * We need to split by words and start removing characters from middle of word until we
-         * get the worst-case length under 140. This will leave the word readable, hopefully.
-         *
-         * zalgo_len = phrase_len * (1 + 2 + 2)
-         * pref_zalgo_len = (phrase_len - some_num_to_remove) * (1 + 2 + 2)
-         * 140 = (35 - X) * 5
-         * 140 / 5 = 35 - X
-         * X = 35 - (140 / 5) = 7
-         */
-        $phraseLength = mb_strlen($phrase);
-        $numberToRemove = (int) ceil(abs($phraseLength - (140 / 3)));
-        $removed = 0;
-        $words = preg_split('/\s+/', $phrase);
-        while ($removed < $numberToRemove) {
-            foreach ($words as $index => $word) {
-                if (mb_strlen($words[$index]) <= 3) {
-                    $removed++;
-                    continue;
-                }
-                // Remove a letter, at random, from the word.
-                $words[$index] = substr_replace($words[$index], '', rand(1, mb_strlen($words[$index]) - 2), 1);
-                $removed++;
-                if ($removed == $numberToRemove) {
-                    break;
-                }
-            }
-        }
-        return $this->speak(implode(' ', $words));
-    }
 
-    public function speak($text = 'You have awakened me too soon!')
+    public function speak($text)
     {
         $this->out = '';
 
@@ -184,9 +135,7 @@ class Zalgo
             $this->out .= $word;
             $this->zalgoify();
         }
-        if ($this->mood == 'twitter') {
-            $this->out = $this->twitterShort($text);
-        }
+
         return $this->out;
     }
 }

@@ -13,5 +13,16 @@ spl_autoload_register( function ($class) {
 
 require(__DIR__ . '/GroupBot/Settings.php');
 
-$db = new \GroupBot\Base\DbControl();
-$db->resetDailyCounters();
+if (isset($argv[1]))
+{
+    if ($argv[1] == 'resetDailyCounters')
+    {
+        $db = new \GroupBot\Base\DbControl();
+        $db->resetDailyCounters();
+    }
+    elseif ($argv[1] == 'runRandomEvent')
+    {
+        $Coin = new \GroupBot\Brains\Coin\Coin();
+        $Coin->runRandomEvent();
+    }
+}

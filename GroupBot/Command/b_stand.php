@@ -19,7 +19,12 @@ class b_stand extends Command
 
         $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move, NULL);
         if ($Blackjack->Talk->areMessages()) {
-            $this->Telegram->talk($this->Message->Chat->id, $Blackjack->Talk->getMessages());
+            $keyboard = $Blackjack->Talk->getKeyboard();
+            if ($keyboard) {
+                $this->Telegram->reply_keyboard($this->Message->Chat->id, $Blackjack->Talk->getMessages(), $this->Message->message_id, $keyboard);
+            } else {
+                $this->Telegram->talk_hide_keyboard($this->Message->Chat->id, $Blackjack->Talk->getMessages());
+            }
             return true;
         }
         return false;

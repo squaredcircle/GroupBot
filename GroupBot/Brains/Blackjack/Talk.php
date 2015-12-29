@@ -12,15 +12,20 @@ namespace GroupBot\Brains\Blackjack;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
 use GroupBot\Brains\Blackjack\Types\Game;
 use GroupBot\Brains\Blackjack\Types\Player;
+use GroupBot\Brains\Coin\Coin;
 
 class Talk
 {
     private $user_name;
     private $Messages = '';
+    private $keyboard = false;
+
+    private $Coin;
 
     public function __construct($user_name)
     {
         $this->user_name = $user_name;
+        $this->Coin = new Coin();
     }
 
     private function addMessage($message)
@@ -38,26 +43,34 @@ class Talk
         return $this->Messages;
     }
 
+    public function getKeyboard()
+    {
+        if ($this->keyboard) {
+            return $this->keyboard;
+        }
+        return false;
+    }
+
     public function join_game($bet)
     {
-        $out = $this->user_name . " has joined the game";
+        $out = emoji(0x1F4B0) . " " . $this->user_name . " has joined the game";
         if ($bet > 0) {
             $out .= " with a bet of " . $bet . " coin.";
         } else {
             $out .= ".";
         }
         $this->addMessage($out);
-        $this->addMessage("Others can also join the game with /blackjack");
-        $this->addMessage("You can start the game with /bjstart");
+        $this->addMessage(emoji(0x1F449) . " Others can also join the game with /blackjack");
+        $this->addMessage(emoji(0x1F449) . " You can start the game with /bjstart");
+        $this->keyboard = [["/bjstart"]];
     }
 
     public function start_game(Game $Game)
     {
         if ($Game->getNumberOfPlayers() > 1) {
             $this->addMessage("The game begins with " . $Game->getNumberOfPlayers() . " players.");
-        } else {
-            $this->addMessage("You're betting " . $Game->getCurrentPlayer()->bet . " coin.");
         }
+
         $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         foreach ($Game->Players as $Player) {
             $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
@@ -68,17 +81,19 @@ class Talk
             }
         }
 
-        if ($Game->getNumberOfPlayers() > 1) {
-            $this->addMessage($Game->getCurrentPlayer()->user_name . " goes first.");
-        } else {
-            $this->addMessage("Please place your move.");
+        if (!$Game->areAllPlayersDone()) {
+            if ($Game->getNumberOfPlayers() > 1) {
+                $this->addMessage($Game->getCurrentPlayer()->user_name . " goes first.");
+            } else {
+                $this->addMessage("Please place your move.");
+            }
+            $this->next_turn_options($Game->getCurrentPlayer());
         }
-        $this->next_turn_options($Game->getCurrentPlayer());
     }
 
     public function stand()
     {
-        $this->addMessage($this->user_name . " stands.");
+        $this->addMessage(emoji(0x1F44C) . " " . $this->user_name . " stands.");
     }
 
     public function blackjack()
@@ -91,8 +106,12 @@ class Talk
         $split = "";
         if ($Player->State == PlayerState::Join && $Player->Hand->canSplit()) {
             $split = "/split, ";
+            $this->keyboard = [["/hit", "/stand"], ["/doubledown", "/split", "/surrender"]];
+        } else {
+            $this->keyboard = [["/hit", "/stand"], ["/doubledown", "/surrender"]];
         }
-        $this->addMessage("You can /hit, /stand, " . $split . "/doubledown or /surrender");
+        $this->addMessage(emoji(0x1F449) . " You can /hit, /stand, " . $split . "/doubledown or /surrender");
+
     }
 
     private function player_state(Player $Player)
@@ -108,18 +127,16 @@ class Talk
 
     public function hit(Player $Player)
     {
-        $this->addMessage($this->user_name . " hits.");
+        $this->addMessage(emoji(0x1F44C) . " " . $this->user_name . " hits.");
         $this->addMessage($this->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
         $this->player_state($Player);
     }
 
     public function split(Player $Player1, Player $Player2)
     {
-        $this->addMessage($Player1->user_name . " has split their hand into two and matched their bet. The dealer has dealt them one new card per hand.");
+        $this->addMessage(emoji(0x1F44C) . " " . $Player1->user_name . " has split their hand into two and matched their bet of " . ($Player1->bet + 0) . ". The dealer has dealt them one new card per hand.");
         $this->addMessage("Hand 1: " . $Player1->Hand->getHandString() . " (" . $Player1->Hand->Value . ")");
         $this->addMessage("Hand 2: " . $Player2->Hand->getHandString() . " (" . $Player2->Hand->Value . ")");
-        $this->addMessage($Player1->user_name . " is now playing their first hand");
-        $this->next_turn_options($Player1);
     }
 
     public function split_wrong_turn()
@@ -134,7 +151,7 @@ class Talk
 
     public function split_dealer_not_enough_money()
     {
-        $this->addMessage(TAXATION_BODY . " doesn't have enough Coin to accept a split, sorry.");
+        $this->addMessage(COIN_TAXATION_BODY . " doesn't have enough Coin to accept a split, sorry.");
     }
 
     public function split_not_enough_money(Player $Player)
@@ -164,7 +181,7 @@ class Talk
 
     public function double_down(Player $Player)
     {
-        $this->addMessage($this->user_name . " doubles down, doubling their bet to " . $Player->bet . ".");
+        $this->addMessage(emoji(0x1F44C) . " " . $this->user_name . " doubles down, doubling their bet to " . ($Player->bet + 0) . ".");
         $this->addMessage($this->user_name . " is dealt another card.");
         $this->addMessage($this->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
         $this->player_state($Player);
@@ -177,28 +194,29 @@ class Talk
 
     public function double_down_dealer_not_enough_money()
     {
-        $this->addMessage(TAXATION_BODY . " doesn't have enough Coin to accept a double down, sorry.");
+        $this->addMessage(COIN_TAXATION_BODY . " doesn't have enough Coin to accept a double down, sorry.");
     }
 
     public function next_turn(Game $Game)
     {
         $Player = $Game->getCurrentPlayer();
-        if ($Game->getNumberOfPlayers() > 1) {
-            $out = "It is now " . $Player->user_name . "'s turn";
-            if ($Player->split == 1) {
-               $out .= " _(first hand)_";
-            } elseif ($Player->split == 2) {
-                $out .= " _(second hand)_";
-            }
-            $this->addMessage($out . ".");
-        } else {
-            $this->addMessage("Please place your move.");
-        }
+
         if ($Player->State == PlayerState::Join && $Player->player_no != 0) {
             $this->addMessage($Player->user_name . "'s hand: " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
         }
         if (!($Player->State == PlayerState::Join && $Player->player_no == 0)) {
             $this->addMessage("Dealer's hand: " . $Game->Dealer->Hand->getHandString()  . " (" . $Game->Dealer->Hand->Value . ")");
+        }
+        if ($Game->getNumberOfPlayers() > 1) {
+            $out = "It is now " . $Player->user_name . "'s turn";
+            if ($Player->split == 1) {
+                $out .= " (hand one)";
+            } elseif ($Player->split == 2) {
+                $out .= " (hand two)";
+            }
+            $this->addMessage($out . ".");
+        } else {
+            $this->addMessage("Please place your move.");
         }
         $this->next_turn_options($Player);
     }
@@ -221,18 +239,22 @@ class Talk
 
     public function player_result(Player $Player, $multiplier)
     {
+        $out = emoji(0x1F4B0);
         if ($multiplier > 0) {
-            $this->addMessage($Player->user_name . " wins " . $multiplier * $Player->bet . " coin!");
+            $out .= $Player->user_name . " wins " . ($multiplier * $Player->bet + 0) . " coin!";
         } elseif ($multiplier == 0) {
             if ($Player->free_bet) {
-                $this->addMessage($Player->user_name . " cannot regain a free bet.");
+                $out .= $Player->user_name . " cannot regain a free bet";
             } else {
-                $this->addMessage($Player->user_name . " regains their bet of " . $Player->bet . ".");
+                $out .= $Player->user_name . " regains their bet of " . ($Player->bet + 0);
             }
         } elseif ($multiplier < 0) {
             $free = $Player->free_bet ? " free " : " ";
-            $this->addMessage($Player->user_name . " loses their" . $free . "bet of " . $Player->bet . ".");
+            $out .= $Player->user_name . " loses their" . $free . "bet of " . ($Player->bet + 0);
         }
+
+        $out .= " (`" . round($this->Coin->SQL->GetUserById($Player->user_id)->balance,2) . "`)";
+        $this->addMessage($out);
     }
 
     public function bet_invalid()
@@ -247,31 +269,31 @@ class Talk
 
     public function bet_mandatory_failed()
     {
-        $this->addMessage(TAXATION_BODY . " can't accept the mandatory bet of 1 Coin right now. You are betting 0 Coin.");
+        $this->addMessage(COIN_TAXATION_BODY . " can't accept the mandatory bet of 1 Coin right now. You are betting 0 Coin.");
     }
 
     public function bet_too_high($balance)
     {
         $out = "You don't have that much Coin to bet.";
         if ($balance < 1) {
-            $out .= " However, " . TAXATION_BODY . " can give you a free bet of 1 Coin if you wish.";
+            $out .= " However, " . COIN_TAXATION_BODY . " can give you a free bet of 1 Coin if you wish.";
         }
         $this->addMessage($out);
     }
 
     public function bet_too_high_for_dealer()
     {
-        $this->addMessage(TAXATION_BODY . " can't accept a bet that high right now.");
+        $this->addMessage(COIN_TAXATION_BODY . " can't accept a bet that high right now.");
     }
 
     public function bet_free()
     {
-        $this->addMessage(TAXATION_BODY . " has given you a free bet of 1 Coin. Welcome back!");
+        $this->addMessage(COIN_TAXATION_BODY . " has given you a free bet of 1 Coin. Welcome back!");
     }
 
     public function bet_free_failed()
     {
-        $this->addMessage(TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
+        $this->addMessage(COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
     }
 
 }

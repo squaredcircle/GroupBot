@@ -29,7 +29,7 @@ class User
         return isset($this->user_name);
     }
 
-    public function hasFirstName()
+    private function hasFirstName()
     {
         return isset($this->first_name);
     }

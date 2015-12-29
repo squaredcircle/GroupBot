@@ -2,6 +2,7 @@
 
 namespace GroupBot\Base;
 
+use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Message;
 
 require(__DIR__ . '/../libraries/common.php');
@@ -47,6 +48,14 @@ class GroupBot
             $Logging = new Logging($this->Message);
             $Logging->doUpdates();
 		}
+
+		$Coin = new Coin();
+		if ($Coin->checkForAndCreateUser($this->Message->User)) {
+			$Telegram = new Telegram();
+			$Telegram->talk($this->Message->Chat->id, "Hi " . $this->Message->User->first_name . "! Your " . COIN_CURRENCY_NAME
+				. " has been set up; you've got 0 " . COIN_CURRENCY_NAME . " at the moment.");
+		}
+
 		return true;
 	}
 

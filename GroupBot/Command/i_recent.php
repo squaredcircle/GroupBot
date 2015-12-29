@@ -7,16 +7,15 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Coin;
+use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
 class i_recent extends Command
 {
     public function i_recent()
     {
-        $ic = new Coin();
-        $ic = $ic->getObject();
-
-        $this->Telegram->talk($this->Message->Chat->id, $ic->recentLogs->getRecentLogsText());
+        $Coin = new Coin();
+        $RecentLogs = $Coin->getRecentLogs();
+        $this->Telegram->talk($this->Message->Chat->id, $RecentLogs->getRecentLogsText());
     }
 }

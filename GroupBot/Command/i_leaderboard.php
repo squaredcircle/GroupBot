@@ -7,16 +7,15 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Coin;
+use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
 class i_leaderboard extends Command
 {
     public function i_leaderboard()
     {
-        $ic = new Coin();
-        $ic = $ic->getObject();
-
-        $this->Telegram->talk($this->Message->Chat->id, $ic->Leaderboard->getTextLeaderboard());
+        $Coin = new Coin();
+        $Leaderboard = $Coin->getLeaderboard();
+        $this->Telegram->talk($this->Message->Chat->id, $Leaderboard->getTextLeaderboard());
     }
 }

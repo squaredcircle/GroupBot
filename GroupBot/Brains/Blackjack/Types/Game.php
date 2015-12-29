@@ -8,10 +8,12 @@
 
 namespace GroupBot\Brains\Blackjack\Types;
 
-use GroupBot\Base\Telegram;
+
 use GroupBot\Brains\Blackjack\Database\Control;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
-use GroupBot\Brains\Coin;
+use GroupBot\Brains\Coin\Coin;
+use GroupBot\Brains\Coin\Enums\TransactionType;
+use GroupBot\Brains\Coin\Types\Transaction;
 
 class Game
 {
@@ -81,12 +83,22 @@ class Game
         return count($this->Players);
     }
 
+    public function areAllPlayersDone()
+    {
+        foreach ($this->Players as $Player) {
+            if ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public function startGame()
     {
         $this->turn = -1;
 
         do {
-            if (++$this->turn == $this->getNumberOfPlayers()) {
+            if (++$this->turn + 1 == $this->getNumberOfPlayers()) {
                 return false;
             }
         } while ($this->getCurrentPlayer()->State == PlayerState::BlackJack);
@@ -110,6 +122,7 @@ class Game
     {
         if (!$this->isGameStarted()) {
             $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet, $free_bet, $split);
+
             $Player->Hand->addCard($this->Deck->dealCard());
             $Player->Hand->addCard($this->Deck->dealCard());
 
@@ -118,13 +131,20 @@ class Game
             $this->Players[] = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
 
-            if ($bet > 0 && !$free_bet) $this->Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($bet), new Telegram());
+            if ($bet > 0 && !$free_bet) $this->Coin->Transact->performTransaction(new Transaction(
+                NULL,
+                $this->Coin->SQL->GetUserById($Player->user_id),
+                $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY),
+                abs($bet),
+                new TransactionType(TransactionType::BlackjackBet)
+            ));
 
             return true;
         } elseif ($split == 2) {
             foreach ($this->Players as $Player) {
                 if ($Player->player_no > $this->getCurrentPlayer()->player_no) {
                     $Player->player_no++;
+                    $this->savePlayer($Player);
                 }
             }
             $Player = new Player($user_id, $user_name, NULL, new PlayerState(PlayerState::Join),
@@ -139,7 +159,13 @@ class Game
             $this->Players[] = $Player;
             $this->DbControl->insert_player($Player, $this->game_id);
 
-            if ($bet > 0) $this->Coin->performTransaction($Player->user_id, TAXATION_BODY, abs($bet), new Telegram());
+            if ($bet > 0) $this->Coin->Transact->performTransaction(new Transaction(
+                NULL,
+                $this->Coin->SQL->GetUserById($Player->user_id),
+                $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY),
+                abs($bet),
+                new TransactionType(TransactionType::BlackjackBet)
+            ));
 
             return true;
         }

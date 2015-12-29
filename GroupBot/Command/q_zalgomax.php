@@ -14,7 +14,7 @@ class q_zalgomax extends Command
 {
     public function q_zalgomax()
     {
-        $zalgo = new Zalgo('enraged');
+        $zalgo = new Zalgo('max');
         $out = $zalgo->speak($this->Message->text);
 
         $this->Telegram->talk($this->Message->Chat->id, $out);

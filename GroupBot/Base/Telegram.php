@@ -23,12 +23,36 @@ class Telegram
 	
 	public function talk($chat_id, $text)
 	{
-		$this->apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
+		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
 	}
 
 	public function talk_suppress($chat_id, $text)
 	{
 		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown", "disable_web_page_preview" => "true"));
+	}
+
+	public function reply_keyboard($chat_id, $text, $message_id, $keyboard)
+	{
+		$this->apiRequestWebhook("sendMessage",
+			array(
+				'chat_id' => $chat_id,
+				"text" => $text,
+				"reply_to_message_id" => $message_id,
+				"parse_mode" => "Markdown",
+				"reply_markup" => array(
+					"keyboard" => $keyboard,
+					"resize_keyboard" => true,
+					"one_time_keyboard" => true,
+					"selective" => true
+				)
+			)
+		);
+	}
+
+	public function talk_hide_keyboard($chat_id, $text)
+	{
+		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown",
+			"reply_markup" => array("hide_keyboard" => true)));
 	}
 
 	public function talkForced($chat_id, $text)

@@ -49,15 +49,17 @@ class SQL
         return $query->execute();
     }
 
-    public function updatePlayer($user_id, $game_id, $card_str, $player_state, $bet, $split)
+    public function updatePlayer($id, $user_id, $game_id, $player_no, $card_str, $player_state, $bet, $split)
     {
         $sql = 'UPDATE bj_players
-                SET cards = :cards, state = :state, bet = :bet, split = :split
-                WHERE user_id = :user_id AND game_id = :game_id';
+                SET cards = :cards, state = :state, bet = :bet, split = :split, player_no = :player_no
+                WHERE user_id = :user_id AND game_id = :game_id AND id = :id';
 
         $query = $this->db->prepare($sql);
+        $query->bindValue(':id', $id);
         $query->bindValue(':user_id', $user_id);
         $query->bindValue(':game_id', $game_id);
+        $query->bindValue(':player_no', $player_no);
         $query->bindValue(':cards', $card_str);
         $query->bindValue(':state', $player_state);
         $query->bindValue(':bet', $bet);
@@ -107,7 +109,7 @@ class SQL
 
     public function select_players($game_id)
     {
-        $sql = 'SELECT user_id, user_name, cards, state, player_no, bet, free_bet, split FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
+        $sql = 'SELECT id, user_id, user_name, cards, state, player_no, bet, free_bet, split FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':game_id', $game_id);

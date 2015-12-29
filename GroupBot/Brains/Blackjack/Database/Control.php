@@ -48,8 +48,10 @@ class Control
     public function updatePlayer(Player $Player, $game_id)
     {
         return $this->DBSQL->updatePlayer(
+            $Player->db_id,
             $Player->user_id,
             $game_id,
+            $Player->player_no,
             $this->Convert->handToString($Player->Hand),
             $this->Convert->stateToString($Player->State),
             $Player->bet,
@@ -82,7 +84,9 @@ class Control
         $Players = array();
         if (!empty($players)) {
             foreach ($players as $player) {
-                $Players[] = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet'], $player['free_bet'], $player['split']);
+                $tmp = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet'], $player['free_bet'], $player['split']);
+                $tmp->setDbId($player['id']);
+                $Players[] = $tmp;
             }
 
             usort($Players, function($a, $b) {

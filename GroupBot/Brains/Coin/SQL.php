@@ -230,7 +230,7 @@ class SQL
 
     public function RetrieveRecentLogsByUser(CoinUser $User, $number)
     {
-        $sql = 'SELECT date, user_sending, user_receiving, amount, tax
+        $sql = 'SELECT date, user_sending, user_receiving, amount, type
 				FROM coin_transactions
 				WHERE user_sending = :user_id OR user_receiving = :user_id
 				ORDER BY date DESC
@@ -261,7 +261,7 @@ class SQL
 
     public function RetrieveRecentLogs($number)
     {
-        $sql = 'SELECT date, user_sending, user_receiving, amount, tax
+        $sql = 'SELECT date, user_sending, user_receiving, amount, type
 				FROM coin_transactions
 				ORDER BY id DESC
 				LIMIT :number';

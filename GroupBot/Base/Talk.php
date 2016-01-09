@@ -9,6 +9,7 @@
 
 namespace GroupBot\Base;
 
+use GroupBot\Brains\Translate;
 use GroupBot\Enums\MessageType;
 use GroupBot\Types\Message;
 
@@ -124,8 +125,19 @@ class Talk
             if ($this->dictUsers($dict_user_replies)) return true;
             if ($this->dictMatch($dict_replies)) return true;
 
-            if (str_word_count($this->Message->text) < 6)
+            if (count(mb_split(" ", $this->Message->text)) < 6) {
                 $this->Telegram->reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
+                return true;
+            }
+        }
+
+        if (count(mb_split(" ", $this->Message->text)) > 2) {
+            $Translate = new Translate();
+            $lang = $Translate->detectLanguage($this->Message->text);
+            if ($lang != 'English') {
+                $translation = $Translate->translate($this->Message->text, 'English');
+                $this->Telegram->talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_*  " . $translation['result'][0] . "*");
+            }
         }
         return true;
     }

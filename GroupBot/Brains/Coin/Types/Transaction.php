@@ -15,7 +15,7 @@ class Transaction
 {
     public $date, $user_sending, $user_receiving, $amount, $type;
 
-    public function __construct($date, CoinUser $user_sending, CoinUser $user_receiving, $amount, TransactionType $type)
+    public function __construct($date, CoinUser $user_sending = NULL, CoinUser $user_receiving = NULL, $amount, TransactionType $type)
     {
         $this->date = $date;
         $this->user_sending = $user_sending;

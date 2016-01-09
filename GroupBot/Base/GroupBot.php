@@ -3,6 +3,7 @@
 namespace GroupBot\Base;
 
 use GroupBot\Brains\Coin\Coin;
+use GroupBot\Types\InlineQuery;
 use GroupBot\Types\Message;
 
 require(__DIR__ . '/../libraries/common.php');
@@ -11,6 +12,7 @@ require(__DIR__ . '/../Settings.php');
 class GroupBot
 {
 	public $Message;
+	public $InlineQuery;
 
 	public function __construct($debug = NULL, $bot = NULL)
 	{
@@ -31,29 +33,30 @@ class GroupBot
 
 		if (!$update) return 0;		// wrong update
 
-		if (isset($update["message"]))
-		{
+		if (isset($update["message"])) {
 			$this->Message = new Message($update['message']);
 
-			if ($this->Message->isCommand())
-			{
+			if ($this->Message->isCommand()) {
 				$this->processCommand();
-			}
-			else
-			{
+			} else {
 				$Talk = new Talk($this->Message);
 				$Talk->processMessage();
 			}
 
-            $Logging = new Logging($this->Message);
-            $Logging->doUpdates();
-		}
+			$Logging = new Logging($this->Message);
+			$Logging->doUpdates();
 
-		$Coin = new Coin();
-		if ($Coin->checkForAndCreateUser($this->Message->User)) {
+
+			$Coin = new Coin();
+			if ($Coin->checkForAndCreateUser($this->Message->User)) {
+				$Telegram = new Telegram();
+				$Telegram->talk($this->Message->Chat->id, "Hi " . $this->Message->User->first_name . "! Your " . COIN_CURRENCY_NAME
+					. " has been set up; you've got 0 " . COIN_CURRENCY_NAME . " at the moment.");
+			}
+		} elseif (isset($update["inline_query"])) {
+			$this->InlineQuery = new InlineQuery($update["inline_query"]);
 			$Telegram = new Telegram();
-			$Telegram->talk($this->Message->Chat->id, "Hi " . $this->Message->User->first_name . "! Your " . COIN_CURRENCY_NAME
-				. " has been set up; you've got 0 " . COIN_CURRENCY_NAME . " at the moment.");
+			$Telegram->answerInlineQuery($this->InlineQuery->id, $this->InlineQuery->results);
 		}
 
 		return true;

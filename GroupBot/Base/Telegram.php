@@ -65,6 +65,11 @@ class Telegram
 		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "reply_to_message_id" => $message_id, "text" => $text, "parse_mode" => "Markdown"));
 	}
 
+	public function answerInlineQuery($inline_query_id, $results)
+	{
+		$this->apiRequestWebhook("answerInlineQuery", array('inline_query_id' => $inline_query_id, 'cache_time' => 0, 'results' => $results));
+	}
+
 	public function apiRequestWebhook($method, $parameters)
 	{
 		if (!is_string($method))

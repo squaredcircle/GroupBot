@@ -198,7 +198,7 @@ class Blackjack
                         $Player->State = new PlayerState(PlayerState::Surrender);
                         $this->Talk->surrender_free($Player);
                     } elseif ($Player->State == PlayerState::Join) {
-                        $this->taxationBodyTransact($this->user_id, $Player->bet * 0.5);
+                        $this->taxationBodyTransact($Player, $Player->bet * 0.5);
                         $Player->State = new PlayerState(PlayerState::Surrender);
                         $this->Talk->surrender($Player);
                     } else {

@@ -15,6 +15,8 @@ use GroupBot\Brains\Coin\Enums\Event;
 use GroupBot\Brains\Coin\SQL;
 use GroupBot\Brains\Coin\Types\Transaction;
 
+require_once __DIR__ .  '/../../../libraries/common.php';
+
 class Events
 {
     private $SQL, $Feedback;
@@ -84,7 +86,7 @@ class Events
                 break;
         }
 
-        $this->poorbonuses();
+        $this->collectPeriodicTax();
     }
 
     private function poorbonuses()
@@ -104,8 +106,10 @@ class Events
             $this->Transact->addMoney($User, $to_give);
         }
 
+        $this->Transact->maintainFixedLevel();
+
         $Telegram = new Telegram();
-        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . "Oh happy day! " . round($TaxationBody->balance * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
+        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . " Oh happy day! " . round($TaxationBody->balance * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
 
         return true;
     }
@@ -165,7 +169,7 @@ class Events
         $this->Transact->maintainFixedLevel();
 
         $Telegram = new Telegram();
-        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . " " . COIN_TAXATION_BODY . " just collected " . round($to_collect, 2) . " " . CURRENCY_NAME . " in tax.");
+        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . " " . COIN_TAXATION_BODY . " just collected " . round($to_collect, 2) . " " . COIN_CURRENCY_NAME . " in tax.");
 
         return true;
     }

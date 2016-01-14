@@ -228,6 +228,17 @@ class SQL
         return $query->rowCount();
     }
 
+    public function GetNumberOfTransactionsByUser(CoinUser $User)
+    {
+        $sql = 'SELECT id FROM coin_transactions WHERE user_sending = :user_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $User->user_id);
+        $query->execute();
+
+        return $query->rowCount();
+    }
+
     public function RetrieveRecentLogsByUser(CoinUser $User, $number)
     {
         $sql = 'SELECT date, user_sending, user_receiving, amount, type

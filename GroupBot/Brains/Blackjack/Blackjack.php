@@ -65,10 +65,16 @@ class Blackjack
             return false;
         } elseif ($balance < 1 && $this->bet <= 1) {
             if ($TaxationBody->balance > $betting_pool + 1.5) {
-                $this->Talk->bet_free();
-                $this->bet = 1;
-                $this->free_bet = true;
-                return true;
+                $stats = $this->DbControl->getStats($this->user_id);
+                if ($stats['free_bets'] < BLACKJACK_DAILY_FREE_BETS) {
+                    $this->Talk->bet_free();
+                    $this->bet = 1;
+                    $this->free_bet = true;
+                    return true;
+                } else {
+                    $this->Talk->bet_free_too_many();
+                    return false;
+                }
             } else {
                 $this->Talk->bet_free_failed();
                 return false;
@@ -132,16 +138,19 @@ class Blackjack
         $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
 
         if ($Player->State == PlayerState::BlackJack) {
+            $Player->no_blackjacks++;
             $this->Talk->blackjack();
         } elseif ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
             switch ($Move) {
                 case PlayerMove::Stand:
                     $Player->State =  new PlayerState(PlayerState::Stand);
+                    $Player->no_stands++;
                     $this->Talk->stand();
                     break;
                 case PlayerMove::Hit:
                     $Player->Hand->addCard($this->Game->Deck->dealCard());
                     $this->setPlayerState(PlayerState::Hit);
+                    $Player->no_hits++;
                     $this->Talk->hit($Player);
                     break;
                 case PlayerMove::DoubleDown:
@@ -153,6 +162,7 @@ class Blackjack
                             $Player->bet = $Player->bet * 2;
                             $Player->Hand->addCard($this->Game->Deck->dealCard());
                             $this->setPlayerState(PlayerState::Stand);
+                            $Player->no_doubledowns++;
                             $this->Talk->double_down($Player);
                         } else {
                             $this->Talk->double_down_dealer_not_enough_money();
@@ -175,6 +185,7 @@ class Blackjack
                                     $Player->Hand->addCard($this->Game->Deck->dealCard());
                                     $this->setPlayerState(PlayerState::Hit);
                                     $Player->split = 1;
+                                    $Player->no_splits++;
                                     $this->Talk->split($Player, $this->Game->getPlayer($Player->player_no + 1));
                                 } else {
                                     $this->Talk->split_dealer_not_enough_money();
@@ -196,10 +207,15 @@ class Blackjack
                 case PlayerMove::Surrender:
                     if ($Player->free_bet) {
                         $Player->State = new PlayerState(PlayerState::Surrender);
+                        $Player->no_surrenders++;
+                        $Player->game_result = "lose";
                         $this->Talk->surrender_free($Player);
                     } elseif ($Player->State == PlayerState::Join) {
                         $this->taxationBodyTransact($Player, $Player->bet * 0.5);
                         $Player->State = new PlayerState(PlayerState::Surrender);
+                        $Player->no_surrenders++;
+                        $Player->game_result = "lose";
+                        $Player->bet_result = $Player->bet * (-0.5);
                         $this->Talk->surrender($Player);
                     } else {
                         $this->Talk->surrender_wrong_turn();
@@ -308,18 +324,27 @@ class Blackjack
         if ($multiplier > 0) {
             if ($TaxationBody->balance > (1 + $multiplier) * $Player->bet) {
                 $this->taxationBodyTransact($Player, (1 + $multiplier) * $Player->bet);
+                $Player->bet_result = $multiplier * $Player->bet;
             } elseif ($TaxationBody->balance > abs($Player->bet)) {
                 $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam, but it can at least return your bet.");
                 $this->taxationBodyTransact($Player, abs($Player->bet));
             } else {
                 $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
+                $Player->bet_result = (-1) * $Player->bet;
             }
-        } elseif ($multiplier == 0 && !$Player->free_bet) {
-            if ($TaxationBody->balance > abs($Player->bet)) {
-                $this->taxationBodyTransact($Player, abs($Player->bet));
-            } else {
-                $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
+            $Player->game_result = "win";
+        } elseif ($multiplier == 0) {
+            if (!$Player->free_bet) {
+                if ($TaxationBody->balance > abs($Player->bet)) {
+                    $this->taxationBodyTransact($Player, abs($Player->bet));
+                } else {
+                    $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
+                }
             }
+            $Player->game_result = "draw";
+        } else {
+            if (!$Player->free_bet) $Player->bet_result = $multiplier * $Player->bet;
+            $Player->game_result = "lose";
         }
 
         $this->Talk->player_result($Player, $multiplier);

@@ -296,4 +296,10 @@ class Talk
         $this->addMessage(COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
     }
 
+    public function bet_free_too_many()
+    {
+        $this->addMessage("Sorry - you only get " . BLACKJACK_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
+    }
+
+
 }

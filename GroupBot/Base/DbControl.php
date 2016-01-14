@@ -68,9 +68,11 @@ class DbControl
                 SET posts_today = 0';
         $sql2 = 'UPDATE stats_commands
                 SET uses_today = 0';
+        $sql3 = 'TRUNCATE bj_stats_today';
         $query1 = $this->db->prepare($sql1);
         $query2 = $this->db->prepare($sql2);
-        return $query1->execute() && $query2->execute();
+        $query3 = $this->db->prepare($sql3);
+        return $query1->execute() && $query2->execute() && $query3->execute();
     }
 
     public function isUserLogged($user_str, $chat_id)

@@ -20,6 +20,18 @@ class i_send extends Command
 
         if ($this->noParams() == 2)
         {
+            $user_sending = $Coin->SQL->GetUserById($this->Message->User->id);
+            $user_receiving = $Coin->SQL->GetUserByName($this->getParam());
+
+            if (!$user_sending) {
+                $this->Telegram->talk($this->Message->Chat->id, emoji("0x1F44E") . " You don't have an " . COIN_CURRENCY_NAME . " account, brah...");
+                return false;
+            }
+            if (!$user_receiving) {
+                $this->Telegram->talk($this->Message->Chat->id,  emoji("0x1F44E") . " Can't find a user called `" . $this->getParam() . "`, brah");
+                return false;
+            }
+
             $Transaction = new Transaction(
                 NULL,
                 $Coin->SQL->GetUserById($this->Message->User->id),

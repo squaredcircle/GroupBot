@@ -136,7 +136,7 @@ class Talk
             $lang = $Translate->detectLanguage($this->Message->text);
             if ($lang != 'English') {
                 $translation = $Translate->translate($this->Message->text, 'English');
-                $this->Telegram->talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_*  " . $translation['result'][0] . "*");
+                $this->Telegram->talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
             }
         }
         return true;

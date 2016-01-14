@@ -23,6 +23,10 @@ class Player
     public $free_bet;
     public $split;
 
+    public $no_hits = 0, $no_stands = 0, $no_blackjacks = 0, $no_splits = 0, $no_doubledowns = 0, $no_surrenders = 0;
+    public $bet_result = 0;
+    public $game_result;
+
     public function __construct($user_id, $user_name, $card_str, PlayerState $state, $player_no, $bet, $free_bet, $split)
     {
         $this->user_id = $user_id;

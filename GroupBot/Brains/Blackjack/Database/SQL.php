@@ -9,6 +9,8 @@
 namespace GroupBot\Brains\Blackjack\Database;
 
 
+use GroupBot\Brains\Blackjack\Types\Player;
+
 class SQL
 {
     private $db;
@@ -121,5 +123,103 @@ class SQL
         } else {
             return false;
         }
+    }
+
+    public function select_player_stats_today($user_id)
+    {
+        $sql = 'SELECT * FROM bj_stats_today WHERE user_id = :user_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $user_id);
+
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return $query->fetch();
+        } else {
+            return false;
+        }
+    }
+
+    public function update_stats(Player $Player)
+    {
+        $this->update_stats_table('bj_stats', $Player);
+        $this->update_stats_table('bj_stats_today', $Player);
+    }
+
+    private function update_stats_table($table, Player $Player)
+    {
+        $sql = 'INSERT INTO ' . $table  . '
+                  (user_id, games_played, wins, losses, draws, hits, stands, blackjacks, splits, doubledowns, surrenders, total_coin_bet, coin_won, coin_lost, free_bets)
+                VALUES
+                  (:user_id, 1, :wins, :losses, :draws, :hits, :stands, :blackjacks, :splits, :doubledowns, :surrenders, :bet, :coin_won, :coin_lost, :free_bets)
+                ON DUPLICATE KEY UPDATE
+                  games_played = games_played + 1,
+                  hits = hits + :hits,
+                  stands = stands + :stands,
+                  blackjacks = blackjacks + :blackjacks,
+                  splits = splits + :splits,
+                  doubledowns = doubledowns + :doubledowns,
+                  surrenders = surrenders + :surrenders,
+                  total_coin_bet = total_coin_bet + :bet,
+                  free_bets = free_bets + :free_bets,
+                  coin_won = coin_won + :coin_won,
+                  coin_lost = coin_lost + :coin_lost,
+                  ';
+        switch ($Player->game_result) {
+            case "win":
+                $sql .= 'wins = wins + 1';
+                break;
+            case "lose":
+                $sql .= 'losses = losses + 1';
+                break;
+            case "draw":
+                $sql .= 'draws = draws + 1';
+                break;
+        }
+
+        $query = $this->db->prepare($sql);
+
+        switch ($Player->game_result) {
+            case "win":
+                $query->bindValue(':wins', 1);
+                $query->bindValue(':losses', 0);
+                $query->bindValue(':draws', 0);
+                break;
+            case "lose":
+                $query->bindValue(':wins', 0);
+                $query->bindValue(':losses', 1);
+                $query->bindValue(':draws', 0);
+                break;
+            case "draw":
+                $query->bindValue(':wins', 0);
+                $query->bindValue(':losses', 0);
+                $query->bindValue(':draws', 1);
+                break;
+        }
+
+        $query->bindValue(':hits', $Player->no_hits);
+        $query->bindValue(':stands', $Player->no_stands);
+        $query->bindValue(':blackjacks', $Player->no_blackjacks);
+        $query->bindValue(':splits', $Player->no_splits);
+        $query->bindValue(':doubledowns', $Player->no_doubledowns);
+        $query->bindValue(':surrenders', $Player->no_surrenders);
+        $query->bindValue(':bet', $Player->free_bet ? 0 : $Player->bet);
+        $query->bindValue(':free_bets', $Player->free_bet ? 1 : 0);
+
+        if ($Player->bet_result > 0) {
+            $query->bindValue(':coin_won', $Player->bet_result);
+            $query->bindValue(':coin_lost', 0);
+        } elseif ($Player->bet_result < 0) {
+            $query->bindValue(':coin_won', 0);
+            $query->bindValue(':coin_lost', abs($Player->bet_result));
+        } else {
+            $query->bindValue(':coin_won', 0);
+            $query->bindValue(':coin_lost', 0);
+        }
+
+        $query->bindValue(':user_id', $Player->user_id);
+
+        return $query->execute();
     }
 }

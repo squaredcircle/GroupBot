@@ -187,6 +187,7 @@ class Game
 
     public function endGame()
     {
+        $this->DbControl->updateStats($this->Players);
         $this->DbControl->delete($this->game_id);
     }
 

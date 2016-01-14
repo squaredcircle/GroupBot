@@ -8,6 +8,8 @@
 namespace GroupBot\Command;
 
 use GroupBot\Base\Logging;
+use GroupBot\Brains\Blackjack\Database\Control;
+use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
 class t_stats extends Command
@@ -23,6 +25,8 @@ class t_stats extends Command
     public function t_stats()
     {
         $log = new Logging($this->Message);
+        $Coin = new Coin();
+        $BlackJackControl = new Control($this->Message->Chat->id);
 
         if ($this->isParam()) {
             $user_id = $log->checkIfUserIsLogged($this->getParam());
@@ -35,6 +39,9 @@ class t_stats extends Command
         }
 
         $log = $log->getAllUserLogsForChat($user_id);
+        $bj_stats = $BlackJackControl->getStats($user_id);
+        $CoinUser = $Coin->SQL->GetUserById($user_id);
+        $balance = round($CoinUser->balance,2);
 
         $date = 0;
         foreach ($log->LogsCommand as $cmd) {
@@ -54,6 +61,21 @@ class t_stats extends Command
             . "\nLast command: `" . $last_cmd->command . "`"
             . "\n`   `•` " . $last_cmd->uses_today . "` use" . $this->plural_grammar($last_cmd->uses_today) . " today"
             . "\n`   `•` " . $last_cmd->uses       . "` use" . $this->plural_grammar($last_cmd->uses_today) . " ever";
+
+        $out .= "\n\n"
+            . "*" . COIN_CURRENCY_NAME . "* stats:"
+            . "\n`   `•` " . $balance . "`" .  emoji(0x1F4B0) . " in the bank"
+            . "\n`   `•` " . $Coin->SQL->GetNumberOfTransactionsByUser($CoinUser) . "` outgoing transactions ever";
+
+        if ($bj_stats) {
+            $bj_balance = $bj_stats['coin_won'] - $bj_stats['coin_lost'];
+            $out .= "\n\n"
+                . "*Blackjack* stats:"
+                . "\n`   `•` " . $bj_stats['games_played'] . "` games ever with `" . $bj_stats['wins'] . ":" . $bj_stats['losses'] . ":" . $bj_stats['draws'] . "` _(W:L:D)_"
+                . "\n`   `•` " . $bj_stats['hits'] . "` hits, `" . $bj_stats['stands'] . "` stands, `" . $bj_stats['surrenders'] . "` surrenders"
+                . "\n`   `•` " . $bj_stats['splits'] . "` splits, `" . $bj_stats['doubledowns'] . "` doubledowns, `" . $bj_stats['blackjacks'] . "` blackjacks"
+                . "\n`   `•` " . round($bj_stats['total_coin_bet'],2) . "`" . emoji(0x1F4B0) . " bet ever, currently " . ($bj_balance > 0 ? "up `" : "down `") . round($bj_balance, 2) . "`" . emoji(0x1F4B0);
+        }
 
         $this->Telegram->talk($this->Message->Chat->id, $out);
         return true;

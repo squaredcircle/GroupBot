@@ -69,6 +69,19 @@ class Control
         return $this->DBSQL->delete($this->chat_id, $game_id);
     }
 
+    public function updateStats($Players)
+    {
+        foreach ($Players as $Player) {
+            $this->DBSQL->update_stats($Player);
+        }
+        return true;
+    }
+
+    public function getStats($user_id)
+    {
+        return $this->DBSQL->select_player_stats_today($user_id);
+    }
+
     public function getGame()
     {
         if ($game = $this->DBSQL->select_game($this->chat_id)) {

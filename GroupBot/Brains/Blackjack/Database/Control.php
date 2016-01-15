@@ -55,7 +55,13 @@ class Control
             $this->Convert->handToString($Player->Hand),
             $this->Convert->stateToString($Player->State),
             $Player->bet,
-            $Player->split
+            $Player->split,
+            $Player->no_hits,
+            $Player->no_stands,
+            $Player->no_blackjacks,
+            $Player->no_splits,
+            $Player->no_doubledowns,
+            $Player->no_surrenders
         );
     }
 
@@ -97,7 +103,22 @@ class Control
         $Players = array();
         if (!empty($players)) {
             foreach ($players as $player) {
-                $tmp = new Player($player['user_id'], $player['user_name'], $this->Convert->handFromString($player['cards']), $this->Convert->stateFromString($player['state']), $player['player_no'], $player['bet'], $player['free_bet'], $player['split']);
+                $tmp = new Player(
+                    $player['user_id'],
+                    $player['user_name'],
+                    $this->Convert->handFromString($player['cards']),
+                    $this->Convert->stateFromString($player['state']),
+                    $player['player_no'],
+                    $player['bet'],
+                    $player['free_bet'],
+                    $player['split'],
+                    $player['no_hits'],
+                    $player['no_stands'],
+                    $player['no_blackjacks'],
+                    $player['no_splits'],
+                    $player['no_doubledowns'],
+                    $player['no_surrenders']
+                );
                 $tmp->setDbId($player['id']);
                 $Players[] = $tmp;
             }

@@ -51,10 +51,13 @@ class SQL
         return $query->execute();
     }
 
-    public function updatePlayer($id, $user_id, $game_id, $player_no, $card_str, $player_state, $bet, $split)
+    public function updatePlayer($id, $user_id, $game_id, $player_no, $card_str, $player_state, $bet, $split,
+                                 $no_hits, $no_stands, $no_blackjacks, $no_splits, $no_doubledowns, $no_surrenders)
     {
         $sql = 'UPDATE bj_players
-                SET cards = :cards, state = :state, bet = :bet, split = :split, player_no = :player_no
+                SET cards = :cards, state = :state, bet = :bet, split = :split, player_no = :player_no,
+                no_stands = :no_stands, no_hits = :no_hits, no_blackjacks = :no_blackjacks, no_splits = :no_splits,
+                no_doubledowns = :no_doubledowns, no_surrenders = :no_surrenders
                 WHERE user_id = :user_id AND game_id = :game_id AND id = :id';
 
         $query = $this->db->prepare($sql);
@@ -66,6 +69,13 @@ class SQL
         $query->bindValue(':state', $player_state);
         $query->bindValue(':bet', $bet);
         $query->bindValue(':split', $split);
+
+        $query->bindValue(':no_hits', $no_hits);
+        $query->bindValue(':no_stands', $no_stands);
+        $query->bindValue(':no_blackjacks', $no_blackjacks);
+        $query->bindValue(':no_splits', $no_splits);
+        $query->bindValue(':no_doubledowns', $no_doubledowns);
+        $query->bindValue(':no_surrenders', $no_surrenders);
 
         return $query->execute();
     }
@@ -111,7 +121,7 @@ class SQL
 
     public function select_players($game_id)
     {
-        $sql = 'SELECT id, user_id, user_name, cards, state, player_no, bet, free_bet, split FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
+        $sql = 'SELECT * FROM bj_players WHERE game_id = :game_id ORDER BY player_no ASC';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':game_id', $game_id);

@@ -52,7 +52,7 @@ class t_stats extends Command
         }
         if (!isset($last_cmd)) return false;
 
-        $out = "*" . $this->Message->Chat->title . "* stats for *" .$log->User->first_name . " " . $log->User->last_name . "*."
+        $out = emoji(0x1F4C8) . "*" . $this->Message->Chat->title . "* stats for *" .$log->User->first_name . " " . $log->User->last_name . "*."
             . "\n`   `•` " . $log->posts_today . "` message" . $this->plural_grammar($log->posts_today) . " sent today"
             . "\n`   `•` " . $log->posts       . "` message" . $this->plural_grammar($log->posts)       . " sent ever"
             . "\n`   `•` " . round(86400 * $log->posts / (strtotime("now") - strtotime("2015-11-19 11:00:00")), 0) . "` messages sent per day, on average"
@@ -63,18 +63,19 @@ class t_stats extends Command
             . "\n`   `•` " . $last_cmd->uses       . "` use" . $this->plural_grammar($last_cmd->uses_today) . " ever";
 
         $out .= "\n\n"
-            . "*" . COIN_CURRENCY_NAME . "* stats:"
+            . emoji(0x1F4B2) . "*" . COIN_CURRENCY_NAME . "* stats:"
             . "\n`   `•` " . $balance . "`" .  emoji(0x1F4B0) . " in the bank"
             . "\n`   `•` " . $Coin->SQL->GetNumberOfTransactionsByUser($CoinUser) . "` outgoing transactions ever";
 
         if ($bj_stats) {
             $bj_balance = $bj_stats['coin_won'] - $bj_stats['coin_lost'];
             $out .= "\n\n"
-                . "*Blackjack* stats:"
+                . emoji(0x1F0CF) . "*Blackjack* stats:"
                 . "\n`   `•` " . $bj_stats['games_played'] . "` games ever with `" . $bj_stats['wins'] . ":" . $bj_stats['losses'] . ":" . $bj_stats['draws'] . "` _(W:L:D)_"
                 . "\n`   `•` " . $bj_stats['hits'] . "` hits, `" . $bj_stats['stands'] . "` stands, `" . $bj_stats['surrenders'] . "` surrenders"
                 . "\n`   `•` " . $bj_stats['splits'] . "` splits, `" . $bj_stats['doubledowns'] . "` doubledowns, `" . $bj_stats['blackjacks'] . "` blackjacks"
-                . "\n`   `•` " . round($bj_stats['total_coin_bet'],2) . "`" . emoji(0x1F4B0) . " bet ever, currently " . ($bj_balance > 0 ? "up `" : "down `") . round($bj_balance, 2) . "`" . emoji(0x1F4B0);
+                . "\n`   `•` " . round($bj_stats['total_coin_bet'],2) . "`" . emoji(0x1F4B0) . " bet ever, currently " .
+                ($bj_balance == 0 ? "breaking even at `" : ($bj_balance > 0 ? "up `" : "down `")) . round($bj_balance, 2) . "`" . emoji(0x1F4B0);
         }
 
         $this->Telegram->talk($this->Message->Chat->id, $out);

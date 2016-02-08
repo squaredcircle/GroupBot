@@ -7,12 +7,13 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class q_person extends Command
 {
     public function q_person()
     {
-        $this->Telegram->talk($this->Message->Chat->id, person($this->Message->text, true));
+        Telegram::talk($this->Message->Chat->id, person($this->Message->text, true));
     }
 }

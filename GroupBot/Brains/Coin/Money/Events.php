@@ -97,26 +97,25 @@ class Events
 
         $Users = $this->SQL->GetUsersByBottomBalance($total_users);
         $PoorestUsers = array();
-        foreach ($Users as $User) if ($User->balance < $average_coin) $PoorestUsers[] = $User;
+        foreach ($Users as $User) if ($User->getBalance(true) < $average_coin) $PoorestUsers[] = $User;
 
         $TaxationBody = $this->SQL->GetUserByName(COIN_TAXATION_BODY);
-        $to_give = $TaxationBody->balance * COIN_POOR_BONUS / count($PoorestUsers);
-        $this->Transact->removeMoney($TaxationBody, $TaxationBody->balance * COIN_POOR_BONUS);
+        $to_give = $TaxationBody->getBalance(true) * COIN_POOR_BONUS / count($PoorestUsers);
+        $this->Transact->removeMoney($TaxationBody, $TaxationBody->getBalance(true) * COIN_POOR_BONUS);
         foreach ($PoorestUsers as $User) {
             $this->Transact->addMoney($User, $to_give);
         }
 
         $this->Transact->maintainFixedLevel();
 
-        $Telegram = new Telegram();
-        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . " Oh happy day! " . round($TaxationBody->balance * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
+        Telegram::customShitpostingMessage(emoji(0x1F4E2) . " Oh happy day! " . round($TaxationBody->getBalance() * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
 
         return true;
     }
 
     private function redistribute()
     {
-        $to_collect = COIN_REDISTRIBUTION_TAX * $this->TaxationBody->balance;
+        $to_collect = COIN_REDISTRIBUTION_TAX * $this->TaxationBody->getBalance(true);
         $leaderboard = $this->SQL->GetUsersByTopBalance(10);
         $exclude_list = [COIN_TAXATION_BODY, "Isaac", "Shlomo", "Grail"];
         $count = 0;
@@ -141,8 +140,7 @@ class Events
                     new TransactionType(TransactionType::RedistributionTax)
                 ));
 
-                $Telegram = new Telegram();
-                $Telegram->customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
+                Telegram::customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
 
                 $this->Transact->maintainFixedLevel();
                 return true;
@@ -156,7 +154,7 @@ class Events
         $this->SQL->CollectPeriodicTax();
 
         $to_collect = COIN_PERIODIC_TAX * $this->Validate->getTotalCoinExisting(false);
-        $this->SQL->UpdateUserBalance($this->TaxationBody, $this->TaxationBody->balance + $to_collect);
+        $this->SQL->UpdateUserBalance($this->TaxationBody, $this->TaxationBody->getBalance(true) + $to_collect);
 
         $this->SQL->AddTransactionLog(new Transaction(
             NULL,
@@ -168,8 +166,7 @@ class Events
 
         $this->Transact->maintainFixedLevel();
 
-        $Telegram = new Telegram();
-        $Telegram->customShitpostingMessage(emoji(0x1F4E2) . " " . COIN_TAXATION_BODY . " just collected " . round($to_collect, 2) . " " . COIN_CURRENCY_NAME . " in tax.");
+        Telegram::customShitpostingMessage(emoji(0x1F4E2) . " " . COIN_TAXATION_BODY . " just collected " . round($to_collect, 2) . " " . COIN_CURRENCY_NAME . " in tax.");
 
         return true;
     }

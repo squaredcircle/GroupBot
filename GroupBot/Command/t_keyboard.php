@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_keyboard extends Command
@@ -17,6 +18,6 @@ class t_keyboard extends Command
         $keyboard = array(
             ["/roll", "/check", "/banana"]
         );
-        $this->Telegram->reply_keyboard($this->Message->Chat->id, $text, $this->Message->message_id, $keyboard);
+        Telegram::reply_keyboard($this->Message->Chat->id, $text, $this->Message->message_id, $keyboard);
     }
 }

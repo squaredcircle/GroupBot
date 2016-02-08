@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_emoji extends Command
@@ -16,6 +17,6 @@ class t_emoji extends Command
         $count = ($this->Message->isText() && is_numeric($this->Message->text))
             ? intval($this->Message->text) : 1;
 
-        $this->Telegram->talk($this->Message->Chat->id, str_repeat(randomEmoji(), $count));
+        Telegram::talk($this->Message->Chat->id, str_repeat(randomEmoji(), $count));
     }
 }

@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Blackjack\Blackjack;
+use GroupBot\Brains\Blackjack\BlackjackTelegram;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Types\Command;
 
@@ -15,18 +15,8 @@ class b_bjstart extends Command
 {
     public function b_bjstart()
     {
+        $bet = $this->isParam() ? $this->getParam() : 0;
         $Move = new PlayerMove(PlayerMove::StartGame);
-
-        $Blackjack = new Blackjack($this->Message->User, $this->Message->Chat->id, $Move, NULL);
-        if ($Blackjack->Talk->areMessages()) {
-            $keyboard = $Blackjack->Talk->getKeyboard();
-            if ($keyboard) {
-                $this->Telegram->reply_keyboard($this->Message->Chat->id, $Blackjack->Talk->getMessages(), $this->Message->message_id, $keyboard);
-            } else {
-                $this->Telegram->talk_hide_keyboard($this->Message->Chat->id, $Blackjack->Talk->getMessages());
-            }
-            return true;
-        }
-        return false;
+        return BlackjackTelegram::getResponse($this->Message, $Move, $bet);
     }
 }

@@ -151,6 +151,22 @@ class SQL
         }
     }
 
+    public function select_player_stats($user_id)
+    {
+        $sql = 'SELECT * FROM bj_stats WHERE user_id = :user_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $user_id);
+
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return $query->fetch();
+        } else {
+            return false;
+        }
+    }
+
     public function update_stats(Player $Player)
     {
         $this->update_stats_table('bj_stats', $Player);

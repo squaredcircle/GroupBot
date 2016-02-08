@@ -15,12 +15,10 @@ use GroupBot\Types\Message;
 
 class Talk
 {
-    private $Telegram;
     private $Message;
 
     public function __construct(Message $message)
     {
-        $this->Telegram = new Telegram();
         $this->Message  = $message;
     }
 
@@ -49,7 +47,7 @@ class Talk
                         }
                     }
                 }
-                $this->Telegram->talk($this->Message->Chat->id, $phrases[$phrase]);
+                Telegram::talk($this->Message->Chat->id, $phrases[$phrase]);
                 return true;
             }
         }
@@ -81,7 +79,7 @@ class Talk
         $keys = array_keys($phrases);
         foreach ($keys as $i) {
            if (strcmp($this->Message->User->user_name, $i) == 0) {
-               $this->Telegram->reply($this->Message->Chat->id, $this->Message->message_id, $phrases[$i]);
+               Telegram::reply($this->Message->Chat->id, $this->Message->message_id, $phrases[$i]);
                return true;
            }
         }
@@ -109,7 +107,7 @@ class Talk
                 $message = 'why, fam?';
                 break;
         }
-        if (isset($message)) $this->Telegram->talk($this->Message->Chat->id, $message);
+        if (isset($message)) Telegram::talk($this->Message->Chat->id, $message);
     }
 
     public function processMessage()
@@ -126,7 +124,7 @@ class Talk
             if ($this->dictMatch($dict_replies)) return true;
 
             if (count(mb_split(" ", $this->Message->text)) < 6) {
-                $this->Telegram->reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
+                Telegram::reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
                 return true;
             }
         }
@@ -136,7 +134,7 @@ class Talk
             $lang = $Translate->detectLanguage($this->Message->text);
             if ($lang != 'English') {
                 $translation = $Translate->translate($this->Message->text, 'English');
-                $this->Telegram->talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
+                Telegram::talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
             }
         }
         return true;

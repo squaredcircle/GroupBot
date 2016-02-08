@@ -62,7 +62,6 @@ class Talk
         $this->addMessage($out);
         $this->addMessage(emoji(0x1F449) . " Others can also join the game with /blackjack");
         $this->addMessage(emoji(0x1F449) . " You can start the game with /bjstart");
-        $this->keyboard = [["/bjstart"]];
     }
 
     public function start_game(Game $Game)
@@ -78,6 +77,7 @@ class Talk
         foreach ($Game->Players as $Player) {
             if ($Player->Hand->isBlackjack()) {
                 $this->addMessage($Player->user_name . " has blackjack! They stand.");
+                $Player->no_blackjacks++;
             }
         }
 
@@ -141,27 +141,27 @@ class Talk
 
     public function split_wrong_turn()
     {
-        $this->addMessage("You can only split on your first turn.");
+        $this->addMessage(emoji(0x1F44E) . "You can only split on your first turn.");
     }
 
     public function split_wrong_cards()
     {
-        $this->addMessage("You can only split with two equal ranked cards on your first turn.");
+        $this->addMessage(emoji(0x1F44E) . "You can only split with two equal ranked cards on your first turn.");
     }
 
     public function split_dealer_not_enough_money()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " doesn't have enough Coin to accept a split, sorry.");
+        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough Coin to accept a split, sorry.");
     }
 
     public function split_not_enough_money(Player $Player)
     {
-        $this->addMessage($Player->user_name . ", you don't have enough money to split");
+        $this->addMessage(emoji(0x1F44E) . $Player->user_name . ", you don't have enough money to split");
     }
 
     public function split_only_once()
     {
-        $this->addMessage("You can only split once!");
+        $this->addMessage(emoji(0x1F44E) . "You can only split once!");
     }
 
     public function surrender(Player $Player)
@@ -171,7 +171,7 @@ class Talk
 
     public function surrender_wrong_turn()
     {
-        $this->addMessage("You can only surrender on your first turn!");
+        $this->addMessage(emoji(0x1F44E) . "You can only surrender on your first turn!");
     }
 
     public function surrender_free(Player $Player)
@@ -189,12 +189,12 @@ class Talk
 
     public function double_down_not_enough_money(Player $Player)
     {
-        $this->addMessage($Player->user_name . ", you don't have enough money to double down.");
+        $this->addMessage(emoji(0x1F44E) . $Player->user_name . ", you don't have enough money to double down.");
     }
 
     public function double_down_dealer_not_enough_money()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " doesn't have enough Coin to accept a double down, sorry.");
+        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough Coin to accept a double down, sorry.");
     }
 
     public function next_turn(Game $Game)
@@ -253,13 +253,13 @@ class Talk
             $out .= $Player->user_name . " loses their" . $free . "bet of " . ($Player->bet + 0);
         }
 
-        $out .= " (`" . round($this->Coin->SQL->GetUserById($Player->user_id)->balance,2) . "`)";
+        $out .= " (`" . $this->Coin->SQL->GetUserById($Player->user_id)->getBalance() . "`)";
         $this->addMessage($out);
     }
 
     public function bet_invalid()
     {
-        $this->addMessage("Please enter a valid bet.");
+        $this->addMessage(emoji(0x1F44E) . "Please enter a valid bet.");
     }
 
     public function bet_mandatory()
@@ -283,7 +283,7 @@ class Talk
 
     public function bet_too_high_for_dealer()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " can't accept a bet that high right now.");
+        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
     }
 
     public function bet_free()
@@ -293,12 +293,12 @@ class Talk
 
     public function bet_free_failed()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
+        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
     }
 
     public function bet_free_too_many()
     {
-        $this->addMessage("Sorry - you only get " . BLACKJACK_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
+        $this->addMessage(emoji(0x1F44E) . "Sorry - you only get " . BLACKJACK_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
     }
 
 

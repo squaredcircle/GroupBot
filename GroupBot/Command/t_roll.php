@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_roll extends Command
@@ -18,7 +19,7 @@ class t_roll extends Command
 
             $no = mt_rand(0,9);
 
-            $this->Telegram->talk($this->Message->Chat->id, "`" . str_repeat($no, 9) . "`");
+            Telegram::talk($this->Message->Chat->id, "`" . str_repeat($no, 9) . "`");
 
             return true;
         }
@@ -32,7 +33,7 @@ class t_roll extends Command
 
             if ($no <0 || $sides < 0 || $no > 50 || $sides > 999999999)
             {
-                $this->Telegram->talk($this->Message->Chat->id, "naw brah");
+                Telegram::talk($this->Message->Chat->id, "naw brah");
                 return false;
             }
 
@@ -40,7 +41,7 @@ class t_roll extends Command
 
             $out = implode(", ", $out);
 
-            $this->Telegram->talk($this->Message->Chat->id, "`" . $out . "`");
+            Telegram::talk($this->Message->Chat->id, "`" . $out . "`");
         } else {
             $out = mt_rand(0, 999999999);
 
@@ -52,12 +53,12 @@ class t_roll extends Command
                 if (preg_match('/^(.)\1*$/', $test))
                 {
                     $text = str_repeat(emoji(0x1F389), $key-1) . sprintf('%09d', $out) . "\nnice " . $value . " brah" .  str_repeat("!", $key-1);
-                    $this->Telegram->talk($this->Message->Chat->id, $text);
+                    Telegram::talk($this->Message->Chat->id, $text);
                     return true;
                 }
             }
 
-            $this->Telegram->talk($this->Message->Chat->id, "`" . sprintf('%09d', $out) . "`");
+            Telegram::talk($this->Message->Chat->id, "`" . sprintf('%09d', $out) . "`");
         }
         return true;
     }

@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Translate;
 use GroupBot\Types\Command;
 
@@ -16,6 +17,6 @@ class t_translate extends Command
     {
         $Translate = new Translate();
         $translation = $Translate->translate($this->Message->text, 'English');
-        $this->Telegram->talk($this->Message->Chat->id, "*" . $translation['result'][0] . "*");
+        Telegram::talk($this->Message->Chat->id, "*" . $translation['result'][0] . "*");
     }
 }

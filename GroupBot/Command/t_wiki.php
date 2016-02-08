@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_wiki extends Command
@@ -14,7 +15,7 @@ class t_wiki extends Command
     public function t_wiki()
     {
         if (strlen($this->Message->text) == 0) {
-            $this->Telegram->talk($this->Message->Chat->id, ">not understanding wiki");
+            Telegram::talk($this->Message->Chat->id, ">not understanding wiki");
             return 0;
         }
 
@@ -26,10 +27,10 @@ class t_wiki extends Command
         $info = key($data->{'query'}->{'pages'});
 
         if ($info == '-1') {
-            $this->Telegram->talk($this->Message->Chat->id, "doesn't exist, fam");
+            Telegram::talk($this->Message->Chat->id, "doesn't exist, fam");
         } else {
             $out =  current($data->{'query'}->{'pages'})->{'extract'};
-            $this->Telegram->talk($this->Message->Chat->id, $out);
+            Telegram::talk($this->Message->Chat->id, $out);
         }
         return true;
     }

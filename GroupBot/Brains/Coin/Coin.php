@@ -40,9 +40,16 @@ class Coin
     public function checkForAndCreateUser(User $User)
     {
         if (!$this->SQL->DoesUserExistById($User->id)) {
+            $username = $User->hasUserName() ? $User->user_name : $User->first_name;
+
+            $username_new = $username; $index = 2;
+            while ($this->SQL->DoesUserExistByName($username_new)) {
+                $username_new = $username . $index;
+            }
+            
             $CoinUser = new CoinUser(
                 $User->id,
-                $User->hasUserName() ? $User->user_name : $User->first_name,
+                $username_new,
                 0
             );
             $this->SQL->CreateNewUser($CoinUser);

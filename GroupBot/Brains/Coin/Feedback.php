@@ -98,10 +98,10 @@ class Feedback
 
 		foreach( $this->feedbackCodes as $i)
 		{
-			$out .= $this->feedbackMessages[$i] . '<br />';
+			$out .= $this->feedbackMessages[$i] . "\n";
 		}
 
-		$out = rtrim($out, "<br />");
+		$out = rtrim($out, "\n");
 
 		return $this->feedback . (strlen($this->feedback) > 0 ? "\n" . $out : $out);
 	}

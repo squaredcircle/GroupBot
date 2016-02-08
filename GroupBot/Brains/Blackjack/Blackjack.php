@@ -39,6 +39,7 @@ class Blackjack
 
         if (!$this->Game = $this->loadOrCreateGame($Move)) return false;
         $this->processPlayerMove($Move);
+        return true;
     }
 
     private function loadOrCreateGame(PlayerMove $Move)
@@ -56,7 +57,7 @@ class Blackjack
 
     private function checkPlayerBet()
     {
-        $balance = $this->Coin->SQL->GetUserById($this->user_id)->balance;
+        $balance = $this->Coin->SQL->GetUserById($this->user_id)->getBalance();
         $betting_pool = isset($this->Game) ? $this->Game->betting_pool : 0;
         $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
 
@@ -64,8 +65,8 @@ class Blackjack
             $this->Talk->bet_invalid();
             return false;
         } elseif ($balance < 1 && $this->bet <= 1) {
-            if ($TaxationBody->balance > $betting_pool + 1.5) {
-                $stats = $this->DbControl->getStats($this->user_id);
+            if ($TaxationBody->getBalance() > $betting_pool + 1.5) {
+                $stats = $this->DbControl->getDailyStats($this->user_id);
                 if ($stats['free_bets'] < BLACKJACK_DAILY_FREE_BETS) {
                     $this->Talk->bet_free();
                     $this->bet = 1;
@@ -80,7 +81,7 @@ class Blackjack
                 return false;
             }
         } elseif ($this->bet == 0) {
-            if ($TaxationBody->balance > $betting_pool + 1.5) {
+            if ($TaxationBody->getBalance() > $betting_pool + 1.5) {
                 $this->bet = 1;
                 $this->Talk->bet_mandatory();
             } else {
@@ -92,7 +93,7 @@ class Blackjack
             return false;
         }
 
-        if ($TaxationBody->balance < $betting_pool + 1.5 * $this->bet) {
+        if ($TaxationBody->getBalance() < $betting_pool + 1.5 * $this->bet) {
             $this->Talk->bet_too_high_for_dealer();
             return false;
         }
@@ -130,6 +131,7 @@ class Blackjack
                 $this->Game->endGame();
             }
         }
+        return true;
     }
 
     private function processTurn(PlayerMove $Move)
@@ -154,8 +156,9 @@ class Blackjack
                     $this->Talk->hit($Player);
                     break;
                 case PlayerMove::DoubleDown:
-                    if ($TaxationBody->balance > $Player->bet) {
-                        if ($TaxationBody->balance > $this->Game->betting_pool + $Player->bet) {
+                    $balance = $this->Coin->SQL->GetUserById($this->user_id)->getBalance();
+                    if ($balance > $Player->bet) {
+                        if ($TaxationBody->getBalance() > $this->Game->betting_pool + $Player->bet) {
                             $this->Coin->Transact->performTransaction(new Transaction(
                                 NULL, $this->Coin->SQL->GetUserById($Player->user_id), $TaxationBody, $Player->bet, new TransactionType(TransactionType::BlackjackBet)
                             ));
@@ -179,8 +182,8 @@ class Blackjack
                         return false;
                     } elseif ($Player->Hand->canSplit()) {
                         if ($Player->split == 0) {
-                            if ($TaxationBody->balance > $Player->bet) {
-                                if ($TaxationBody->balance > $this->Game->betting_pool + $Player->bet) {
+                            if ($TaxationBody->getBalance() > $Player->bet) {
+                                if ($TaxationBody->getBalance() > $this->Game->betting_pool + $Player->bet) {
                                     $this->Game->addPlayer($this->user_id, $this->user_name, $Player->bet, false, 2);
                                     $Player->Hand->addCard($this->Game->Deck->dealCard());
                                     $this->setPlayerState(PlayerState::Hit);
@@ -233,6 +236,7 @@ class Blackjack
             $this->finaliseGame();
             $this->Game->endGame();
         }
+        return true;
     }
 
     private function setPlayerState($DefaultPlayerState)
@@ -318,27 +322,26 @@ class Blackjack
 
     private function payPlayer(Player $Player, $multiplier)
     {
-        $Telegram = new Telegram();
         $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
 
         if ($multiplier > 0) {
-            if ($TaxationBody->balance > (1 + $multiplier) * $Player->bet) {
+            if ($TaxationBody->getBalance() > (1 + $multiplier) * $Player->bet) {
                 $this->taxationBodyTransact($Player, (1 + $multiplier) * $Player->bet);
                 $Player->bet_result = $multiplier * $Player->bet;
-            } elseif ($TaxationBody->balance > abs($Player->bet)) {
-                $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam, but it can at least return your bet.");
+            } elseif ($TaxationBody->getBalance() > abs($Player->bet)) {
+                Telegram::talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam, but it can at least return your bet.");
                 $this->taxationBodyTransact($Player, abs($Player->bet));
             } else {
-                $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
+                Telegram::talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
                 $Player->bet_result = (-1) * $Player->bet;
             }
             $Player->game_result = "win";
         } elseif ($multiplier == 0) {
             if (!$Player->free_bet) {
-                if ($TaxationBody->balance > abs($Player->bet)) {
+                if ($TaxationBody->getBalance() > abs($Player->bet)) {
                     $this->taxationBodyTransact($Player, abs($Player->bet));
                 } else {
-                    $Telegram->talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
+                    Telegram::talk($this->chat_id, COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
                 }
             }
             $Player->game_result = "draw";

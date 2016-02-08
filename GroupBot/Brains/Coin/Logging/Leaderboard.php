@@ -48,7 +48,7 @@ class Leaderboard
                 } else {
                     $out .= "   `*";
                 }
-                $out .= $i->user_name . "* (" . round($i->balance, 2) . ")\n";
+                $out .= $i->user_name . "* (" . $i->getBalance() . ")\n";
             }
         } else {
             $out .= "No users to display.";

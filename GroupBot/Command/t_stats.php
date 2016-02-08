@@ -8,6 +8,7 @@
 namespace GroupBot\Command;
 
 use GroupBot\Base\Logging;
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Blackjack\Database\Control;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
@@ -31,7 +32,7 @@ class t_stats extends Command
         if ($this->isParam()) {
             $user_id = $log->checkIfUserIsLogged($this->getParam());
             if (!$user_id) {
-                $this->Telegram->talk($this->Message->Chat->id, "can't find that user, brah");
+                Telegram::talk($this->Message->Chat->id, "can't find that user, brah");
                 return false;
             }
         } else {
@@ -39,9 +40,8 @@ class t_stats extends Command
         }
 
         $log = $log->getAllUserLogsForChat($user_id);
-        $bj_stats = $BlackJackControl->getStats($user_id);
+        $bj_stats = $BlackJackControl->getAllStats($user_id);
         $CoinUser = $Coin->SQL->GetUserById($user_id);
-        $balance = round($CoinUser->balance,2);
 
         $date = 0;
         foreach ($log->LogsCommand as $cmd) {
@@ -64,7 +64,7 @@ class t_stats extends Command
 
         $out .= "\n\n"
             . emoji(0x1F4B2) . "*" . COIN_CURRENCY_NAME . "* stats:"
-            . "\n`   `•` " . $balance . "`" .  emoji(0x1F4B0) . " in the bank"
+            . "\n`   `•` " . $CoinUser->getBalance() . "`" .  emoji(0x1F4B0) . " in the bank"
             . "\n`   `•` " . $Coin->SQL->GetNumberOfTransactionsByUser($CoinUser) . "` outgoing transactions ever";
 
         if ($bj_stats) {
@@ -78,7 +78,7 @@ class t_stats extends Command
                 ($bj_balance == 0 ? "breaking even at `" : ($bj_balance > 0 ? "up `" : "down `")) . round($bj_balance, 2) . "`" . emoji(0x1F4B0);
         }
 
-        $this->Telegram->talk($this->Message->Chat->id, $out);
+        Telegram::talk($this->Message->Chat->id, $out);
         return true;
     }
 }

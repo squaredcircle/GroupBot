@@ -83,9 +83,14 @@ class Control
         return true;
     }
 
-    public function getStats($user_id)
+    public function getDailyStats($user_id)
     {
         return $this->DBSQL->select_player_stats_today($user_id);
+    }
+
+    public function getAllStats($user_id)
+    {
+        return $this->DBSQL->select_player_stats($user_id);
     }
 
     public function getGame()

@@ -49,14 +49,13 @@ class GroupBot
 
 			$Coin = new Coin();
 			if ($Coin->checkForAndCreateUser($this->Message->User)) {
-				$Telegram = new Telegram();
-				$Telegram->talk($this->Message->Chat->id, "Hi " . $this->Message->User->first_name . "! Your " . COIN_CURRENCY_NAME
-					. " has been set up; you've got 0 " . COIN_CURRENCY_NAME . " at the moment.");
+				Telegram::talk($this->Message->Chat->id, emoji(0x1F64B) . "Hi " . $this->Message->User->first_name . "! Your " . COIN_CURRENCY_NAME . " account has been set up; here's the details:"
+					. "\n`   `• You're starting with *0*" . emoji(0x1F4B0)
+					. "\n`   `• Your Coin username is *" . $Coin->SQL->GetUserById($this->Message->User->id)->user_name . "*");
 			}
 		} elseif (isset($update["inline_query"])) {
 			$this->InlineQuery = new InlineQuery($update["inline_query"]);
-			$Telegram = new Telegram();
-			$Telegram->answerInlineQuery($this->InlineQuery->id, $this->InlineQuery->results);
+			Telegram::answerInlineQuery($this->InlineQuery->id, $this->InlineQuery->results);
 		}
 
 		return true;
@@ -75,8 +74,7 @@ class GroupBot
                     $obj = new $class($this->Message);
                     $obj->$command();
                 } catch (\Exception $e) {
-                    $Telegram = new Telegram();
-                    $Telegram->talk($this->Message->Chat->id, "something's broken inside, brah");
+					Telegram::talk($this->Message->Chat->id, "something's broken inside, brah");
                     return false;
                 }
 				return true;

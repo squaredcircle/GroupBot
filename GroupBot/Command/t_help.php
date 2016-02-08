@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_help extends Command
@@ -54,6 +55,6 @@ isaaccoin - sucks lol
 /spookyzalgoperson pls stop
 /photo of what?
 /isaaccoin sucks lol";
-        $this->Telegram->talk($this->Message->Chat->id, $response);
+        Telegram::talk($this->Message->Chat->id, $response);
     }
 }

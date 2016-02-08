@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 use Imagick;
 use DateTime;
@@ -32,6 +33,6 @@ class t_wolfram extends Command
         $date = new DateTime();
         $path = WOLFRAM_DIR . '/img' . $date->getTimestamp() . '.gif';
         $combined->writeImage($path);
-        $this->Telegram->customPhotoSender2($this->Message->Chat->id, $path);
+        Telegram::customPhotoSender($this->Message->Chat->id, $path);
     }
 }

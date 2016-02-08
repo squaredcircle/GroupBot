@@ -59,8 +59,8 @@ class Validate
 
     private function parseAmount(CoinUser $User, $amount)
     {
-        if (round($User->balance,2) - $amount == 0)
-            return $User->balance;
+        if ($User->getBalance() - $amount == 0)
+            return $User->getBalance(true);
         else
             return $amount;
     }
@@ -71,7 +71,7 @@ class Validate
 
         $total_coin = 0.0;
         foreach ($users as $i) {
-            $total_coin += $i->balance;
+            $total_coin += $i->getBalance(true);
         }
         return $total_coin;
     }

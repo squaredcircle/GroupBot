@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_christmas extends Command
@@ -51,6 +52,6 @@ class t_christmas extends Command
         $out .= $jokes[mt_rand(0, count($jokes) - 1)];
         $out .= $this->santa(15);
 
-        $this->Telegram->talk($this->Message->Chat->id, $out);
+        Telegram::talk($this->Message->Chat->id, $out);
     }
 }

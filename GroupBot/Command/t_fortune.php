@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_fortune extends Command
@@ -14,6 +15,6 @@ class t_fortune extends Command
     public function t_fortune()
     {
         $out = shell_exec("/usr/games/fortune");
-        $this->Telegram->talk($this->Message->Chat->id, $out);
+        Telegram::talk($this->Message->Chat->id, $out);
     }
 }

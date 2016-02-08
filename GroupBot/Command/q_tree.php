@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class q_tree extends Command
@@ -54,6 +55,6 @@ class q_tree extends Command
         $out .= ".``" .  $this->present(8) . "\n";
         $out .= "*M E R R Y  C H R I S T M A S*";
 
-        $this->Telegram->talk($this->Message->Chat->id, $out);
+        Telegram::talk($this->Message->Chat->id, $out);
     }
 }

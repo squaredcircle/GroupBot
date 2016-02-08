@@ -36,11 +36,11 @@ class SQL
             $query = $this->db->prepare($sql);
             $query->bindValue(':user_id', $User->user_id);
             $query->bindValue(':user_name', $User->user_name);
-            $query->bindValue(':balance', $User->balance);
+            $query->bindValue(':balance', $User->getBalance(true));
 
             if ($query->execute()) {
                 $this->Feedback->addFeedback("Hi " . $User->user_name . "! Your " . COIN_CURRENCY_NAME
-                    . " has been set up; you've got " . $User->balance . " " . COIN_CURRENCY_NAME . " at the moment.");
+                    . " has been set up; you've got " . $User->getBalance(). " " . COIN_CURRENCY_NAME . " at the moment.");
                 return true;
             } else {
                 $this->Feedback->addFeedback("Something went wrong; I couldn't set up an " . COIN_CURRENCY_NAME . " account for you, " . $User->user_name . "...");

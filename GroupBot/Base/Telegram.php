@@ -6,34 +6,36 @@ require_once(__DIR__ . '/../Settings.php');
 
 class Telegram
 {
-	public function __construct()
-    {
+	public function __construct() {}
 
+	public static function customShitpostingMessage($text)
+	{
+		self::talkForced(SHITPOSTING_ID, $text);
 	}
 
-	public function customShitpostingMessage($text)
+	public static function broadcast($text, $channel)
 	{
-		$this->talkForced(SHITPOSTING_ID, $text);
-	}
-
-	public function CoinBroadcast($text)
-	{
-		$this->apiRequest("sendMessage", array('chat_id' => '@IsaacCoin', "text" => $text, "parse_mode" => "Markdown"));
+		self::apiRequest("sendMessage", array('chat_id' => '@' . $channel, "text" => $text, "parse_mode" => "Markdown"));
 	}
 	
-	public function talk($chat_id, $text)
+	public static function talk($chat_id, $text)
 	{
-		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
+		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
 	}
 
-	public function talk_suppress($chat_id, $text)
+	public static function talkForced($chat_id, $text)
 	{
-		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown", "disable_web_page_preview" => "true"));
+		self::apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text));
 	}
 
-	public function reply_keyboard($chat_id, $text, $message_id, $keyboard)
+	public static function talk_suppress($chat_id, $text)
 	{
-		$this->apiRequestWebhook("sendMessage",
+		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown", "disable_web_page_preview" => "true"));
+	}
+
+	public static function reply_keyboard($chat_id, $text, $message_id, $keyboard)
+	{
+		self::apiRequestWebhook("sendMessage",
 			array(
 				'chat_id' => $chat_id,
 				"text" => $text,
@@ -49,41 +51,54 @@ class Telegram
 		);
 	}
 
-	public function talk_hide_keyboard($chat_id, $text)
+	public static function talk_hide_keyboard($chat_id, $text)
 	{
-		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown",
+		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown",
 			"reply_markup" => array("hide_keyboard" => true)));
 	}
 
-	public function talkForced($chat_id, $text)
+	public static function reply($chat_id, $message_id, $text)
 	{
-		$this->apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text));
+		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "reply_to_message_id" => $message_id, "text" => $text, "parse_mode" => "Markdown"));
 	}
 
-	public function reply($chat_id, $message_id, $text)
+	public static function answerInlineQuery($inline_query_id, $results)
 	{
-		$this->apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "reply_to_message_id" => $message_id, "text" => $text, "parse_mode" => "Markdown"));
+		self::apiRequestWebhook("answerInlineQuery", array('inline_query_id' => $inline_query_id, 'cache_time' => 0, 'results' => $results));
 	}
 
-	public function answerInlineQuery($inline_query_id, $results)
+	public static function customPhotoSender($chat_id, $file_path)
 	{
-		$this->apiRequestWebhook("answerInlineQuery", array('inline_query_id' => $inline_query_id, 'cache_time' => 0, 'results' => $results));
+		$url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendPhoto?chat_id=" . $chat_id ;
+
+		$post_fields = array(
+			'chat_id'   => $chat_id,
+			'photo'     => new \CURLFile(realpath($file_path))
+		);
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+		//curl_setopt($ch, CURLOPT_INFILESIZE, filesize($file_path));
+		return curl_exec($ch);
 	}
 
-	public function apiRequestWebhook($method, $parameters)
+	public static function fileIdPhotoSender($chat_id, $file_id)
 	{
-		if (!is_string($method))
-		{
+		self::apiRequestWebhook("sendPhoto", array('chat_id' => $chat_id, 'photo' => $file_id));
+	}
+
+	private static function apiRequestWebhook($method, $parameters)
+	{
+		if (!is_string($method)) {
 			error_log("Method name must be a string\n");
 			return false;
 		}
 
-		if (!$parameters)
-		{
-			$parameters = array();
-		}
-		else if (!is_array($parameters))
-		{
+		if (!$parameters) $parameters = array();
+		else if (!is_array($parameters)) {
 			error_log("Parameters must be an array\n");
 			return false;
 		}
@@ -95,29 +110,22 @@ class Telegram
 		return true;
 	}
 
-	public function apiRequest($method, $parameters)
+	static function apiRequest($method, $parameters)
 	{
-		if (!is_string($method))
-		{
+		if (!is_string($method)) {
 			error_log("Method name must be a string\n");
 			return false;
 		}
 
-		if (!$parameters)
-		{
-			$parameters = array();
-		}
-		else if (!is_array($parameters))
-		{
+		if (!$parameters) $parameters = array();
+		else if (!is_array($parameters)) {
 			error_log("Parameters must be an array\n");
 			return false;
 		}
 
-		foreach ($parameters as $key => &$val)
-		{
+		foreach ($parameters as $key => &$val) {
 			// encoding to JSON array parameters, for example reply_markup
-			if (!is_numeric($val) && !is_string($val))
-				$val = json_encode($val);
+			if (!is_numeric($val) && !is_string($val)) $val = json_encode($val);
 		}
 		$url = API_URL.$method.'?'.http_build_query($parameters);
 
@@ -126,63 +134,10 @@ class Telegram
 		curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 5);
 		curl_setopt($handle, CURLOPT_TIMEOUT, 60);
 
-		return $this->exec_curl_request($handle);
+		return self::exec_curl_request($handle);
 	}
 
-	public function imagickPhotoSender($chat_id, $img, $size)
-	{
-		$bot_url    = "https://api.telegram.org/bot" . BOT_TOKEN;
-		$url = $bot_url . "/sendPhoto?chat_id=" . $chat_id;
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, array("photo"     => $img, ));
-		curl_setopt($ch, CURLOPT_INFILESIZE, $size);
-		$output = curl_exec($ch);
-		print $output;
-	}
-
-	public function customPhotoSender($chat_id, $file_path)
-	{
-		$bot_url    = "https://api.telegram.org/bot" . BOT_TOKEN;
-		$url = $bot_url . "/sendPhoto?chat_id=" . $chat_id;
-		$ch = curl_init(); 
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
-		curl_setopt($ch, CURLOPT_URL, $url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-		curl_setopt($ch, CURLOPT_POSTFIELDS, array("photo"     => "@" . $file_path, ));
-		curl_setopt($ch, CURLOPT_INFILESIZE, filesize($file_path));
-		$output = curl_exec($ch);
-		print $output;
-	}
-
-	public function customPhotoSender2($chat_id, $file_path)
-	{
-		$bot_url    = "https://api.telegram.org/bot" . BOT_TOKEN;
-		$url        = $bot_url . "/sendPhoto?chat_id=" . $chat_id ;
-
-		$post_fields = array('chat_id'   => $chat_id,
-				'photo'     => new \CURLFile(realpath($file_path))
-		);
-
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-				"Content-Type:multipart/form-data"
-		));
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
-		return curl_exec($ch);
-		//print_r(json_decode($output,true));
-	}
-
-	public function fileIdPhotoSender($chat_id, $file_id)
-	{
-		$this->apiRequestWebhook("sendPhoto", array('chat_id' => $chat_id, 'photo' => $file_id));
-	}
-
-	function exec_curl_request($handle) 
+	private static function exec_curl_request($handle)
 	{
 		$response = curl_exec($handle);
 
@@ -197,29 +152,20 @@ class Telegram
 		$http_code = intval(curl_getinfo($handle, CURLINFO_HTTP_CODE));
 		curl_close($handle);
 
-		if ($http_code >= 500) 
-		{
-			// do not wat to DDOS server if something goes wrong
+		if ($http_code >= 500) {
+			// do not want to DDOS the server if something goes wrong
 			sleep(10);
 			return false;
 		} 
-		else if ($http_code != 200) 
-		{
+		else if ($http_code != 200) {
 			$response = json_decode($response, true);
 			error_log("Request has failed with error {$response['error_code']}: {$response['description']}\n");
-			if ($http_code == 401) 
-			{
-				throw new \Exception('Invalid access token provided');
-			}
-		return false;
+			if ($http_code == 401) throw new \Exception('Invalid access token provided');
+			return false;
 		} 
-		else 
-		{
+		else {
 			$response = json_decode($response, true);
-			if (isset($response['description'])) 
-			{
-				error_log("Request was successful: {$response['description']}\n");
-			}
+			//if (isset($response['description'])) error_log("Request was successful: {$response['description']}\n");
 			$response = $response['result'];
 		}
 

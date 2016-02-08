@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
@@ -26,6 +27,6 @@ class i_icstats extends Command
             . "\n`   `• " . "a transaction tax of `" . COIN_TRANSACTION_TAX * 100 . "%`."
             . "\n`   `• " . "a daily tax of `" . COIN_PERIODIC_TAX * 100 . "%` at `12 noon`";
 
-        $this->Telegram->talk($this->Message->Chat->id,$out);
+        Telegram::talk($this->Message->Chat->id,$out);
     }
 }

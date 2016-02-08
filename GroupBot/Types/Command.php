@@ -9,17 +9,13 @@
 namespace GroupBot\Types;
 
 
-use GroupBot\Base\Telegram;
-
-
 class Command
 {
-    protected $Telegram, $Message;
+    protected $Message;
 
     public function __construct(Message $message)
     {
         $this->Message = $message;
-        $this->Telegram = new Telegram();
     }
 
     public function isParam()

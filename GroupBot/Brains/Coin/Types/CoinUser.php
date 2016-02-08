@@ -21,4 +21,9 @@ class CoinUser
         $this->user_name = $user_name;
         $this->balance = $balance;
     }
+
+    public function getBalance($high_precision = false)
+    {
+        return $high_precision ? $this->balance : round($this->balance,2);
+    }
 }

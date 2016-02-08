@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_rkeyboard extends Command
@@ -14,6 +15,6 @@ class t_rkeyboard extends Command
     public function t_rkeyboard()
     {
         $text = "tada";
-        $this->Telegram->talk_hide_keyboard($this->Message->Chat->id, $text);
+        Telegram::talk_hide_keyboard($this->Message->Chat->id, $text);
     }
 }

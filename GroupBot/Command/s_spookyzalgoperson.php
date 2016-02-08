@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Zalgo;
 use GroupBot\Enums\ChatType;
 use GroupBot\Types\Command;
@@ -23,10 +24,10 @@ class s_spookyzalgoperson extends Command
 
 
         if ($this->Message->Chat->type == ChatType::Group)
-            $this->Telegram->talk($this->Message->Chat->id, $no1);
+            Telegram::talk($this->Message->Chat->id, $no1);
         elseif (strlen($this->Message->text) == 0)
-            $this->Telegram->talk($this->Message->Chat->id, $no2);
+            Telegram::talk($this->Message->Chat->id, $no2);
         else
-            $this->Telegram->talk('-19315940', person($out, false));
+            Telegram::talk('-19315940', person($out, false));
     }
 }

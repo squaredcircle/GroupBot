@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
@@ -16,6 +17,6 @@ class i_recent extends Command
     {
         $Coin = new Coin();
         $RecentLogs = $Coin->getRecentLogs();
-        $this->Telegram->talk($this->Message->Chat->id, $RecentLogs->getRecentLogsText());
+        Telegram::talk($this->Message->Chat->id, $RecentLogs->getRecentLogsText());
     }
 }

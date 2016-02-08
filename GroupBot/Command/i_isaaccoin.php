@@ -7,12 +7,13 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class i_isaaccoin extends Command
 {
     public function i_isaaccoin()
     {
-        $this->Telegram->talk($this->Message->Chat->id, "http://v5.crazyserver.net.au/coin");
+        Telegram::talk($this->Message->Chat->id, "http://v5.crazyserver.net.au/coin");
     }
 }

@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 
@@ -16,6 +17,6 @@ class i_leaderboard extends Command
     {
         $Coin = new Coin();
         $Leaderboard = $Coin->getLeaderboard();
-        $this->Telegram->talk($this->Message->Chat->id, $Leaderboard->getTextLeaderboard());
+        Telegram::talk($this->Message->Chat->id, $Leaderboard->getTextLeaderboard());
     }
 }

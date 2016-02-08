@@ -7,12 +7,13 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Types\Command;
 
 class t_bow extends Command
 {
     public function t_bow()
     {
-        $this->Telegram->talk($this->Message->Chat->id, "*roaring applause*");
+        Telegram::talk($this->Message->Chat->id, "*roaring applause*");
     }
 }

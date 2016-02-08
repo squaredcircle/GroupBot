@@ -7,6 +7,7 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Base\Telegram;
 use GroupBot\Brains\Zalgo;
 use GroupBot\Types\Command;
 
@@ -17,6 +18,6 @@ class q_zalgomin extends Command
         $zalgo = new Zalgo('min');
         $out = $zalgo->speak($this->Message->text);
 
-        $this->Telegram->talk($this->Message->Chat->id, $out);
+        Telegram::talk($this->Message->Chat->id, $out);
     }
 }

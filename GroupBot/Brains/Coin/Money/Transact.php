@@ -55,7 +55,7 @@ class Transact
 
     public function removeMoney(CoinUser $User, $amount)
 	{
-        $new_balance = $User->balance - $amount;
+        $new_balance = $User->getBalance(true) - $amount;
 		
 		if ($new_balance >= 0) {
 			return $this->SQL->UpdateUserBalance($User, $new_balance);

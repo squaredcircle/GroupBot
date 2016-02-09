@@ -10,6 +10,7 @@ use GroupBot\Brains\Blackjack\Types\Player;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Brains\Coin\Enums\TransactionType;
 use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\libraries\eos\Parser;
 use GroupBot\Types\User;
 
 class Blackjack
@@ -62,16 +63,34 @@ class Blackjack
         $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
 
         if (!(is_numeric($this->bet) && $this->bet >= 0 && $this->bet == round($this->bet, 2))) {
-            $this->Talk->bet_invalid();
-            return false;
-        } elseif ($balance < 1 && $this->bet <= 1) {
+            if (stripos($this->bet, "all") !== false) {
+                try {
+                    $value = Parser::solve($this->bet, array('all' => $balance));
+                    $value = round($value,2);
+                    if ($value >=0 && $value <= $balance) {
+                        $this->bet = $value;
+                        $this->Talk->bet_calculation($value);
+                    } else {
+                        $this->Talk->bet_invalid_calculation();
+                        return false;
+                    }
+                } catch (\Exception $e) {
+                    $this->Talk->bet_invalid_notation();
+                    return false;
+                }
+            } else {
+                $this->Talk->bet_invalid();
+                return false;
+            }
+        }
+
+        if ($balance < 1 && $this->bet <= 1) {
             if ($TaxationBody->getBalance() > $betting_pool + 1.5) {
                 $stats = $this->DbControl->getDailyStats($this->user_id);
                 if ($stats['free_bets'] < BLACKJACK_DAILY_FREE_BETS) {
                     $this->Talk->bet_free();
                     $this->bet = 1;
                     $this->free_bet = true;
-                    return true;
                 } else {
                     $this->Talk->bet_free_too_many();
                     return false;
@@ -80,15 +99,16 @@ class Blackjack
                 $this->Talk->bet_free_failed();
                 return false;
             }
-        } elseif ($this->bet == 0) {
+        } elseif ($this->bet < 0) {
             if ($TaxationBody->getBalance() > $betting_pool + 1.5) {
                 $this->bet = 1;
                 $this->Talk->bet_mandatory();
             } else {
+                $this->bet = 0;
                 $this->Talk->bet_mandatory_failed();
             }
             return true;
-        } elseif ($this->bet >= $balance) {
+        } elseif ($this->bet > $balance) {
             $this->Talk->bet_too_high($balance);
             return false;
         }

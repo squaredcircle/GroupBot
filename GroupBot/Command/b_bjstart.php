@@ -15,7 +15,7 @@ class b_bjstart extends Command
 {
     public function b_bjstart()
     {
-        $bet = $this->isParam() ? $this->getParam() : 0;
+        $bet = $this->isParam() ? $this->getAllParams() : 0;
         $Move = new PlayerMove(PlayerMove::StartGame);
         return BlackjackTelegram::getResponse($this->Message, $Move, $bet);
     }

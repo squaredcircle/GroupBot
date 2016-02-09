@@ -23,7 +23,7 @@ class b_blackjack extends Command
             $Move = new PlayerMove(PlayerMove::JoinGame);
         }
 
-        $bet = $this->isParam() ? $this->getParam() : 0;
+        $bet = $this->isParam() ? $this->getAllParams() : 0;
         return BlackjackTelegram::getResponse($this->Message, $Move, $bet);
     }
 }

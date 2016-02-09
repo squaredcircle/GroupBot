@@ -262,6 +262,16 @@ class Talk
         $this->addMessage(emoji(0x1F44E) . "Please enter a valid bet.");
     }
 
+    public function bet_invalid_notation()
+    {
+        $this->addMessage(emoji(0x1F44E) . "Your bet doesn't make sense. You can use the word `all` in a sensible equation to calculate your bet.");
+    }
+
+    public function bet_invalid_calculation()
+    {
+        $this->addMessage(emoji(0x1F44E) . "Sorry, that calculates to an amount you cannot bet.");
+    }
+
     public function bet_mandatory()
     {
         $this->addMessage("You are betting with the mandatory bet of 1 Coin.");
@@ -286,9 +296,14 @@ class Talk
         $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
     }
 
+    public function bet_calculation($value)
+    {
+        $this->addMessage(emoji(0x1F4DD) . "Okay, you've placed a bet of " . $value . " Coin.");
+    }
+
     public function bet_free()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " has given you a free bet of 1 Coin. Welcome back!");
+        $this->addMessage("You've got less than 1 Coin in your account, so " . COIN_TAXATION_BODY . " has given you a free bet of 1 Coin. Welcome back!");
     }
 
     public function bet_free_failed()

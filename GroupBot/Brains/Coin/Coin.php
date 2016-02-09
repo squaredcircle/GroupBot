@@ -50,7 +50,8 @@ class Coin
             $CoinUser = new CoinUser(
                 $User->id,
                 $username_new,
-                0
+                0,
+                NULL
             );
             $this->SQL->CreateNewUser($CoinUser);
             return true;

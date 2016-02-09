@@ -42,6 +42,7 @@ class Transact
 			$Transaction->amount = $amount_adj;
 			$this->Feedback->addFeedbackCode(24); // Coin transferred.
 			$this->SQL->AddTransactionLog($Transaction);
+			$this->updateUserLastActivity($Transaction);
 			return $Transaction->amount;
 		}
         $this->Feedback->addFeedbackCode(25); // Transfer botched. Oops.
@@ -103,6 +104,18 @@ class Transact
 		{
 			$to_take = $total_money - 1000;
 			$this->removeMoney($TaxationBody, $to_take);
+		}
+	}
+
+	private function updateUserLastActivity(Transaction $transaction)
+	{
+		if ($transaction->type == TransactionType::BlackjackBet ||
+			$transaction->type == TransactionType::BlackjackWin ||
+			$transaction->type == TransactionType::Manual)
+		{
+			$date = date("Y-m-d H:i:s");
+			$this->SQL->UpdateUserLastActivity($transaction->user_sending, $date);
+			$this->SQL->UpdateUserLastActivity($transaction->user_receiving, $date);
 		}
 	}
 }

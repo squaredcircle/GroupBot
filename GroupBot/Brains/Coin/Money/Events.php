@@ -39,7 +39,7 @@ class Events
 
         $count = count($choices);
         $n = 0;
-        $num = mt_rand(0, array_sum($weights));
+        $num = mt_rand(0, 10000 * array_sum($weights)) / 10000;
 
         for ($i = 0; $i < $count; $i++) {
             $n += $weights[$i];
@@ -65,28 +65,48 @@ class Events
 
         switch ($this->weightedRandom($choices)) {
             case Event::AllTax:
+                $this->collectPeriodicTax();
                 break;
             case Event::WealthyTax:
+                $this->collectPeriodicTax();
                 break;
             case Event::PoorTax:
+                $this->collectPeriodicTax();
                 break;
             case Event::RedistributeTax:
+                $this->redistribute();
                 break;
             case Event::RedistributeWealthiest:
+                $this->redistribute();
                 break;
             case Event::IncreaseValue:
+                $this->redistribute();
                 break;
             case Event::DecreaseValue:
+                $this->poorbonuses();
                 break;
             case Event::RandomBonuses:
+                $this->poorbonuses();
                 break;
             case Event::WealthyBonuses:
+                $this->poorbonuses();
                 break;
             case Event::PoorBonuses:
+                $this->poorbonuses();
                 break;
         }
+    }
 
-        $this->collectPeriodicTax();
+    private function filterUsersByLastActivity($users)
+    {
+        $out = array();
+        foreach ($users as $user) {
+            if (isset($user->last_activity)) {
+                if (strtotime("+2 weeks") > strtotime($user->last_activity))
+                    $out[] = $user;
+            }
+        }
+        return $out;
     }
 
     private function poorbonuses()
@@ -96,6 +116,7 @@ class Events
         $average_coin = $total_coin / $total_users;
 
         $Users = $this->SQL->GetUsersByBottomBalance($total_users);
+        $Users = $this->filterUsersByLastActivity($Users);
         $PoorestUsers = array();
         foreach ($Users as $User) if ($User->getBalance(true) < $average_coin) $PoorestUsers[] = $User;
 
@@ -116,18 +137,19 @@ class Events
     private function redistribute()
     {
         $to_collect = COIN_REDISTRIBUTION_TAX * $this->TaxationBody->getBalance(true);
-        $leaderboard = $this->SQL->GetUsersByTopBalance(10);
-        $exclude_list = [COIN_TAXATION_BODY, "Isaac", "Shlomo", "Grail"];
+        $users = $this->SQL->GetAllUsers(false);
+        $users = $this->filterUsersByLastActivity($users);
+        $exclude_list = [COIN_TAXATION_BODY, "Isaac", "Shlomo"];
         $count = 0;
 
-        if (!empty($leaderboard)) {
-            foreach ($leaderboard as $i) {
+        if (!empty($users)) {
+            foreach ($users as $i) {
                 if (!in_array($i['user_name'], $exclude_list)) $count++;
             }
             if ($count > 0)
             {
                 $this->Transact->removeMoney($this->TaxationBody, $to_collect);
-                foreach ($leaderboard as $i) {
+                foreach ($users as $i) {
                     if (!in_array($i['user_name'], $exclude_list))
                         $this->Transact->addMoney($i, $to_collect / $count);
                 }

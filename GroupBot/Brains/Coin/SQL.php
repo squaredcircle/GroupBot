@@ -31,12 +31,13 @@ class SQL
         } elseif ($this->DoesUserExistByName($User->user_name)) {
             $this->Feedback->addFeedbackCode(14); // Username taken
         } else {
-            $sql = 'INSERT INTO coin_users (user_id, user_name, balance)
-                    VALUES(:user_id, :user_name, :balance)';
+            $sql = 'INSERT INTO coin_users (user_id, user_name, balance, last_activity)
+                    VALUES(:user_id, :user_name, :balance, :last_activity)';
             $query = $this->db->prepare($sql);
             $query->bindValue(':user_id', $User->user_id);
             $query->bindValue(':user_name', $User->user_name);
             $query->bindValue(':balance', $User->getBalance(true));
+            $query->bindValue(':last_activity', $User->last_activity);
 
             if ($query->execute()) {
                 $this->Feedback->addFeedback("Hi " . $User->user_name . "! Your " . COIN_CURRENCY_NAME
@@ -59,6 +60,20 @@ class SQL
         $query->bindValue(':user_id', $User->user_id);
         $query->bindValue(':user_name', $User->user_name);
         $query->bindValue(':balance', $new_balance);
+
+        return $query->execute();
+    }
+
+    public function UpdateUserLastActivity(CoinUser $User, $new_date)
+    {
+        $sql = 'UPDATE coin_users
+				SET last_activity = :last_activity
+				WHERE user_id = :user_id OR user_name = :user_name';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $User->user_id);
+        $query->bindValue(':user_name', $User->user_name);
+        $query->bindValue(':last_activity', $new_date);
 
         return $query->execute();
     }
@@ -91,7 +106,7 @@ class SQL
 
     public function GetUserById($user_id)
     {
-        $sql = 'SELECT user_id, user_name, balance
+        $sql = 'SELECT user_id, user_name, balance, last_activity
                 FROM coin_users WHERE user_id = :user_id
                 LIMIT 1';
         $query = $this->db->prepare($sql);
@@ -103,7 +118,8 @@ class SQL
             return new CoinUser(
                 $result_row['user_id'],
                 $result_row['user_name'],
-                $result_row['balance']
+                $result_row['balance'],
+                $result_row['last_activity']
             );
         }
 
@@ -112,7 +128,7 @@ class SQL
 
     public function GetUserByName($user_name)
     {
-        $sql = 'SELECT user_id, user_name, balance
+        $sql = 'SELECT user_id, user_name, balance, last_activity
                 FROM coin_users WHERE user_name = :user_name
                 LIMIT 1';
         $query = $this->db->prepare($sql);
@@ -124,7 +140,8 @@ class SQL
             return new CoinUser(
                 $result_row['user_id'],
                 $result_row['user_name'],
-                $result_row['balance']
+                $result_row['balance'],
+                $result_row['last_activity']
             );
         }
 
@@ -134,9 +151,9 @@ class SQL
     public function GetAllUsers($include_taxation_body)
     {
         if ($include_taxation_body)
-            $sql = 'SELECT user_id, user_name, balance FROM coin_users';
+            $sql = 'SELECT user_id, user_name, balance, last_activity FROM coin_users';
         else
-            $sql = 'SELECT user_id, user_name, balance FROM coin_users WHERE user_name != "'. COIN_TAXATION_BODY . '"';
+            $sql = 'SELECT user_id, user_name, balance, last_activity FROM coin_users WHERE user_name != "'. COIN_TAXATION_BODY . '"';
 
         $query = $this->db->prepare($sql);
         $query->execute();
@@ -147,7 +164,8 @@ class SQL
                 $Users[] = new CoinUser(
                     $user['user_id'],
                     $user['user_name'],
-                    $user['balance']
+                    $user['balance'],
+                    $user['last_activity']
                 );
             }
             return $Users;
@@ -170,7 +188,7 @@ class SQL
 
     public function GetUsersByTopBalance($number)
     {
-        $sql = 'SELECT user_id, user_name, balance
+        $sql = 'SELECT user_id, user_name, balance, last_activity
 				FROM coin_users
 				ORDER BY balance DESC
 				LIMIT :number';
@@ -185,7 +203,8 @@ class SQL
                 $Users[] = new CoinUser(
                     $user['user_id'],
                     $user['user_name'],
-                    $user['balance']
+                    $user['balance'],
+                    $user['last_activity']
                 );
             }
             return $Users;
@@ -195,7 +214,7 @@ class SQL
 
     public function GetUsersByBottomBalance($number)
     {
-        $sql = 'SELECT user_id, user_name, balance
+        $sql = 'SELECT user_id, user_name, balance, last_activity
 				FROM coin_users
 				ORDER BY balance ASC
 				LIMIT :number';
@@ -210,7 +229,8 @@ class SQL
                 $Users[] = new CoinUser(
                     $user['user_id'],
                     $user['user_name'],
-                    $user['balance']
+                    $user['balance'],
+                    $user['last_activity']
                 );
             }
             return $Users;

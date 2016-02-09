@@ -99,7 +99,7 @@ class Blackjack
                 $this->Talk->bet_free_failed();
                 return false;
             }
-        } elseif ($this->bet < 0) {
+        } elseif ($this->bet < 1) {
             if ($TaxationBody->getBalance() > $betting_pool + 1.5) {
                 $this->bet = 1;
                 $this->Talk->bet_mandatory();

@@ -51,6 +51,48 @@ class Talk
         return false;
     }
 
+    public function turn_expired()
+    {
+        $this->addMessage(emoji(0x231B) . " " . $this->user_name . " hasn't made a move in over 5 minutes. They automatically stand.");
+    }
+
+    public function game_status(Game $game)
+    {
+        $out = emoji(0x1F4E2) . " A game is in progress. The table is set as follows:";
+        $out .= "\nDealer: " . $game->Dealer->Hand->getHandString();
+        foreach ($game->Players as $player) {
+            switch ($player->State) {
+                case PlayerState::BlackJack:
+                    $state = "Blackjack";
+                    break;
+                case PlayerState::Bust:
+                    $state = "Bust";
+                    break;
+                case PlayerState::Hit:
+                    $state = "Hit";
+                    break;
+                case PlayerState::Stand:
+                    $state = "Stand";
+                    break;
+                case PlayerState::Surrender:
+                    $state = "Surrender";
+                    break;
+                case PlayerState::TwentyOne:
+                    $state = "Twenty one";
+                    break;
+                case PlayerState::Join:
+                    $state = "Waiting";
+                    break;
+                default:
+                    $state = "";
+                    break;
+            }
+            $out .= "\n" . $player->user_name . ": " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
+        }
+        $out .= "\n" .  emoji(0x1F449) . "It is now *" . $game->getCurrentPlayer()->user_name . "'s* turn.";
+        $this->addMessage($out);
+    }
+
     public function join_game($bet)
     {
         $out = emoji(0x1F4B0) . " " . $this->user_name . " has joined the game";

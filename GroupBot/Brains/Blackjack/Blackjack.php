@@ -124,9 +124,19 @@ class Blackjack
     {
         if ($this->Game->isGameStarted())
         {
+            $player = $this->Game->getCurrentPlayer();
             if ($this->Game->getCurrentPlayer()->user_id == $this->user_id
                 && $Move != PlayerMove::JoinGame && $Move != PlayerMove::StartGame) {
                 $this->processTurn($Move);
+            } elseif ($player->user_id != $this->user_id
+                && strtotime("-5 minutes") > strtotime($player->last_move_time)) {
+                $this->user_id = $player->user_id;
+                $this->user_name = $player->user_name;
+                $this->Talk = new Talk($this->user_name);
+                $this->Talk->turn_expired();
+                $this->processTurn(new PlayerMove(PlayerMove::Stand));
+            } elseif ($Move == PlayerMove::JoinGame || $Move == PlayerMove::StartGame) {
+                $this->Talk->game_status($this->Game);
             }
         }
         elseif (!$this->Game->isPlayerInGame($this->user_id))

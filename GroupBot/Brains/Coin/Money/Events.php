@@ -109,6 +109,17 @@ class Events
         return $out;
     }
 
+    private function filterUsersByName($users, $names)
+    {
+        $out = array();
+        foreach ($users as $user) {
+            if (!in_array($user->user_name, $names)) {
+                $out[] = $user;
+            }
+        }
+        return $out;
+    }
+
     private function poorbonuses()
     {
         $total_coin = $this->Validate->getTotalCoinExisting(false);
@@ -139,34 +150,27 @@ class Events
         $to_collect = COIN_REDISTRIBUTION_TAX * $this->TaxationBody->getBalance(true);
         $users = $this->SQL->GetAllUsers(false);
         $users = $this->filterUsersByLastActivity($users);
-        $exclude_list = [COIN_TAXATION_BODY, "Isaac", "Shlomo"];
-        $count = 0;
+        $users = $this->filterUsersByName($users, array(COIN_TAXATION_BODY, "Isaac", "Shlomo"));
+        $count = count($users);
 
         if (!empty($users)) {
+            $this->Transact->removeMoney($this->TaxationBody, $to_collect);
             foreach ($users as $i) {
-                if (!in_array($i['user_name'], $exclude_list)) $count++;
+                $this->Transact->addMoney($i, $to_collect / $count);
             }
-            if ($count > 0)
-            {
-                $this->Transact->removeMoney($this->TaxationBody, $to_collect);
-                foreach ($users as $i) {
-                    if (!in_array($i['user_name'], $exclude_list))
-                        $this->Transact->addMoney($i, $to_collect / $count);
-                }
 
-                $this->SQL->AddTransactionLog(new Transaction(
-                    NULL,
-                    $this->TaxationBody,
-                    NULL,
-                    $to_collect,
-                    new TransactionType(TransactionType::RedistributionTax)
-                ));
+            $this->SQL->AddTransactionLog(new Transaction(
+                NULL,
+                $this->TaxationBody,
+                NULL,
+                $to_collect,
+                new TransactionType(TransactionType::RedistributionTax)
+            ));
 
-                Telegram::customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
+            Telegram::customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
 
-                $this->Transact->maintainFixedLevel();
-                return true;
-            }
+            $this->Transact->maintainFixedLevel();
+            return true;
         }
         return false;
     }

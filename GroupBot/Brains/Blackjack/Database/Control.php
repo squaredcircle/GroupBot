@@ -122,7 +122,8 @@ class Control
                     $player['no_blackjacks'],
                     $player['no_splits'],
                     $player['no_doubledowns'],
-                    $player['no_surrenders']
+                    $player['no_surrenders'],
+                    $player['last_move_time']
                 );
                 $tmp->setDbId($player['id']);
                 $Players[] = $tmp;

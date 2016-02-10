@@ -34,8 +34,8 @@ class SQL
 
     public function insert_player($game_id, $user_id, $user_name, $card_str, $player_state, $player_no, $bet, $free_bet, $split)
     {
-        $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no, bet, free_bet, split)
-                VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no, :bet, :free_bet, :split)';
+        $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no, bet, free_bet, split, last_move_time)
+                VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no, :bet, :free_bet, :split, NOW())';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':user_id', $user_id);
@@ -57,7 +57,7 @@ class SQL
         $sql = 'UPDATE bj_players
                 SET cards = :cards, state = :state, bet = :bet, split = :split, player_no = :player_no,
                 no_stands = :no_stands, no_hits = :no_hits, no_blackjacks = :no_blackjacks, no_splits = :no_splits,
-                no_doubledowns = :no_doubledowns, no_surrenders = :no_surrenders
+                no_doubledowns = :no_doubledowns, no_surrenders = :no_surrenders, last_move_time = NOW()
                 WHERE user_id = :user_id AND game_id = :game_id AND id = :id';
 
         $query = $this->db->prepare($sql);

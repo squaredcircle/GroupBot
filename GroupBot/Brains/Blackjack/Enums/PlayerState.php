@@ -9,14 +9,12 @@
 namespace GroupBot\Brains\Blackjack\Enums;
 
 
-class PlayerState extends \SplEnum
+class PlayerState extends \GroupBot\Brains\CardGame\Enums\PlayerState
 {
-    const Join = 1;
-    const Stand = 2;
-    const Hit = 3;
-    const Bust = 4;
-    const TwentyOne = 5;
-    const BlackJack = 6;
-    const Surrender = 7;
-    const Dealer = 8;
+    const Stand = 3;
+    const Hit = 4;
+    const Bust = 5;
+    const TwentyOne = 6;
+    const BlackJack = 7;
+    const Surrender = 8;
 }

@@ -94,15 +94,16 @@ class Transact
 	{
 		$TaxationBody = $this->SQL->GetUserByName(COIN_TAXATION_BODY);
 		$total_money = $this->Validate->getTotalCoinExisting(true);
+		$total_money_target = 10000;
 
-		if ($total_money < 1000)
+		if ($total_money < $total_money_target)
 		{
-			$to_give = 1000 - $total_money;
+			$to_give = $total_money_target - $total_money;
 			$this->addMoney($TaxationBody, $to_give);
 		}
-		elseif ($total_money > 1000)
+		elseif ($total_money > $total_money_target)
 		{
-			$to_take = $total_money - 1000;
+			$to_take = $total_money - $total_money_target;
 			$this->removeMoney($TaxationBody, $to_take);
 		}
 	}
@@ -111,11 +112,15 @@ class Transact
 	{
 		if ($transaction->type == TransactionType::BlackjackBet ||
 			$transaction->type == TransactionType::BlackjackWin ||
-			$transaction->type == TransactionType::Manual)
+			$transaction->type == TransactionType::CasinoWarBet ||
+			$transaction->type == TransactionType::CasinoWarWin)
 		{
 			$date = date("Y-m-d H:i:s");
 			$this->SQL->UpdateUserLastActivity($transaction->user_sending, $date);
 			$this->SQL->UpdateUserLastActivity($transaction->user_receiving, $date);
+		} elseif ($transaction->type == TransactionType::Manual) {
+			$date = date("Y-m-d H:i:s");
+			$this->SQL->UpdateUserLastActivity($transaction->user_sending, $date);
 		}
 	}
 }

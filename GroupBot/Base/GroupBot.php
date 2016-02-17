@@ -11,6 +11,7 @@ require(__DIR__ . '/../Settings.php');
 
 class GroupBot
 {
+	/** @var  Message */
 	public $Message;
 	public $InlineQuery;
 
@@ -61,15 +62,28 @@ class GroupBot
 		return true;
 	}
 
+	private function duplicateCommand($class)
+	{
+		if (strcmp($class, "GroupBot\\Command\\c_surrender") === 0) {
+			$SQL = new \GroupBot\Brains\Blackjack\SQL();
+			if ($SQL->select_game($this->Message->Chat->id)) return true;
+		} elseif (strcmp($class, "GroupBot\\Command\\b_surrender") === 0) {
+			$SQL = new \GroupBot\Brains\Casinowar\SQL();
+			if ($SQL->select_game($this->Message->Chat->id)) return true;
+		}
+		return false;
+	}
+
 	private function runCommand($cmd)
 	{
-		foreach(['t_', 'i_', 's_', 'q_', 'b_'] as $i)
+		foreach(['t_', 'i_', 's_', 'q_', 'b_', 'c_'] as $i)
 		{
 			$command = $i . $cmd;
 			$class = "GroupBot\\Command\\" . $command;
 
 			if (class_exists($class))
 			{
+				if ($this->duplicateCommand($class)) continue;
 				try {
                     $obj = new $class($this->Message);
                     $obj->$command();

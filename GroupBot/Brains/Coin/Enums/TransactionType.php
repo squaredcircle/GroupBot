@@ -19,6 +19,8 @@ class TransactionType extends \SplEnum
 
     const BlackjackBet = 10;
     const BlackjackWin = 11;
+    const CasinoWarBet = 12;
+    const CasinoWarWin = 13;
 
     const AllTax = 20;
     const WealthyTax = 21;

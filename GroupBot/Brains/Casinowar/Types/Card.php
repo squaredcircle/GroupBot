@@ -6,7 +6,7 @@
  * Time: 8:43 PM
  */
 
-namespace GroupBot\Brains\Blackjack\Types;
+namespace GroupBot\Brains\Casinowar\Types;
 
 
 class Card extends \GroupBot\Brains\CardGame\Types\Card
@@ -15,16 +15,16 @@ class Card extends \GroupBot\Brains\CardGame\Types\Card
     {
         switch ($this->rank) {
             case 'A':
-                $out = 'A';
+                $out = 14;
                 break;
             case 'J':
-                $out = 10;
+                $out = 11;
                 break;
             case 'Q':
-                $out = 10;
+                $out = 12;
                 break;
             case 'K':
-                $out = 10;
+                $out = 13;
                 break;
             default:
                 $out = $this->rank;

@@ -82,7 +82,8 @@ class DbControl
                 SET posts_today = 0';
         $sql2 = 'UPDATE stats_commands
                 SET uses_today = 0';
-        $sql3 = 'TRUNCATE bj_stats_today';
+        $sql3 = 'UPDATE casino
+                SET free_bets_today = 0';
         $query1 = $this->db->prepare($sql1);
         $query2 = $this->db->prepare($sql2);
         $query3 = $this->db->prepare($sql3);

@@ -7,15 +7,15 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Blackjack\Telegram;
-use GroupBot\Brains\Blackjack\Enums\PlayerMove;
+use GroupBot\Brains\Casinowar\Telegram;
+use GroupBot\Brains\Casinowar\Enums\PlayerMove;
 use GroupBot\Brains\Coin;
 use GroupBot\Enums\ChatType;
 use GroupBot\Types\Command;
 
-class b_blackjack extends Command
+class c_casinowar extends Command
 {
-    public function b_blackjack()
+    public function c_casinowar()
     {
         if ($this->Message->Chat->type == ChatType::Individual) {
             $Move = new PlayerMove(PlayerMove::StartGame);

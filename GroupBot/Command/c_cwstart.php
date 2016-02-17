@@ -7,13 +7,13 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Blackjack\Enums\PlayerMove;
-use GroupBot\Brains\Blackjack\Telegram;
+use GroupBot\Brains\Casinowar\Enums\PlayerMove;
+use GroupBot\Brains\Casinowar\Telegram;
 use GroupBot\Types\Command;
 
-class b_bjstart extends Command
+class c_cwstart extends Command
 {
-    public function b_bjstart()
+    public function c_cwstart()
     {
         $bet = $this->isParam() ? $this->getAllParams() : 0;
         $Move = new PlayerMove(PlayerMove::StartGame);

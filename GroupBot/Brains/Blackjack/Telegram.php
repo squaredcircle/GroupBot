@@ -9,11 +9,10 @@
 namespace GroupBot\Brains\Blackjack;
 
 
-use GroupBot\Base\Telegram;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Types\Message;
 
-class BlackjackTelegram
+class Telegram
 {
     public static function getResponse(Message $message, PlayerMove $move, $bet = NULL)
     {
@@ -21,9 +20,9 @@ class BlackjackTelegram
         if ($Blackjack->Talk->areMessages()) {
             $keyboard = $Blackjack->Talk->getKeyboard();
             if ($keyboard) {
-                Telegram::reply_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $message->message_id, $keyboard);
+                \GroupBot\Base\Telegram::reply_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $message->message_id, $keyboard);
             } else {
-                Telegram::talk_hide_keyboard($message->Chat->id, $Blackjack->Talk->getMessages());
+                \GroupBot\Base\Telegram::talk_hide_keyboard($message->Chat->id, $Blackjack->Talk->getMessages());
             }
             return true;
         }

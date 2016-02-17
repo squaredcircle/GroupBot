@@ -9,69 +9,11 @@
 namespace GroupBot\Brains\Blackjack\Types;
 
 
-class Hand
+class Hand extends \GroupBot\Brains\CardGame\Types\Hand
 {
-    public $Cards;
-    public $Value;
-
-    public function __construct($card_array = array())
-    {
-        $this->Cards = $this->Cards = $card_array;
-        $this->Value = $this->handValue();
-    }
-
-    public function addCard(Card $Card)
-    {
-        $this->Cards[] = $Card;
-        $this->Value = $this->handValue();
-    }
-
-    public function removeCard(Card $Card)
-    {
-        if ($this->hasCard($Card)) {
-            $i = array_search($Card, $this->Cards);
-            unset($this->Cards[$i]);
-            $this->Value = $this->handValue();
-            return true;
-        }
-        return false;
-    }
-
-    public function getHandString()
-    {
-        $out = '';
-        foreach ($this->Cards as $Card) {
-            $out .= "*" . $Card->rank . "*" . $Card->suit . ", ";
-        }
-        return substr($out, 0, -2);
-    }
-
-    public function countCardInstances(Card $Card)
-    {
-        $map = function(Card $c) {return $c->rank . $c->suit;};
-        $count = array_count_values(array_map($map, $this->Cards));
-        $key = $Card->rank . $Card->suit;
-        return array_key_exists($key, $count) ? $count[$key] : 0;
-    }
-
-    public function hasCard(Card $Card)
-    {
-        return in_array($Card, $this->Cards);
-    }
-
     public function canSplit()
     {
         return (count($this->Cards) == 2 && $this->Cards[0]->value == $this->Cards[1]->value);
-    }
-
-    public function hasCards()
-    {
-        return !empty($this->Cards);
-    }
-
-    public function size()
-    {
-        return count($this->Cards);
     }
 
     public function isBust()
@@ -94,7 +36,7 @@ class Hand
         return ($this->size() == 2 && $this->Value == 21);
     }
 
-    private function handValue()
+    protected function handValue()
     {
         if (empty($this->Cards)) return 0;
 
@@ -112,5 +54,10 @@ class Hand
             return $value + 11 + ($aces - 1);
         else
             return $value + $aces;
+    }
+
+    protected function newCard($rank, $suit)
+    {
+        return new Card($rank, $suit);
     }
 }

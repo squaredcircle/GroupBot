@@ -6,7 +6,7 @@
  * Time: 9:50 PM
  */
 
-namespace GroupBot\Brains\Blackjack\Types;
+namespace GroupBot\Brains\Casinowar\Types;
 
 
 class Deck extends \GroupBot\Brains\CardGame\Types\Deck

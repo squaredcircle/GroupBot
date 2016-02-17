@@ -6,10 +6,10 @@
  * Time: 6:55 PM
  */
 
-namespace GroupBot\Brains\Blackjack\Types;
+namespace GroupBot\Brains\Casinowar\Types;
 
 
-use GroupBot\Brains\Blackjack\Enums\PlayerState;
+use GroupBot\Brains\Casinowar\Enums\PlayerState;
 
 class Player extends \GroupBot\Brains\CardGame\Types\Player
 {
@@ -17,17 +17,12 @@ class Player extends \GroupBot\Brains\CardGame\Types\Player
     public $Hand;
     /** @var PlayerState  */
     public $State;
-    public $split = 0;
-    public $no_hits, $no_stands, $no_blackjacks, $no_splits, $no_doubledowns, $no_surrenders;
-
-    public function isSplit()
-    {
-        return $this->split != 0;
-    }
+    public $no_surrenders = 0;
+    public $no_wars = 0;
 
     public function construct($user_id, $user_name, \GroupBot\Brains\CardGame\Types\Hand $hand, \GroupBot\Brains\CardGame\Enums\PlayerState $playerState,
                               $player_no, $bet, $free_bet, $id = NULL, $last_move_time = NULL,
-                              $split = 0, $no_hits = 0, $no_stands = 0, $no_blackjacks = 0, $no_splits = 0, $no_doubledowns = 0, $no_surrenders = 0)
+                              $no_wars = 0, $no_surrenders = 0)
     {
         $this->user_id = $user_id;
         $this->user_name =  $user_name;
@@ -40,13 +35,13 @@ class Player extends \GroupBot\Brains\CardGame\Types\Player
         $this->id = $id;
         $this->last_move_time = $last_move_time;
 
-        $this->split = $split;
-        $this->no_hits = $no_hits;
-        $this->no_stands = $no_stands;
-        $this->no_blackjacks = $no_blackjacks;
-        $this->no_splits = $no_splits;
-        $this->no_doubledowns = $no_doubledowns;
+        $this->no_wars = $no_wars;
         $this->no_surrenders = $no_surrenders;
+    }
+
+    public function isAtWar()
+    {
+        return ($this->no_wars > 0);
     }
 
     /**
@@ -59,7 +54,7 @@ class Player extends \GroupBot\Brains\CardGame\Types\Player
 
     /**
      * @param $state
-     * @return PlayerState
+     * @return \GroupBot\Brains\CardGame\Enums\PlayerState
      */
     protected function newPlayerState($state)
     {

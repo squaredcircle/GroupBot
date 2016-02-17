@@ -25,7 +25,7 @@ class Telegram
 
 	public static function talkForced($chat_id, $text)
 	{
-		self::apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text));
+		self::apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
 	}
 
 	public static function talk_suppress($chat_id, $text)

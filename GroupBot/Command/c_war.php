@@ -7,15 +7,15 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Blackjack\Telegram;
-use GroupBot\Brains\Blackjack\Enums\PlayerMove;
+use GroupBot\Brains\Casinowar\Telegram;
+use GroupBot\Brains\Casinowar\Enums\PlayerMove;
 use GroupBot\Types\Command;
 
-class b_split extends Command
+class c_war extends Command
 {
-    public function b_split()
+    public function c_war()
     {
-        $Move = new PlayerMove(PlayerMove::Split);
+        $Move = new PlayerMove(PlayerMove::War);
         return Telegram::getResponse($this->Message, $Move);
     }
 }

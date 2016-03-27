@@ -15,6 +15,6 @@ class t_photo extends Command
     public function t_photo()
     {
         $local_path = random_pic(PHOTO_DIR);
-        PhotoCache::SendPhotoByPath($local_path, $this->Message->Chat->id);
+        PhotoCache::SendPhotoByPath($this->db, $local_path, $this->Message->Chat->id);
     }
 }

@@ -17,21 +17,41 @@ class Message
     public $message_id, $date;
     public $forward_from, $forward_date, $reply_to_message;
 
+    /** @var  User */
+    public $new_chat_participant;
+
+    /** @var  User */
+    public $left_chat_participant;
+
+    public $new_chat_title;
+    public $new_chat_photo;
+
     public $command = false;
     public $text;
     public $raw_text;
+
+    /** @var  MessageContent */
+    public $MessageContent;
+
+    /** @var  MessageType */
+    public $MessageType;
     
-    // Enums
-    public $MessageContent, $MessageType;
-    
-    // Classes
-    public $User, $Chat;
+    /** @var User  */
+    public $User;
+
+    /** @var Chat  */
+    public $Chat;
+
     private $Audio, $Document, $Photo, $Sticker, $Video, $Voice, $Contact, $Location;
 
-    public function __construct($message)
+    /** @var  \PDO */
+    private $db;
+
+    public function __construct($message, \PDO $db)
     {
-        $this->User = new User($message['from']);
-        $this->Chat = new Chat($message['chat']);
+        $this->db = $db;
+        $this->User = User::constructFromTelegramUpdate($message['from'], $message['chat'], $this->db);
+        $this->Chat = Chat::constructFromTelegramUpdate($message['chat'], $this->db);
 
         $this->message_id = $message['message_id'];
 
@@ -125,16 +145,23 @@ class Message
             $this->MessageType = new MessageType(MessageType::Forward);
         } elseif (isset($message['new_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::NewChatParticipant);
+            $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $this->db);
         } elseif (isset($message['left_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::LeftChatParticipant);
         } elseif (isset($message['new_chat_title'])) {
             $this->MessageType = new MessageType(MessageType::NewChatTitle);
+            $this->new_chat_title = $message['new_chat_title'];
         } elseif (isset($message['new_chat_photo'])) {
             $this->MessageType = new MessageType(MessageType::NewChatPhoto);
+            $this->new_chat_photo = $message['new_chat_photo'];
         } elseif (isset($message['delete_chat_photo'])) {
             $this->MessageType = new MessageType(MessageType::DeleteChatPhoto);
         } elseif (isset($message['group_chat_created'])) {
             $this->MessageType = new MessageType(MessageType::GroupChatCreated);
+        } elseif (isset($message['supergroup_chat_created'])) {
+            $this->MessageType = new MessageType(MessageType::SuperGroupChatCreated);
+        } elseif (isset($message['channel_chat_created'])) {
+            $this->MessageType = new MessageType(MessageType::ChannelChatCreated);
         } else {
             $this->MessageType = new MessageType(MessageType::Regular);
         }

@@ -10,6 +10,7 @@ namespace GroupBot\Brains\Blackjack\Types;
 
 
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
+use GroupBot\Types\User;
 
 class Player extends \GroupBot\Brains\CardGame\Types\Player
 {
@@ -25,12 +26,11 @@ class Player extends \GroupBot\Brains\CardGame\Types\Player
         return $this->split != 0;
     }
 
-    public function construct($user_id, $user_name, \GroupBot\Brains\CardGame\Types\Hand $hand, \GroupBot\Brains\CardGame\Enums\PlayerState $playerState,
+    public function construct(User $user, \GroupBot\Brains\CardGame\Types\Hand $hand, \GroupBot\Brains\CardGame\Enums\PlayerState $playerState,
                               $player_no, $bet, $free_bet, $id = NULL, $last_move_time = NULL,
                               $split = 0, $no_hits = 0, $no_stands = 0, $no_blackjacks = 0, $no_splits = 0, $no_doubledowns = 0, $no_surrenders = 0)
     {
-        $this->user_id = $user_id;
-        $this->user_name =  $user_name;
+        $this->user= $user;
         $this->Hand = $hand;
         $this->State = $playerState;
         $this->player_no = $player_no;

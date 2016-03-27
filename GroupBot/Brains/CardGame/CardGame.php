@@ -10,18 +10,24 @@ namespace GroupBot\Brains\CardGame;
 
 
 use GroupBot\Brains\CardGame\Enums\PlayerMove;
-use GroupBot\Brains\Coin\Coin;
+use GroupBot\Brains\Coin\Money\Transact;
 use GroupBot\Types\User;
 use GroupBot\Brains\CardGame\Types\Game;
 
 abstract class CardGame
 {
 
-    protected $chat_id, $user_id, $user_name, $bet, $free_bet;
+    protected $chat_id, $bet, $free_bet;
+    /** @var  User */
+    protected $user;
+
+    /** @var \PDO  */
+    protected $db;
+
     /**
-     * @var Coin
+     * @var Transact
      */
-    protected $Coin;
+    protected $Transact;
     /**
      * @var SQL
      */
@@ -42,23 +48,24 @@ abstract class CardGame
 
     /**
      * CardGame constructor.
-     * @param User $User
+     * @param \PDO $db
+     * @param User $user
      * @param $chat_id
      * @param PlayerMove $Move
      * @param $bet
      */
-    public function __construct(User $User, $chat_id, PlayerMove $Move, $bet)
+    public function __construct(\PDO $db, User $user, $chat_id, PlayerMove $Move, $bet)
     {
         $this->chat_id = $chat_id;
-        $this->user_id = $User->id;
-        $this->user_name = $User->first_name;
+        $this->user = $user;
         $this->bet = $bet;
         $this->free_bet = false;
 
-        $this->SQL = $this->newSQL();
-        $this->Talk = $this->newTalk($this->user_name);
-        $this->Coin = new Coin();
-        $this->Bets = new Bets($this->Talk);
+        $this->db = $db;
+        $this->SQL = $this->newSQL($db);
+        $this->Talk = $this->newTalk($this->user->user_name);
+        $this->Transact = new Transact($db);
+        $this->Bets = new Bets($this->Talk, $db);
 
         if (!$this->Game = $this->loadOrCreateGame($Move)) return false;
         $this->processPlayerMove($Move);
@@ -66,9 +73,10 @@ abstract class CardGame
     }
 
     /**
+     * @param \PDO $db
      * @return SQL
      */
-    abstract protected function newSQL();
+    abstract protected function newSQL(\PDO $db);
 
     /**
      * @param $user_name
@@ -93,10 +101,10 @@ abstract class CardGame
             $this->SQL->insert_game($this->chat_id);
             $Game = $this->SQL->select_game($this->chat_id);
             $Game->addDealer();
-            if (!$this->Bets->checkPlayerBet($Game, $this->user_id, $this->bet)) return false;
+            if (!$this->Bets->checkPlayerBet($Game, $this->user, $Game->Dealer->user, $this->bet)) return false;
             $this->bet = $this->Bets->bet;
             $this->free_bet = $this->Bets->free_bet;
-            $player = $Game->addPlayer($this->user_id, $this->user_name, $this->bet, $this->free_bet);
+            $player = $Game->addPlayer($this->user, $this->Bets, $this->bet, $this->free_bet);
             if ($Move == PlayerMove::JoinGame) $this->Talk->join_game($player);
         }
         return $Game;
@@ -111,32 +119,32 @@ abstract class CardGame
         if ($this->Game->isGameStarted())
         {
             $player = $this->Game->getCurrentPlayer();
-            if ($this->Game->getCurrentPlayer()->user_id == $this->user_id
+            if ($this->Game->getCurrentPlayer()->user->user_id == $this->user->user_id
                 && $Move != PlayerMove::JoinGame && $Move != PlayerMove::StartGame) {
                 $this->processTurn($Move);
-            } elseif ($player->user_id != $this->user_id
+            } elseif ($player->user->user_id != $this->user->user_id
                 && strtotime("-5 minutes") > strtotime($player->last_move_time)) {
-                $this->user_id = $player->user_id;
-                $this->user_name = $player->user_name;
+                $this->user->user_id = $player->user->user_id;
+                $this->user->user_name = $player->user->user_name;
                 $this->Talk->turn_expired($player);
                 $this->processTurn($this->newPlayerMove(PlayerMove::DefaultMove));
             } elseif ($Move == PlayerMove::JoinGame || $Move == PlayerMove::StartGame) {
                 $this->Talk->game_status($this->Game);
             }
         }
-        elseif (!$this->Game->isPlayerInGame($this->user_id))
+        elseif (!$this->Game->isPlayerInGame($this->user->user_id))
         {
             if ($Move == PlayerMove::JoinGame ) {
-                if (!$this->Bets->checkPlayerBet($this->Game, $this->user_id, $this->bet)) return false;
+                if (!$this->Bets->checkPlayerBet($this->Game, $this->user, $this->Game->Dealer->user, $this->bet)) return false;
                 $this->bet = $this->Bets->bet;
                 $this->free_bet = $this->Bets->free_bet;
-                $player = $this->Game->addPlayer($this->user_id, $this->user_name, $this->bet, $this->free_bet);
+                $player = $this->Game->addPlayer($this->user, $this->Bets, $this->bet, $this->free_bet);
                 $this->Talk->join_game($player);
             } elseif ($Move == PlayerMove::StartGame) {
-                if (!$this->Bets->checkPlayerBet($this->Game, $this->user_id, $this->bet)) return false;
+                if (!$this->Bets->checkPlayerBet($this->Game, $this->user, $this->Game->Dealer->user, $this->bet)) return false;
                 $this->bet = $this->Bets->bet;
                 $this->free_bet = $this->Bets->free_bet;
-                $this->Game->addPlayer($this->user_id, $this->user_name, $this->bet, $this->free_bet);
+                $this->Game->addPlayer($this->user, $this->Bets, $this->bet, $this->free_bet);
                 $this->Game->startGame();
                 $this->Game->saveGame();
                 $this->Talk->start_game($this->Game);
@@ -146,7 +154,7 @@ abstract class CardGame
                 }
             }
         }
-        elseif ($this->Game->isPlayerInGame($this->user_id))
+        elseif ($this->Game->isPlayerInGame($this->user->user_id))
         {
             if ($Move == PlayerMove::StartGame) {
                 $this->Game->startGame();

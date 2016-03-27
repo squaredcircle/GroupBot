@@ -10,12 +10,13 @@ namespace GroupBot\Brains\Coin\Types;
 
 
 use GroupBot\Brains\Coin\Enums\TransactionType;
+use GroupBot\Types\User;
 
 class Transaction
 {
     public $date, $user_sending, $user_receiving, $amount, $type;
 
-    public function __construct($date, CoinUser $user_sending = NULL, CoinUser $user_receiving = NULL, $amount, TransactionType $type)
+    public function __construct(User $user_sending = NULL, User $user_receiving = NULL, $amount, TransactionType $type, $date = NULL)
     {
         $this->date = $date;
         $this->user_sending = $user_sending;

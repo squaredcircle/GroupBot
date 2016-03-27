@@ -24,4 +24,6 @@ class MessageType extends SplEnum
     const NewChatPhoto = 7;
     const DeleteChatPhoto = 8;
     const GroupChatCreated = 9;
+    const SuperGroupChatCreated = 10;
+    const ChannelChatCreated = 11;
 }

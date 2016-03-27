@@ -18,7 +18,8 @@ class InlineQuery
     public function __construct($query)
     {
         $this->id = $query['id'];
-        $this->from = new User($query['from']);
+        $this->from = new User();
+        $this->from->construct($query['from']);
         $this->query = $query['query'];
         $this->offset = $query['offset'];
         $this->parseQuery();

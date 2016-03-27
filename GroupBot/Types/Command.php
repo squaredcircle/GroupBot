@@ -11,11 +11,16 @@ namespace GroupBot\Types;
 
 class Command
 {
+    /** @var Message  */
     protected $Message;
 
-    public function __construct(Message $message)
+    /** @var \PDO  */
+    protected $db;
+
+    public function __construct(Message $message, \PDO $db)
     {
         $this->Message = $message;
+        $this->db = $db;
     }
 
     public function isParam()
@@ -28,6 +33,10 @@ class Command
         return count(explode(' ', $this->Message->text));
     }
 
+    /**
+     * @param int $no Indexed from 0
+     * @return mixed
+     */
     public function getParam($no = 0)
     {
         return explode(' ', $this->Message->text)[$no];

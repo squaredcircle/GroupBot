@@ -16,6 +16,6 @@ class c_war extends Command
     public function c_war()
     {
         $Move = new PlayerMove(PlayerMove::War);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

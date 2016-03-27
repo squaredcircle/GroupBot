@@ -7,14 +7,14 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
 class t_rate extends Command
 {
     public function t_rate()
     {
-        require(__DIR__ . '/../libraries/dictionary.php');
+        require(__DIR__ . '/../libraries/Dictionary.php');
         Telegram::talk($this->Message->Chat->id, $ratings[mt_rand(0,10)]);
     }
 }

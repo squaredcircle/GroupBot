@@ -15,56 +15,80 @@ class Chat
     public $id;
     public $type;
     public $title;
-    public $user_name;
-    public $first_name;
-    public $last_name;
+    public $messages_sent_last_min;
 
-    public function __construct($chat)
+    public static function constructFromTelegramUpdate($chat_update, \PDO $db)
     {
-        $this->id = $chat['id'];
-        $this->type = $this->determineChatType($chat);
-        $this->title = isset($chat['title']) ? $chat['title'] : NULL;
-        $this->user_name = isset($chat['username']) ? $chat['username'] : NULL;
-        $this->first_name = isset($chat['first_name']) ? $chat['first_name'] : NULL;
-        $this->last_name = isset($chat['last_name']) ? $chat['last_name'] : NULL;
-    }
+        $changed = false;
 
-    private function determineChatType($chat)
-    {
-        if (isset($chat['type'])) {
-            switch ($chat['type']) {
-                case 'private':
-                    return new ChatType(ChatType::Individual);
-                    break;
-                case 'group':
-                    return new ChatType(ChatType::Group);
-                    break;
-                case 'channel':
-                    return new ChatType(ChatType::Channel);
-                    break;
+        $chatSQL = new \GroupBot\Database\Chat($db);
+        if ($chat = $chatSQL->getChatById($chat_update['id'])) {
+            if (strcmp($chat->title, $chat_update['title']) !== 0) {
+                $chat->title = $chat_update['title'];
+                $changed = true;
             }
+            $chat->id = $chat->chat_id;
+            unset($chat->chat_id);
+        } else {
+            $chat = new Chat();
+            $chat->construct(
+                $chat_update['id'],
+                $chat->determineChatType($chat_update),
+                isset($chat_update['title']) ? $chat_update['title'] : NULL,
+                0
+            );
+            $changed = true;
         }
 
-        return NULL;
+        if ($changed) $chatSQL->updateChat($chat);
+        return $chat;
     }
 
-    public function hasUserName()
+    public function construct($id, ChatType $type, $title, $messages_sent_last_min)
     {
-        return isset($this->user_name);
+        $this->id = $id;
+        $this->type = $type;
+        $this->title = $title;
+        $this->messages_sent_last_min = $messages_sent_last_min;
     }
 
-    public function hasFirstName()
+    public function waitBeforeSend()
     {
-        return isset($this->first_name);
+        if ($this->type == ChatType::Group || $this->type == ChatType::SuperGroup) {
+            if ($this->messages_sent_last_min <= 10) return 0;
+            if ($this->messages_sent_last_min <= 14) return 1;
+            if ($this->messages_sent_last_min <= 17) return 2;
+            if ($this->messages_sent_last_min <= 20) return 3;
+        }
+        if ($this->type == ChatType::Individual || $this->type == ChatType::Channel) {
+            if ($this->messages_sent_last_min <= 30) return 0;
+            if ($this->messages_sent_last_min <= 40) return 1;
+            if ($this->messages_sent_last_min <= 50) return 2;
+            if ($this->messages_sent_last_min <= 60) return 3;
+        }
+        return 0;
     }
 
-    public function hasLastName()
+    /**
+     * @param string $chat_type
+     * @return bool|ChatType
+     */
+    private function determineChatType($chat_type)
     {
-        return isset($this->last_name);
-    }
-
-    public function hasFullName()
-    {
-        return ($this->hasFirstName() && $this->hasLastName());
+        switch ($chat_type['type']) {
+            case 'private':
+                return new ChatType(ChatType::Individual);
+                break;
+            case 'group':
+                return new ChatType(ChatType::Group);
+                break;
+            case 'supergroup':
+                return new ChatType(ChatType::SuperGroup);
+                break;
+            case 'channel':
+                return new ChatType(ChatType::Channel);
+                break;
+        }
+        return false;
     }
 }

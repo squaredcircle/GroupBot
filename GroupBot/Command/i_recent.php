@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Brains\Coin\Coin;
 use GroupBot\Types\Command;
 

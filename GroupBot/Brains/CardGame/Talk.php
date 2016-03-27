@@ -11,20 +11,11 @@ namespace GroupBot\Brains\CardGame;
 
 use GroupBot\Brains\CardGame\Types\Game;
 use GroupBot\Brains\CardGame\Types\Player;
-use GroupBot\Brains\Coin\Coin;
 
 abstract class Talk
 {
     protected $Messages = '';
     protected $keyboard = false;
-
-    /** @var Coin  */
-    protected $Coin;
-
-    public function __construct()
-    {
-        $this->Coin = new Coin();
-    }
 
     protected function addMessage($message)
     {
@@ -60,35 +51,35 @@ abstract class Talk
     {
         $out = emoji(0x1F4B0);
         if ($multiplier > 0) {
-            $out .= $Player->user_name . " wins " . ($multiplier * $Player->bet + 0) . " coin!";
+            $out .= $Player->user->user_name . " wins " . ($multiplier * $Player->bet + 0) . " coin!";
         } elseif ($multiplier == 0) {
             if ($Player->free_bet) {
-                $out .= $Player->user_name . " cannot regain a free bet";
+                $out .= $Player->user->user_name . " cannot regain a free bet";
             } else {
-                $out .= $Player->user_name . " regains their bet of " . ($Player->bet + 0);
+                $out .= $Player->user->user_name . " regains their bet of " . ($Player->bet + 0);
             }
         } elseif ($multiplier < 0) {
             $free = $Player->free_bet ? " free " : " ";
-            $out .= $Player->user_name . " loses their" . $free . "bet of " . ($Player->bet + 0);
+            $out .= $Player->user->user_name . " loses their" . $free . "bet of " . ($Player->bet + 0);
         }
 
-        $out .= " (`" . $this->Coin->SQL->GetUserById($Player->user_id)->getBalance() . "`)";
+        $out .= " (`" . $Player->user->getBalance() . "`)";
         $this->addMessage($out);
     }
 
     public function bet_invalid()
     {
-        $this->addMessage(emoji(0x1F44E) . "Please enter a valid bet.");
+        $this->addMessage(emoji(0x1F44E) . " Please enter a valid bet.");
     }
 
     public function bet_invalid_notation()
     {
-        $this->addMessage(emoji(0x1F44E) . "Your bet doesn't make sense. You can use the word `all` in a sensible equation to calculate your bet.");
+        $this->addMessage(emoji(0x1F44E) . " Your bet doesn't make sense. You can use the word `all` in a sensible equation to calculate your bet.");
     }
 
     public function bet_invalid_calculation()
     {
-        $this->addMessage(emoji(0x1F44E) . "Sorry, that calculates to an amount you cannot bet.");
+        $this->addMessage(emoji(0x1F44E) . " Sorry, that calculates to an amount you cannot bet.");
     }
 
     public function bet_mandatory()
@@ -103,12 +94,12 @@ abstract class Talk
 
     public function bet_limit()
     {
-        $this->addMessage(emoji(0x1F449) . "The betting limit per game is " . CASINO_BETTING_MAX . ". Your bet has been adjusted.");
+        $this->addMessage(emoji(0x1F449) . " The betting limit per game is " . CASINO_BETTING_MAX . ". Your bet has been adjusted.");
     }
 
     public function bet_too_high($balance)
     {
-        $out = emoji(0x1F44E) . "You don't have that much Coin to bet.";
+        $out = emoji(0x1F44E) . " You don't have that much Coin to bet.";
         if ($balance < 1) {
             $out .= "\nHowever, " . COIN_TAXATION_BODY . " can give you a free bet of 1 Coin if you wish.";
         }
@@ -117,42 +108,42 @@ abstract class Talk
 
     public function bet_too_high_for_dealer()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
     }
 
     public function bet_calculation($value)
     {
-        $this->addMessage(emoji(0x1F4DD) . "Okay, you've placed a bet of " . $value . " Coin.");
+        $this->addMessage(emoji(0x1F4DD) . " Okay, you've placed a bet of " . $value . " Coin.");
     }
 
-    public function bet_free()
+    public function bet_free($free_bets_today)
     {
-        $this->addMessage("You've got less than 1 Coin in your account, so " . COIN_TAXATION_BODY . " has given you a free bet of 1 Coin. Welcome back!");
+        $this->addMessage("You've less than 1 Coin, so " . COIN_TAXATION_BODY . " has given you a free bet of 1 Coin (*" . (CASINO_DAILY_FREE_BETS  - $free_bets_today - 1) .  "* left today). Welcome back!");
     }
 
     public function bet_free_failed()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
     }
 
     public function bet_free_too_many()
     {
-        $this->addMessage(emoji(0x1F44E) . "Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
+        $this->addMessage(emoji(0x1F44E) . " Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
     }
 
     public function pay_bet_failed_return()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough money to pay you, but it can at least return your bet.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, but it can at least return your bet.");
     }
 
     public function pay_bet_failed()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
     }
 
     public function pay_bet_failed_repay()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
     }
 
 }

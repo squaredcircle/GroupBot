@@ -16,6 +16,6 @@ class b_split extends Command
     public function b_split()
     {
         $Move = new PlayerMove(PlayerMove::Split);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

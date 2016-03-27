@@ -8,10 +8,11 @@
 namespace GroupBot\Command;
 
 use GroupBot\Base\Logging;
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Brains\Blackjack\Database\Control;
 use GroupBot\Brains\Blackjack\SQL;
 use GroupBot\Brains\Coin\Coin;
+use GroupBot\Brains\Level\Level;
 use GroupBot\Types\Command;
 
 class t_stats extends Command
@@ -30,6 +31,7 @@ class t_stats extends Command
         $Coin = new Coin();
         $BlackjackSQL = new SQL();
         $CasinowarSQL = new \GroupBot\Brains\Casinowar\SQL();
+        $Level = new Level();
 
         if ($this->isParam()) {
             $user_id = $log->checkIfUserIsLogged($this->getParam());
@@ -44,6 +46,8 @@ class t_stats extends Command
         $log = $log->getAllUserLogsForChat($user_id);
         $bj_stats = $BlackjackSQL->select_player_stats($user_id);
         $cw_stats = $CasinowarSQL->select_player_stats($user_id);
+        $level = $Level->SQL->get_level($user_id);
+        $level_title = $Level->getTitle($level);
         $CoinUser = $Coin->SQL->GetUserById($user_id);
 
         $date = 0;
@@ -55,7 +59,8 @@ class t_stats extends Command
         }
         if (!isset($last_cmd)) return false;
 
-        $out = emoji(0x1F4C8) . "*" . $this->Message->Chat->title . "* stats for *" .$log->User->first_name . " " . $log->User->last_name . "*."
+        $out = emoji(0x1F4C8) . "*" . $this->Message->Chat->title . "* stats for "
+            . "\n*" .$log->User->first_name . " " . $log->User->last_name . "*, the Level *$level* $level_title"
             . "\n`   `•` " . $log->posts_today . "` message" . $this->plural_grammar($log->posts_today) . " sent today"
             . "\n`   `•` " . $log->posts       . "` message" . $this->plural_grammar($log->posts)       . " sent ever"
             . "\n`   `•` " . round(86400 * $log->posts / (strtotime("now") - strtotime("2015-11-19 11:00:00")), 0) . "` messages sent per day, on average"

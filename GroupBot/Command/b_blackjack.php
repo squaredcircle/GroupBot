@@ -24,6 +24,6 @@ class b_blackjack extends Command
         }
 
         $bet = $this->isParam() ? $this->getAllParams() : 0;
-        return Telegram::getResponse($this->Message, $Move, $bet);
+        return Telegram::getResponse($this->db, $this->Message, $Move, $bet);
     }
 }

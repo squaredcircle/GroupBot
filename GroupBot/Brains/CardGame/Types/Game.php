@@ -9,8 +9,10 @@
 namespace GroupBot\Brains\CardGame\Types;
 
 
+use GroupBot\Brains\CardGame\Bets;
 use GroupBot\Brains\CardGame\Enums\GameType;
 use GroupBot\Brains\CardGame\SQL;
+use GroupBot\Types\User;
 
 abstract class Game
 {
@@ -41,14 +43,16 @@ abstract class Game
 
     /**
      * Game constructor.
+     * @param \PDO $db
+     * @param GameType $gameType
      * @param $chat_id
      * @param $game_id
      * @param $turn
      * @param Player[]|NULL $Players
      */
-    public function __construct(GameType $gameType, $chat_id, $game_id, $turn, $Players = NULL)
+    public function __construct(\PDO $db, GameType $gameType, $chat_id, $game_id, $turn, $Players = NULL)
     {
-        $this->SQL = $this->newSQL();
+        $this->SQL = $this->newSQL($db);
         $this->GameType = $gameType;
 
         $this->betting_pool = 0;
@@ -58,7 +62,7 @@ abstract class Game
         $this->turn = $turn;
         if (isset($Players) && $Players) {
             foreach ($Players as $key => $player) {
-                if ($player->user_id == '0') {
+                if ($player->user->user_id == '-1') {
                     $this->Dealer = $player;
                     unset($Players[$key]);
                 }
@@ -84,7 +88,7 @@ abstract class Game
     public function isPlayerInGame($user_id)
     {
         foreach ($this->Players as $Player) {
-            if ($Player->user_id == $user_id) return true;
+            if ($Player->user->user_id == $user_id) return true;
         }
         return false;
     }
@@ -99,7 +103,7 @@ abstract class Game
 
     /**
      * @param $no
-     * @return Player
+     * @return Player|bool
      */
     public function getPlayer($no)
     {
@@ -108,6 +112,7 @@ abstract class Game
                 return $Player;
             }
         }
+        return false;
     }
 
     /**
@@ -134,13 +139,13 @@ abstract class Game
     abstract public function addDealer();
 
     /**
-     * @param $user_id
-     * @param $user_name
+     * @param User $user
+     * @param Bets $bets
      * @param $bet
      * @param $free_bet
-     * @return Player|bool
+     * @return bool|Player
      */
-    abstract public function addPlayer($user_id, $user_name, $bet, $free_bet);
+    abstract public function addPlayer(User $user, Bets $bets, $bet, $free_bet);
 
     /**
      * @param Player|NULL $Player
@@ -187,9 +192,10 @@ abstract class Game
     }
 
     /**
+     * @param \PDO $db
      * @return SQL
      */
-    abstract protected function newSQL();
+    abstract protected function newSQL(\PDO $db);
 
     /**
      * @return Hand

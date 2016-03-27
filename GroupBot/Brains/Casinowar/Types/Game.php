@@ -73,7 +73,7 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
     {
         if (!$this->isGameStarted()) {
             $Player = new Player();
-            $Player->construct('0', 'Dealer', new Hand(), new PlayerState(PlayerState::Dealer), -1, 0, false);
+            $Player->construct('-1', 'Dealer', new Hand(), new PlayerState(PlayerState::Dealer), -1, 0, false);
             $Player->Hand->addCard($this->Deck->dealCard());
             $this->Dealer = $Player;
             $this->SQL->insert_player($this->game_id, $Player);
@@ -112,6 +112,7 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
                 new TransactionType(TransactionType::CasinoWarBet)
             ));
 
+            $Player->bet = round($bet, 2);
             return $Player;
         }
         return false;

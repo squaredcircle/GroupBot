@@ -49,7 +49,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                 case PlayerState::Surrender | PlayerState::SurrenderForced:
                     $state = "Surrender";
                     break;
-                case PlayerState::WarVictory | PlayerState::WarLose:
+                case PlayerState::WarVictory | PlayerState::War:
                     $state = "War";
                     break;
                 case PlayerState::Join:
@@ -61,7 +61,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             }
             $out .= "\n" . $player->user_name . ": " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
         }
-        $out .= "\n" .  emoji(0x1F449) . "It is now *" . $game->getCurrentPlayer()->user_name . "'s* turn.";
+        $out .= "\n" .  emoji(0x1F449) . " It is now *" . $game->getCurrentPlayer()->user_name . "'s* turn.";
         $this->addMessage($out);
     }
 
@@ -113,12 +113,12 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function surrender_free(Player $player)
     {
-        $this->addMessage(emoji(0x1F4B0) . $player->user_name . " surrenders! However, as they're on a free bet, they receive no Coin.");
+        $this->addMessage(emoji(0x1F4B0) . " " . $player->user_name . " surrenders! However, as they're on a free bet, they receive no Coin.");
     }
 
     public function surrender(Player $player)
     {
-        $out = emoji(0x1F4B0) . $player->user_name . " surrenders! The dealer returns half their bet ";
+        $out = emoji(0x1F4B0) . " " . $player->user_name . " surrenders! The dealer returns half their bet ";
         $out .= " (`" . $this->Coin->SQL->GetUserById($player->user_id)->getBalance() . "`)";
         $this->addMessage($out);
     }
@@ -140,16 +140,16 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function war_free_bet()
     {
-        $this->addMessage(emoji(0x1F44E) . "Sorry, you don't have enough Coin to go to war. \nYou automatically surrender instead.");
+        $this->addMessage(emoji(0x1F44E) . " Sorry, you don't have enough Coin to go to war. \nYou automatically surrender instead.");
     }
 
     public function war_not_enough_money()
     {
-        $this->addMessage(emoji(0x1F44E) . "Sorry, you don't have enough Coin to go to war. \nYou automatically surrender instead.");
+        $this->addMessage(emoji(0x1F44E) . " Sorry, you don't have enough Coin to go to war. \nYou automatically surrender instead.");
     }
 
     public function war_dealer_not_enough_money()
     {
-        $this->addMessage(emoji(0x1F44E) . COIN_TAXATION_BODY . " doesn't have enough Coin to accept a war bet, sorry. \nYou automatically surrender instead.");
+        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough Coin to accept a war bet, sorry. \nYou automatically surrender instead.");
     }
 }

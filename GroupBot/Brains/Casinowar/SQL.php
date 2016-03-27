@@ -11,9 +11,7 @@ namespace GroupBot\Brains\Casinowar;
 
 use GroupBot\Brains\CardGame\Enums\GameResult;
 use GroupBot\Brains\CardGame\Enums\GameType;
-use GroupBot\Brains\Casinowar\Enums\PlayerState;
 use GroupBot\Brains\Casinowar\Types\Game;
-use GroupBot\Brains\Casinowar\Types\Hand;
 use GroupBot\Brains\Casinowar\Types\Player;
 use GroupBot\Brains\Casinowar\Types\Stats;
 

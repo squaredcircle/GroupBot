@@ -9,7 +9,7 @@ use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
 use GroupBot\Brains\CardGame\CardGame;
 use GroupBot\Brains\Coin\Enums\TransactionType;
-use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\Brains\Coin\Types\BankTransaction;
 
 class Blackjack extends CardGame
 {
@@ -24,7 +24,7 @@ class Blackjack extends CardGame
     {
         /** @var Player $Player */
         $Player = $this->Game->getCurrentPlayer();
-        $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
+        $bank = $this->Transact->UserSQL->getUserFromId(COIN_BANK_ID);
 
         if ($Player->State == PlayerState::BlackJack) {
             $Player->no_blackjacks++;
@@ -43,11 +43,10 @@ class Blackjack extends CardGame
                     $this->Talk->hit($Player);
                     break;
                 case PlayerMove::DoubleDown:
-                    $balance = $this->Coin->SQL->GetUserById($this->user_id)->getBalance();
-                    if ($balance > $Player->bet) {
-                        if ($TaxationBody->getBalance() > $this->Game->betting_pool + $Player->bet) {
-                            $this->Coin->Transact->performTransaction(new Transaction(
-                                NULL, $this->Coin->SQL->GetUserById($Player->user_id), $TaxationBody, $Player->bet, new TransactionType(TransactionType::BlackjackBet)
+                    if ($this->user->getBalance()> $Player->bet) {
+                        if ($bank->getBalance() > $this->Game->betting_pool + $Player->bet) {
+                            $this->Transact->transactToBank(new BankTransaction(
+                                $this->user, $Player->bet, new TransactionType(TransactionType::BlackjackBet)
                             ));
                             $Player->bet = $Player->bet * 2;
                             $Player->Hand->addCard($this->Game->Deck->dealCard());
@@ -69,9 +68,9 @@ class Blackjack extends CardGame
                         return false;
                     } elseif ($Player->Hand->canSplit()) {
                         if ($Player->split == 0) {
-                            if ($TaxationBody->getBalance() > $Player->bet) {
-                                if ($TaxationBody->getBalance() > $this->Game->betting_pool + $Player->bet) {
-                                    $this->Game->addPlayer($this->user_id, $this->user_name, $Player->bet, false, 2);
+                            if ($bank->getBalance() > $Player->bet) {
+                                if ($bank->getBalance() > $this->Game->betting_pool + $Player->bet) {
+                                    $this->Game->addPlayer($this->user, $this->Bets, $Player->bet, false, 2);
                                     $Player->Hand->addCard($this->Game->Deck->dealCard());
                                     $this->setPlayerState(PlayerState::Hit);
                                     $Player->split = 1;
@@ -162,50 +161,51 @@ class Blackjack extends CardGame
             if ($Player->State == PlayerState::Stand)
             {
                 if ($Dealer->Hand->isBust()) {
-                    $this->Bets->payPlayer($Player, 1.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, 1.0);
                 } elseif ($Dealer->Hand->isBlackjack() || $Dealer->Hand->isTwentyOne()) {
-                    $this->Bets->payPlayer($Player, -1.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, -1.0);
                 } else {
                     if ($Player->Hand->Value > $Dealer->Hand->Value) {
-                        $this->Bets->payPlayer($Player, 1.0);
+                        $this->Bets->payPlayer($Player, $Dealer->user, 1.0);
                     } elseif ($Player->Hand->Value == $Dealer->Hand->Value) {
-                        $this->Bets->payPlayer($Player, 0.0);
+                        $this->Bets->payPlayer($Player, $Dealer->user, 0.0);
                     }  elseif ($Player->Hand->Value < $Dealer->Hand->Value) {
-                        $this->Bets->payPlayer($Player, -1.0);
+                        $this->Bets->payPlayer($Player, $Dealer->user, -1.0);
                     }
                 }
             }
             elseif ($Player->State == PlayerState::Bust)
             {
-                $this->Bets->payPlayer($Player, -1.0);
+                $this->Bets->payPlayer($Player, $Dealer->user, -1.0);
             }
             elseif ($Player->State == PlayerState::TwentyOne)
             {
                 if ($Dealer->Hand->isBlackjack()) {
-                    $this->Bets->payPlayer($Player, -1.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, -1.0);
                 } elseif ($Dealer->Hand->isTwentyOne()) {
-                    $this->Bets->payPlayer($Player, 0.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, 0.0);
                 } else {
-                    $this->Bets->payPlayer($Player, 1.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, 1.0);
                 }
             }
             elseif ($Player->State == PlayerState::BlackJack)
             {
                 if ($Dealer->Hand->isBlackjack()) {
-                    $this->Bets->payPlayer($Player, 0.0);
+                    $this->Bets->payPlayer($Player, $Dealer->user, 0.0);
                 } else {
-                    $this->Bets->payPlayer($Player, 1.5);
+                    $this->Bets->payPlayer($Player, $Dealer->user, 1.5);
                 }
             }
         }
     }
 
     /**
-     * @return \GroupBot\Brains\Blackjack\SQL
+     * @param \PDO $db
+     * @return SQL
      */
-    protected function newSQL()
+    protected function newSQL(\PDO $db)
     {
-        return new SQL();
+        return new SQL($db);
     }
 
     /**
@@ -214,7 +214,7 @@ class Blackjack extends CardGame
      */
     protected function newTalk($user_name)
     {
-        return new Talk($this->user_name);
+        return new Talk();
     }
 
     /**

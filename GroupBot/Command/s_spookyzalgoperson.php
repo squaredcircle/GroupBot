@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Brains\Zalgo;
 use GroupBot\Enums\ChatType;
 use GroupBot\Types\Command;

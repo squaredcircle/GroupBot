@@ -16,6 +16,6 @@ class b_doubledown extends Command
     public function b_doubledown()
     {
         $Move = new PlayerMove(PlayerMove::DoubleDown);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

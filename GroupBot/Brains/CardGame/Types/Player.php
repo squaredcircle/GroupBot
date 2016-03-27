@@ -11,16 +11,17 @@ namespace GroupBot\Brains\CardGame\Types;
 
 use GroupBot\Brains\CardGame\Enums\GameResult;
 use GroupBot\Brains\CardGame\Enums\PlayerState;
+use GroupBot\Types\User;
 
 abstract class Player
 {
     public $id;
-    public $user_id;
-    public $user_name;
+
+    /** @var  User */
+    public $user;
+
     /** @var Hand  */
     public $Hand;
-    /** @var PlayerState  */
-    public $State;
 
     protected $cards;
     protected $state;
@@ -34,6 +35,9 @@ abstract class Player
     public $game_result;
     public $last_move_time;
 
+    /** @var PlayerState  */
+    public $State;
+
     public function __construct()
     {
         if (!isset($this->Hand) && isset($this->cards)) {
@@ -44,7 +48,7 @@ abstract class Player
             $this->State = $this->newPlayerState($this->state);
     }
 
-    abstract public function construct($user_id, $user_name, Hand $hand, PlayerState $playerState, $player_no, $bet, $free_bet, $id = NULL, $last_move_time = NULL);
+    abstract public function construct(User $user, Hand $hand, PlayerState $playerState, $player_no, $bet, $free_bet, $id = NULL, $last_move_time = NULL);
 
     /**
      * @return Hand

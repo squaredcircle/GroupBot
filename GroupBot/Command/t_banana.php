@@ -16,6 +16,6 @@ class t_banana extends Command
     public function t_banana()
     {
         $local_path = random_pic(BANANA_DIR);
-        PhotoCache::SendPhotoByPath($local_path, $this->Message->Chat->id);
+        PhotoCache::SendPhotoByPath($this->db, $local_path, $this->Message->Chat->id);
     }
 }

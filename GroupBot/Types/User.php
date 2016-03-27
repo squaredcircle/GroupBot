@@ -9,38 +9,95 @@
 namespace GroupBot\Types;
 
 
+use GroupBot\Telegram;
+use GroupBot\Libraries\Dictionary;
+
 class User
 {
-    public $id;
-    public $user_name;
+    public $user_id;
     public $first_name;
+    public $user_name;
     public $last_name;
 
-    public function __construct($user)
+    public $balance;
+    public $level;
+    public $last_activity;
+
+    public $received_income_today;
+    public $free_bets_today;
+
+    public static function constructFromTelegramUpdate($user_update, $chat, \PDO $db)
     {
-        $this->id = $user['id'];
-        $this->user_name = isset($user['username']) ? $user['username'] : NULL;
-        $this->last_name = isset($user['last_name']) ? $user['last_name'] : NULL;
-        $this->first_name = $user['first_name'];
+        $changed = false;
+
+        $userSQL = new \GroupBot\Database\User($db);
+        if ($user = $userSQL->getUserFromId($user_update['id'])) {
+            if (isset($user_update['first_name']) &&strcmp($user->first_name, $user_update['first_name']) !== 0) {
+                $user->first_name = $user_update['first_name'];
+                $changed = true;
+            }
+            if (isset($user_update['username']) && strcmp($user->user_name, $user_update['username']) !== 0) {
+                $user->user_name = $user_update['username'];
+                $changed = true;
+            }
+            if (isset($user_update['last_name']) && strcmp($user->last_name, $user_update['last_name']) !== 0) {
+                $user->last_name = $user_update['last_name'];
+                $changed = true;
+            }
+        } else {
+            $user = new User();
+            $user->construct($user_update['id'], $user_update['first_name'], $user_update['last_name'], $user_update['username']);
+            Telegram::talkForced($chat['id'], emoji(0x1F4EF) . "*" . $user->getName(). "*, you have risen from squalor to become a *Level 1 " . $user->getTitle() . "*. You find " . $user->getBalance() . " `" . COIN_CURRENCY_NAME . "` in a money bag on your person.\nBest of luck, brave traveller. Use /help to get started.");
+            $changed = true;
+        }
+        if ($changed) $user->save($db);
+        return $user;
     }
 
-    public function hasUserName()
+    public function construct($user_id, $first_name, $last_name = NULL, $user_name = NULL, $balance = 0, $level = 1, $last_activity = NULL, $received_income_today = 0, $free_bets_today = 0)
     {
-        return isset($this->user_name);
+        $this->user_id = $user_id;
+        $this->first_name = $first_name;
+        $this->last_name = $last_name;
+        $this->user_name = $user_name;
+        $this->balance = $balance;
+        $this->level = $level;
+        $this->last_activity = $last_activity;
+        $this->received_income_today = $received_income_today;
+        $this->free_bets_today = $free_bets_today;
     }
 
-    private function hasFirstName()
+    public function save(\PDO $db)
     {
-        return isset($this->first_name);
+        $userSQL = new \GroupBot\Database\User($db);
+        return $userSQL->updateUser($this);
     }
 
-    public function hasLastName()
+    public function getName()
     {
-        return isset($this->last_name);
+        if (isset($this->user_name)) return $this->user_name;
+        if (isset($this->last_name)) return $this->first_name . " " . $this->last_name;
+        return $this->first_name;
     }
 
-    public function hasFullName()
+    public function getBalance($high_precision = false)
     {
-        return ($this->hasFirstName() && $this->hasLastName());
+        return $high_precision ? $this->balance : round($this->balance, 2);
+    }
+
+    public function getTitle()
+    {
+        $dict = new Dictionary();
+
+        if ($this->level > count($dict->level_titles)) {
+            return end($dict->level_titles);
+        } else {
+            return $dict->level_titles[$this->level];
+        }
+    }
+
+    public function getNameLevelAndTitle()
+    {
+        return "*" . $this->getName() . "*, the *Level " . $this->level . " " . $this->getTitle() . "*";
     }
 }

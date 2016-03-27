@@ -10,11 +10,11 @@ namespace GroupBot\Brains\Blackjack\Types;
 
 
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
+use GroupBot\Brains\CardGame\Bets;
 use GroupBot\Brains\CardGame\SQL;
 use GroupBot\Brains\CardGame\Types\Deck;
-use GroupBot\Brains\Coin\Coin;
 use GroupBot\Brains\Coin\Enums\TransactionType;
-use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\Types\User;
 
 class Game extends \GroupBot\Brains\CardGame\Types\Game
 {
@@ -54,7 +54,9 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
     {
         if (!$this->isGameStarted()) {
             $Player = new Player();
-            $Player->construct('0', 'Dealer', new Hand(), new PlayerState(PlayerState::Dealer), -1, 0, false);
+            $Dealer = new User();
+            $Dealer->construct('-1', 'Dealer', '', 'Dealer');
+            $Player->construct($Dealer, new Hand(), new PlayerState(PlayerState::Dealer), -1, 0, false);
             $Player->Hand->addCard($this->Deck->dealCard());
             $this->Dealer = $Player;
             $this->SQL->insert_player($this->game_id, $Player);
@@ -64,20 +66,18 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
     }
 
     /**
-     * @param $user_id
-     * @param $user_name
+     * @param User $user
+     * @param Bets $bets
      * @param $bet
      * @param $free_bet
      * @param int $split
      * @return bool|Player
      */
-    public function addPlayer($user_id, $user_name, $bet, $free_bet, $split = 0)
+    public function addPlayer(User $user, Bets $bets, $bet, $free_bet, $split = 0)
     {
-        $Coin = new Coin();
-
         if (!$this->isGameStarted()) {
             $Player = new Player();
-            $Player->construct($user_id, $user_name, new Hand(), new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet, $free_bet, NULL, NULL, $split);
+            $Player->construct($user, new Hand(), new PlayerState(PlayerState::Join), $this->getNumberOfPlayers(), $bet, $free_bet, NULL, NULL, $split);
             $Player->Hand->addCard($this->Deck->dealCard());
             $Player->Hand->addCard($this->Deck->dealCard());
 
@@ -86,13 +86,8 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
             $this->Players[] = $Player;
             $this->SQL->insert_player($this->game_id, $Player);
 
-            if ($bet > 0 && !$free_bet) $Coin->Transact->performTransaction(new Transaction(
-                NULL,
-                $Coin->SQL->GetUserById($Player->user_id),
-                $Coin->SQL->GetUserByName(COIN_TAXATION_BODY),
-                abs($bet),
-                new TransactionType(TransactionType::BlackjackBet)
-            ));
+            if ($bet > 0 && !$free_bet) $bets->payBank($Player, new TransactionType(TransactionType::BlackjackBet));
+            $Player->bet = round($bet, 2);
 
             return $Player;
         } elseif ($split == 2) {
@@ -103,7 +98,7 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
                 }
             }
             $Player = new Player();
-            $Player->construct($user_id, $user_name, new Hand(), new PlayerState(PlayerState::Join), $this->getCurrentPlayer()->player_no + 1, $bet, $free_bet, NULL, NULL, 2);
+            $Player->construct($user, new Hand(), new PlayerState(PlayerState::Join), $this->getCurrentPlayer()->player_no + 1, $bet, $free_bet, NULL, NULL, 2);
 
             $Card = $this->getCurrentPlayer()->Hand->Cards[1];
             $this->getCurrentPlayer()->Hand->removeCard($Card);
@@ -114,13 +109,8 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
             $this->Players[] = $Player;
             $this->SQL->insert_player($this->game_id, $Player);
 
-            if ($bet > 0) $Coin->Transact->performTransaction(new Transaction(
-                NULL,
-                $Coin->SQL->GetUserById($Player->user_id),
-                $Coin->SQL->GetUserByName(COIN_TAXATION_BODY),
-                abs($bet),
-                new TransactionType(TransactionType::BlackjackBet)
-            ));
+            if ($bet > 0) $bets->payBank($Player, new TransactionType(TransactionType::BlackjackBet));
+            $Player->bet = round($bet, 2);
 
             return $Player;
         }
@@ -128,11 +118,12 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
     }
 
     /**
+     * @param \PDO $db
      * @return SQL
      */
-    protected function newSQL()
+    protected function newSQL(\PDO $db)
     {
-        return new \GroupBot\Brains\Blackjack\SQL();
+        return new \GroupBot\Brains\Blackjack\SQL($db);
     }
 
     /**

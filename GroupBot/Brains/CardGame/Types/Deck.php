@@ -56,7 +56,7 @@ abstract class Deck
         $ranks  = ['A', 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K'];
         $suits = ['♠', '♥', '♦', '♣'];
 
-        return $this->newCard('2', '♣');
+        //return $this->newCard('2', '♣');
 
         if ($this->Hand->hasCards()) {
             do {

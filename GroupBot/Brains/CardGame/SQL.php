@@ -9,27 +9,13 @@
 namespace GroupBot\Brains\CardGame;
 
 
-use GroupBot\Base\DbControl;
 use GroupBot\Brains\CardGame\Types\Game;
 use GroupBot\Brains\CardGame\Types\Player;
 use GroupBot\Brains\CardGame\Types\Stats;
+use GroupBot\Database\DbConnection;
 
-abstract class SQL
+abstract class SQL extends DbConnection
 {
-    /**
-     * @var \PDO
-     */
-    protected $db;
-
-    /**
-     * SQL constructor.
-     */
-    public function __construct()
-    {
-        $DbControl = new DbControl();
-        $this->db = $DbControl->getObject();
-    }
-
     /**
      * @param $chat_id
      * @return bool

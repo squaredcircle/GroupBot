@@ -17,7 +17,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 {
     public function turn_expired(\GroupBot\Brains\CardGame\Types\Player $player)
     {
-        $this->addMessage(emoji(0x231B) . " " . $player->user_name . " hasn't made a move in over 5 minutes. They automatically stand.");
+        $this->addMessage(emoji(0x231B) . " " . $player->user->user_name . " hasn't made a move in over 5 minutes. They automatically stand.");
     }
 
     /**
@@ -27,7 +27,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
     {
         $out = emoji(0x1F4E2) . " Waiting for players to join the game.\nCurrent players: ";
         foreach ($game->Players as $player) {
-            $out .= "*" . $player->user_name . "*, ";
+            $out .= "*" . $player->user->user_name . "*, ";
         }
         $out = substr($out, 0, -2);
         $out .= "\nOther players can join with /blackjack, or you can start the game with /bjstart";
@@ -68,15 +68,15 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                     $state = "";
                     break;
             }
-            $out .= "\n" . $player->user_name . ": " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
+            $out .= "\n" . $player->user->user_name . ": " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
         }
-        $out .= "\n" .  emoji(0x1F449) . "It is now *" . $game->getCurrentPlayer()->user_name . "'s* turn.";
+        $out .= "\n" .  emoji(0x1F449) . "It is now *" . $game->getCurrentPlayer()->user->user_name . "'s* turn.";
         $this->addMessage($out);
     }
 
     public function join_game(\GroupBot\Brains\CardGame\Types\Player $player)
     {
-        $out = emoji(0x1F4B0) . " " . $player->user_name . " has joined the game";
+        $out = emoji(0x1F4B0) . " " . $player->user->user_name . " has joined the game";
         if ($player->bet > 0) {
             $out .= " with a bet of " . $player->bet . " coin.";
         } else {
@@ -98,18 +98,18 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
         $this->addMessage("The dealer draws " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         foreach ($Game->Players as $Player) {
-            $this->addMessage($Player->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
+            $this->addMessage($Player->user->user_name . " has " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
         }
         foreach ($Game->Players as $Player) {
             if ($Player->Hand->isBlackjack()) {
-                $this->addMessage($Player->user_name . " has blackjack! They stand.");
+                $this->addMessage($Player->user->user_name . " has blackjack! They stand.");
                 $Player->no_blackjacks++;
             }
         }
 
         if (!$Game->areAllPlayersDone()) {
             if ($Game->getNumberOfPlayers() > 1) {
-                $this->addMessage($Game->getCurrentPlayer()->user_name . " goes first.");
+                $this->addMessage($Game->getCurrentPlayer()->user->user_name . " goes first.");
             } else {
                 $this->addMessage("Please place your move.");
             }
@@ -119,12 +119,12 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function stand(Player $player)
     {
-        $this->addMessage(emoji(0x1F44C) . " " . $player->user_name . " stands.");
+        $this->addMessage(emoji(0x1F44C) . " " . $player->user->user_name . " stands.");
     }
 
     public function blackjack(Player $player)
     {
-        $this->addMessage($player->user_name . " has blackjack!");
+        $this->addMessage($player->user->user_name . " has blackjack!");
     }
 
     /**
@@ -151,24 +151,24 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
     private function player_state(Player $Player)
     {
         if ($Player->State == PlayerState::Stand) {
-            $this->addMessage($Player->user_name . " stands.");
+            $this->addMessage($Player->user->user_name . " stands.");
         } elseif ($Player->State == PlayerState::Bust) {
-            $this->addMessage($Player->user_name . " is bust.");
+            $this->addMessage($Player->user->user_name . " is bust.");
         } elseif ($Player->State == PlayerState::TwentyOne) {
-            $this->addMessage($Player->user_name . " has twenty one! " . $Player->user_name . " stands.");
+            $this->addMessage($Player->user->user_name . " has twenty one! " . $Player->user->user_name . " stands.");
         }
     }
 
     public function hit(Player $Player)
     {
-        $this->addMessage(emoji(0x1F44C) . " " . $Player->user_name . " hits.");
-        $this->addMessage($Player->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
+        $this->addMessage(emoji(0x1F44C) . " " . $Player->user->user_name . " hits.");
+        $this->addMessage($Player->user->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
         $this->player_state($Player);
     }
 
     public function split(\GroupBot\Brains\CardGame\Types\Player $Player1, \GroupBot\Brains\CardGame\Types\Player $Player2)
     {
-        $this->addMessage(emoji(0x1F44C) . " " . $Player1->user_name . " has split their hand into two and matched their bet of " . ($Player1->bet + 0) . ". The dealer has dealt them one new card per hand.");
+        $this->addMessage(emoji(0x1F44C) . " " . $Player1->user->user_name . " has split their hand into two and matched their bet of " . ($Player1->bet + 0) . ". The dealer has dealt them one new card per hand.");
         $this->addMessage("Hand 1: " . $Player1->Hand->getHandString() . " (" . $Player1->Hand->Value . ")");
         $this->addMessage("Hand 2: " . $Player2->Hand->getHandString() . " (" . $Player2->Hand->Value . ")");
     }
@@ -190,7 +190,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function split_not_enough_money(Player $Player)
     {
-        $this->addMessage(emoji(0x1F44E) . $Player->user_name . ", you don't have enough money to split");
+        $this->addMessage(emoji(0x1F44E) . $Player->user->user_name . ", you don't have enough money to split");
     }
 
     public function split_only_once()
@@ -200,8 +200,8 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function surrender(Player $player)
     {
-        $out = $player->user_name . " surrenders! The dealer returns half their bet. ";
-        $out .= " (`" . $this->Coin->SQL->GetUserById($player->user_id)->getBalance() . "`)";
+        $out = $player->user->user_name . " surrenders! The dealer returns half their bet. ";
+        $out .= " (`" . $player->user->getBalance() . "`)";
         $this->addMessage($out);
     }
 
@@ -212,20 +212,20 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 
     public function surrender_free(Player $Player)
     {
-        $this->addMessage($Player->user_name . " surrenders! However, as they're on a free bet, they receive no Coin.");
+        $this->addMessage($Player->user->user_name . " surrenders! However, as they're on a free bet, they receive no Coin.");
     }
 
     public function double_down(Player $Player)
     {
-        $this->addMessage(emoji(0x1F44C) . " " . $Player->user_name . " doubles down, doubling their bet to " . ($Player->bet + 0) . ".");
-        $this->addMessage($Player->user_name . " is dealt another card.");
-        $this->addMessage($Player->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
+        $this->addMessage(emoji(0x1F44C) . " " . $Player->user->user_name . " doubles down, doubling their bet to " . ($Player->bet + 0) . ".");
+        $this->addMessage($Player->user->user_name . " is dealt another card.");
+        $this->addMessage($Player->user->user_name . "'s cards: " . $Player->Hand->getHandString() . " (" . $Player->Hand->Value . ")");
         $this->player_state($Player);
     }
 
     public function double_down_not_enough_money(Player $Player)
     {
-        $this->addMessage(emoji(0x1F44E) . $Player->user_name . ", you don't have enough money to double down.");
+        $this->addMessage(emoji(0x1F44E) . $Player->user->user_name . ", you don't have enough money to double down.");
     }
 
     public function double_down_dealer_not_enough_money()
@@ -242,13 +242,13 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         $Player = $Game->getCurrentPlayer();
 
         if ($Player->State == PlayerState::Join && $Player->player_no != 0) {
-            $this->addMessage($Player->user_name . "'s hand: " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
+            $this->addMessage($Player->user->user_name . "'s hand: " . $Player->Hand->getHandString()  . " (" . $Player->Hand->Value . ")");
         }
         if (!($Player->State == PlayerState::Join && $Player->player_no == 0)) {
             $this->addMessage("Dealer's hand: " . $Game->Dealer->Hand->getHandString()  . " (" . $Game->Dealer->Hand->Value . ")");
         }
         if ($Game->getNumberOfPlayers() > 1) {
-            $out = "It is now " . $Player->user_name . "'s turn";
+            $out = "It is now " . $Player->user->user_name . "'s turn";
             if ($Player->split == 1) {
                 $out .= " (hand one)";
             } elseif ($Player->split == 2) {

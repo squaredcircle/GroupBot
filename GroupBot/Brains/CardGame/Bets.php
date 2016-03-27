@@ -9,70 +9,37 @@
 namespace GroupBot\Brains\CardGame;
 
 
-use GroupBot\Base\DbControl;
 use GroupBot\Brains\CardGame\Enums\GameResult;
 use GroupBot\Brains\CardGame\Enums\GameType;
 use GroupBot\Brains\CardGame\Types\Game;
 use GroupBot\Brains\CardGame\Types\Player;
-use GroupBot\Brains\Coin\Coin;
 use GroupBot\Brains\Coin\Enums\TransactionType;
-use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\Brains\Coin\Money\Transact;
+use GroupBot\Brains\Coin\Types\BankTransaction;
 use GroupBot\libraries\eos\Parser;
+use GroupBot\Types\User;
 
 class Bets
 {
-    private $Coin, $db, $Talk;
+    private $Transact, $db, $Talk;
     public $bet, $free_bet;
 
-    public function __construct(Talk $Talk)
+    public function __construct(Talk $Talk, \PDO $db)
     {
+        $this->Transact = new Transact($db);
         $this->free_bet = false;
         $this->Talk = $Talk;
-        $this->Coin = new Coin();
-        $DbControl = new DbControl();
-        $this->db = $DbControl->getObject();
-    }
-
-    /**
-     * @param $user_id
-     * @return int
-     */
-    private function getFreeBetsToday($user_id)
-    {
-        $sql = 'SELECT free_bets_today FROM casino WHERE user_id = :user_id';
-
-        $query = $this->db->prepare($sql);
-        $query->bindValue(':user_id', $user_id);
-
-        $query->execute();
-
-        if ($query->rowCount()) {
-            return $query->fetch()['free_bets_today'];
-        }
-        return 0;
-    }
-
-    private function incrementFreeBetsToday($user_id, $free_bets_today)
-    {
-        $sql = 'INSERT INTO casino (user_id, free_bets_today)
-                VALUES (:user_id, :free_bets_today)
-                ON DUPLICATE KEY UPDATE
-                  free_bets_today = free_bets_today + 1';
-
-        $query = $this->db->prepare($sql);
-        $query->bindValue(':user_id', $user_id);
-        $query->bindValue(':free_bets_today', $free_bets_today);
-
-        return $query->execute();
+        $this->db = $db;
     }
 
     /**
      * @param Game $game
-     * @param $user_id
+     * @param User $user
+     * @param User $bank
      * @param $bet
      * @return bool
      */
-    public function checkPlayerBet(Game $game, $user_id, $bet)
+    public function checkPlayerBet(Game $game, User $user, User $bank, $bet)
     {
         switch ($game->GameType) {
             case GameType::Blackjack:
@@ -86,17 +53,15 @@ class Bets
                 break;
         }
         $this->bet = $bet;
-        $balance = $this->Coin->SQL->GetUserById($user_id)->getBalance();
-        $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
 
         if (!(is_numeric($this->bet) && $this->bet >= 0 && $this->bet == round($this->bet, 2))) {
             if (stripos($this->bet, "all") !== false) {
                 try {
-                    $value = Parser::solve($this->bet, array('all' => $balance));
-                    $value = round($value,2);
-                    if ($value >=0 && $value <= $balance) {
+                    $value = Parser::solve($this->bet, array('all' => $user->getBalance(true)));
+                    $value = round($value,4);
+                    if ($value >=0 && $value <= $user->getBalance(true)) {
                         $this->bet = $value;
-                        $this->Talk->bet_calculation($value);
+                        $this->Talk->bet_calculation(round($value,2));
                     } else {
                         $this->Talk->bet_invalid_calculation();
                         return false;
@@ -116,14 +81,14 @@ class Bets
             $this->Talk->bet_limit();
         }
 
-        if ($balance < 1 && $this->bet <= 1) {
-            if ($TaxationBody->getBalance() > $game->betting_pool + $max_bet_factor) {
-                $free_bets_today = $this->getFreeBetsToday($user_id);
-                if ($free_bets_today < CASINO_DAILY_FREE_BETS) {
-                    $this->Talk->bet_free();
+        if ($user->getBalance(true) < 1 && $this->bet <= 1) {
+            if ($bank->getBalance() > $game->betting_pool + $max_bet_factor) {
+                if ($user->free_bets_today < CASINO_DAILY_FREE_BETS) {
+                    $this->Talk->bet_free($user->free_bets_today);
                     $this->bet = 1;
                     $this->free_bet = true;
-                    $this->incrementFreeBetsToday($user_id, $free_bets_today + 1);
+                    $user->free_bets_today++;
+                    $user->save($this->db);
                 } else {
                     $this->Talk->bet_free_too_many();
                     return false;
@@ -133,7 +98,7 @@ class Bets
                 return false;
             }
         } elseif ($this->bet < 1) {
-            if ($TaxationBody->getBalance() > $game->betting_pool + $max_bet_factor) {
+            if ($bank->getBalance() > $game->betting_pool + $max_bet_factor) {
                 $this->bet = 1;
                 $this->Talk->bet_mandatory();
             } else {
@@ -141,12 +106,12 @@ class Bets
                 $this->Talk->bet_mandatory_failed();
             }
             return true;
-        } elseif ($this->bet > $balance) {
-            $this->Talk->bet_too_high($balance);
+        } elseif ($this->bet > $user->getBalance(true)) {
+            $this->Talk->bet_too_high($user->getBalance(true));
             return false;
         }
 
-        if ($TaxationBody->getBalance() < $game->betting_pool + $max_bet_factor * $this->bet) {
+        if ($bank->getBalance() < $game->betting_pool + $max_bet_factor * $this->bet) {
             $this->Talk->bet_too_high_for_dealer();
             return false;
         }
@@ -157,18 +122,16 @@ class Bets
 
     /**
      * @param Player $player
-     * @param $bet
+     * @param User $bank
      * @param $multiplier
      */
-    public function payPlayer(Player $player, $multiplier)
+    public function payPlayer(Player $player, User $bank,  $multiplier)
     {
-        $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
-
         if ($multiplier > 0) {
-            if ($TaxationBody->getBalance() > (1 + $multiplier) * $player->bet) {
+            if ($bank->getBalance() > (1 + $multiplier) * $player->bet) {
                 $this->taxationBodyTransact($player, (1 + $multiplier) * $player->bet);
                 $player->bet_result = $multiplier * $player->bet;
-            } elseif ($TaxationBody->getBalance() > abs($player->bet)) {
+            } elseif ($bank->getBalance() > abs($player->bet)) {
                 $this->Talk->pay_bet_failed_return();
                 $this->taxationBodyTransact($player, abs($player->bet));
             } else {
@@ -178,7 +141,7 @@ class Bets
             $player->game_result = new GameResult(GameResult::Win);
         } elseif ($multiplier == 0) {
             if (!$player->free_bet) {
-                if ($TaxationBody->getBalance() > abs($player->bet)) {
+                if ($bank->getBalance() > abs($player->bet)) {
                     $this->taxationBodyTransact($player, abs($player->bet));
                 } else {
                     $this->Talk->pay_bet_failed_repay();
@@ -194,18 +157,28 @@ class Bets
     }
 
     /**
+     * @param Player $player
+     * @param TransactionType $transactionType
+     * @return bool
+     */
+    public function payBank(Player $player, TransactionType $transactionType)
+    {
+        return $this->Transact->transactToBank(new BankTransaction(
+            $player->user,
+            $player->bet,
+            $transactionType
+        ));
+    }
+
+    /**
      * @param Player $Player
      * @param $amount
      * @return bool
      */
     public function taxationBodyTransact(Player $Player, $amount)
     {
-        $TaxationBody = $this->Coin->SQL->GetUserByName(COIN_TAXATION_BODY);
-
-        return $this->Coin->Transact->performTransaction(new Transaction(
-            NULL,
-            $TaxationBody,
-            $this->Coin->SQL->GetUserById($Player->user_id),
+        return $this->Transact->transactFromBank(new BankTransaction(
+            $Player->user,
             $amount,
             new TransactionType(TransactionType::BlackjackWin)
         ));

@@ -16,6 +16,6 @@ class b_stand extends Command
     public function b_stand()
     {
         $Move = new PlayerMove(PlayerMove::Stand);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

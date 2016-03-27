@@ -14,15 +14,15 @@ use GroupBot\Types\Message;
 
 class Telegram
 {
-    public static function getResponse(Message $message, PlayerMove $move, $bet = NULL)
+    public static function getResponse(\PDO $db, Message $message, PlayerMove $move, $bet = NULL)
     {
-        $Blackjack = new Blackjack($message->User, $message->Chat->id, $move, $bet);
+        $Blackjack = new Blackjack($db, $message->User, $message->Chat->id, $move, $bet);
         if ($Blackjack->Talk->areMessages()) {
             $keyboard = $Blackjack->Talk->getKeyboard();
             if ($keyboard) {
-                \GroupBot\Base\Telegram::reply_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $message->message_id, $keyboard);
+                \GroupBot\Telegram::reply_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $message->message_id, $keyboard);
             } else {
-                \GroupBot\Base\Telegram::talk_hide_keyboard($message->Chat->id, $Blackjack->Talk->getMessages());
+                \GroupBot\Telegram::talk_hide_keyboard($message->Chat->id, $Blackjack->Talk->getMessages());
             }
             return true;
         }

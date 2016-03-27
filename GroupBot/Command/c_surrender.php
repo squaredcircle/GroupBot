@@ -16,6 +16,6 @@ class c_surrender extends Command
     public function c_surrender()
     {
         $Move = new PlayerMove(PlayerMove::Surrender);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

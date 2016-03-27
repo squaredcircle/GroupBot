@@ -8,28 +8,50 @@
  */
 namespace GroupBot\Brains\Coin\Money;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Brains\Coin\Types\BankTransaction;
+use GroupBot\Brains\Level\Level;
+use GroupBot\Brains\Query;
+use GroupBot\Telegram;
 use GroupBot\Brains\Coin\Enums\TransactionType;
 use GroupBot\Brains\Coin\Feedback;
 use GroupBot\Brains\Coin\Enums\Event;
-use GroupBot\Brains\Coin\SQL;
 use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\Types\User;
 
 require_once __DIR__ .  '/../../../libraries/common.php';
 
 class Events
 {
-    private $SQL, $Feedback;
-    private $Transact, $Validate;
-    private $TaxationBody;
+    /** @var \GroupBot\Database\User  */
+    private $UserSQL;
 
-    public function __construct(SQL $SQL, Feedback $Feedback)
+    /** @var Feedback  */
+    private $Feedback;
+
+    /** @var Transact  */
+    private $Transact;
+
+    /** @var Validate  */
+    private $Validate;
+
+    public function __construct(\PDO $db)
     {
-        $this->Feedback = $Feedback;
-        $this->SQL = $SQL;
-        $this->Transact = new Transact($SQL, $Feedback);
-        $this->Validate = new Validate($SQL, $Feedback);
-        $this->TaxationBody = $SQL->GetUserByName(COIN_TAXATION_BODY);
+        $this->Feedback = new Feedback();
+        $this->db = $db;
+        $this->UserSQL = new \GroupBot\Database\User($db);
+        $this->Transact = new Transact($db);
+        $this->Validate = new Validate($this->Feedback);
+    }
+
+    public function addIncome(User $user)
+    {
+        if ($user->received_income_today) return false;
+        $user->received_income_today = true;
+        return $this->Transact->transactFromBank(new BankTransaction(
+            $user,
+            Level::getDailyAllowance($user->level),
+            new TransactionType(TransactionType::DailyIncome)
+        ));
     }
 
     private function weightedRandom($array)
@@ -97,6 +119,10 @@ class Events
         }
     }
 
+    /**
+     * @param User[] $users
+     * @return User[]
+     */
     private function filterUsersByLastActivity($users)
     {
         $out = array();
@@ -109,6 +135,11 @@ class Events
         return $out;
     }
 
+    /**
+     * @param User[] $users
+     * @param string[] $names
+     * @return User[]
+     */
     private function filterUsersByName($users, $names)
     {
         $out = array();
@@ -122,46 +153,51 @@ class Events
 
     private function poorbonuses()
     {
-        $total_coin = $this->Validate->getTotalCoinExisting(false);
-        $total_users = $this->SQL->GetTotalNumberOfUsers(false);
+        $total_coin = $this->Transact->CoinSQL->getTotalCoinExisting(false);
+        $total_users = $this->UserSQL->GetTotalNumberOfUsers(false);
         $average_coin = $total_coin / $total_users;
 
-        $Users = $this->SQL->GetUsersByBottomBalance($total_users);
+        $Users = Query::getUsersByMoneyAndLevel($this->db, NULL, false, false);
         $Users = $this->filterUsersByLastActivity($Users);
+
+        /** @var User[] $PoorestUsers */
         $PoorestUsers = array();
         foreach ($Users as $User) if ($User->getBalance(true) < $average_coin) $PoorestUsers[] = $User;
 
-        $TaxationBody = $this->SQL->GetUserByName(COIN_TAXATION_BODY);
-        $to_give = $TaxationBody->getBalance(true) * COIN_POOR_BONUS / count($PoorestUsers);
-        $this->Transact->removeMoney($TaxationBody, $TaxationBody->getBalance(true) * COIN_POOR_BONUS);
+        $bank = $this->UserSQL->getUserFromId(COIN_BANK_ID);
+        $to_give = $bank->getBalance(true) * COIN_POOR_BONUS / count($PoorestUsers);
+        $this->Transact->removeMoney($bank, $bank->getBalance(true) * COIN_POOR_BONUS);
         foreach ($PoorestUsers as $User) {
             $this->Transact->addMoney($User, $to_give);
+            $User->save($this->db);
         }
 
-        $this->Transact->maintainFixedLevel();
+        $this->Transact->maintainFixedLevel($bank);
+        $bank->save($this->db);
 
-        Telegram::customShitpostingMessage(emoji(0x1F4E2) . " Oh happy day! " . round($TaxationBody->getBalance() * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
+        Telegram::customShitpostingMessage(emoji(0x1F4E2) . " Oh happy day! " . round($bank->getBalance() * COIN_POOR_BONUS, 2) . " of " . COIN_TAXATION_BODY . "'s wealth has been spread amongst the poorest members of the community.");
 
         return true;
     }
 
     private function redistribute()
     {
-        $to_collect = COIN_REDISTRIBUTION_TAX * $this->TaxationBody->getBalance(true);
-        $users = $this->SQL->GetAllUsers(false);
+        $bank = $this->UserSQL->getUserFromId(COIN_BANK_ID);
+        $to_collect = COIN_REDISTRIBUTION_TAX * $bank->getBalance(true);
+        $users = $this->UserSQL->GetAllUsers(false);
         $users = $this->filterUsersByLastActivity($users);
         $users = $this->filterUsersByName($users, array(COIN_TAXATION_BODY, "Isaac", "Shlomo"));
         $count = count($users);
 
         if (!empty($users)) {
-            $this->Transact->removeMoney($this->TaxationBody, $to_collect);
+            $this->Transact->removeMoney($bank, $to_collect);
             foreach ($users as $i) {
                 $this->Transact->addMoney($i, $to_collect / $count);
+                $i->save($this->db);
             }
 
-            $this->SQL->AddTransactionLog(new Transaction(
-                NULL,
-                $this->TaxationBody,
+            $this->Transact->CoinSQL->AddTransactionLog(new Transaction(
+                $bank,
                 NULL,
                 $to_collect,
                 new TransactionType(TransactionType::RedistributionTax)
@@ -169,7 +205,8 @@ class Events
 
             Telegram::customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
 
-            $this->Transact->maintainFixedLevel();
+            $this->Transact->maintainFixedLevel($bank);
+            $bank->save($this->db);
             return true;
         }
         return false;
@@ -177,20 +214,21 @@ class Events
 
     private function collectPeriodicTax()
     {
-        $this->SQL->CollectPeriodicTax();
+        $bank = $this->UserSQL->getUserFromId(COIN_BANK_ID);
+        $this->Transact->CoinSQL->CollectPeriodicTax();
 
-        $to_collect = COIN_PERIODIC_TAX * $this->Validate->getTotalCoinExisting(false);
-        $this->SQL->UpdateUserBalance($this->TaxationBody, $this->TaxationBody->getBalance(true) + $to_collect);
+        $to_collect = COIN_PERIODIC_TAX * $this->Transact->CoinSQL->getTotalCoinExisting(false);
+        $bank->balance = $bank->getBalance(true) + $to_collect;
 
-        $this->SQL->AddTransactionLog(new Transaction(
+        $this->Transact->CoinSQL->AddTransactionLog(new Transaction(
             NULL,
-            NULL,
-            $this->TaxationBody,
+            $bank,
             $to_collect,
             new TransactionType(TransactionType::AllTax)
         ));
 
-        $this->Transact->maintainFixedLevel();
+        $this->Transact->maintainFixedLevel($bank);
+        $bank->save($this->db);
 
         Telegram::customShitpostingMessage(emoji(0x1F4E2) . " " . COIN_TAXATION_BODY . " just collected " . round($to_collect, 2) . " " . COIN_CURRENCY_NAME . " in tax.");
 

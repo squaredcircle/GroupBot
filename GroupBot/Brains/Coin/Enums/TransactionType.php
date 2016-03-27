@@ -32,4 +32,10 @@ class TransactionType extends \SplEnum
     const RandomBonus = 27;
     const WealthyBonus = 28;
     const PoorBonus = 29;
+
+    const DailyIncome = 40;
+
+    const LevelPurchase = 50;
+
+    const Apocalypse = 60;
 }

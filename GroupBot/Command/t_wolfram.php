@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Types\Command;
 use Imagick;
 use DateTime;

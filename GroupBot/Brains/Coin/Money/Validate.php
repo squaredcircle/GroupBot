@@ -10,18 +10,16 @@ namespace GroupBot\Brains\Coin\Money;
 
 
 use GroupBot\Brains\Coin\Feedback;
-use GroupBot\Brains\Coin\SQL;
-use GroupBot\Brains\Coin\Types\CoinUser;
 use GroupBot\Brains\Coin\Types\Transaction;
+use GroupBot\Types\User;
 
 class Validate
 {
-    private $Feedback, $SQL;
+    private $Feedback;
 
-    public function __construct(SQL $SQL, Feedback $Feedback)
+    public function __construct(Feedback $Feedback)
     {
         $this->Feedback = $Feedback;
-        $this->SQL = $SQL;
     }
 
     public function checkTransaction(Transaction $Transaction)
@@ -47,7 +45,7 @@ class Validate
         return false;
     }
 
-    private function checkRecipientAndSender(CoinUser $recipient, CoinUser $sender)
+    private function checkRecipientAndSender(User $recipient, User $sender)
     {
         if (isset($sender->user_id) && $recipient->user_id == $sender->user_id) {
             $this->Feedback->addFeedbackCode(21); // Can't send Coin to yourself!
@@ -57,22 +55,11 @@ class Validate
         return true;
     }
 
-    private function parseAmount(CoinUser $User, $amount)
+    private function parseAmount(User $User, $amount)
     {
         if ($User->getBalance() - $amount == 0)
             return $User->getBalance(true);
         else
             return $amount;
-    }
-
-    public function getTotalCoinExisting($include_taxation_body)
-    {
-        $users = $this->SQL->GetAllUsers($include_taxation_body);
-
-        $total_coin = 0.0;
-        foreach ($users as $i) {
-            $total_coin += $i->getBalance(true);
-        }
-        return $total_coin;
     }
 }

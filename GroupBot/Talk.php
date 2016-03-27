@@ -7,22 +7,28 @@
  * Time: 12:25 PM
  */
 
-namespace GroupBot\Base;
+namespace GroupBot;
 
 use GroupBot\Brains\Translate;
 use GroupBot\Enums\MessageType;
+use GroupBot\Libraries\Dictionary;
 use GroupBot\Types\Message;
 
 class Talk
 {
+    /** @var Message  */
     private $Message;
+
+    /** @var Dictionary  */
+    private $dict;
 
     public function __construct(Message $message)
     {
         $this->Message  = $message;
+        $this->dict = new Dictionary();
     }
 
-    private function isShitBotMentioned()
+    private function isBotMentioned()
     {
         return isset($this->Message->text) && (stripos($this->Message->text, BOT_FRIENDLY_NAME) !== false);
     }
@@ -88,14 +94,12 @@ class Talk
 
     private function processChannelChange()
     {
-        require(__DIR__ . '/../libraries/dictionary.php');
-
         switch ($this->Message->MessageType) {
             case MessageType::NewChatTitle:
-                $message = $ratings[mt_rand(0,10)];
+                $message = $this->dict->ratings[mt_rand(0,10)];
                 break;
             case MessageType::NewChatPhoto:
-                $message = $ratings[mt_rand(0,10)];
+                $message = $this->dict->ratings[mt_rand(0,10)];
                 break;
             case MessageType::NewChatParticipant:
                 $message = 'hi new guy';
@@ -112,24 +116,22 @@ class Talk
 
     public function processMessage()
     {
-        require(__DIR__ . '/../libraries/dictionary.php');
-
-        if ($this->dictMatch($dict_interjections, $dict_interjections_exclusions)) return true;
+        if ($this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
-        if ($this->isShitBotMentioned())
+        if ($this->isBotMentioned())
         {
-            if ($this->dictCommand($dict_reply_commands)) return true;
-            if ($this->dictUsers($dict_user_replies)) return true;
-            if ($this->dictMatch($dict_replies)) return true;
+            if ($this->dictCommand($this->dict->reply_commands)) return true;
+            if ($this->dictUsers($this->dict->user_replies)) return true;
+            if ($this->dictMatch($this->dict->replies)) return true;
 
             if (count(mb_split(" ", $this->Message->text)) < 6) {
-                Telegram::reply($this->Message->Chat->id, $this->Message->message_id, $dict_default_reply);
+                Telegram::reply($this->Message->Chat->id, $this->Message->message_id, $this->dict->default_reply);
                 return true;
             }
         }
 
-        if (count(mb_split(" ", $this->Message->text)) > 2) {
+        if (count(mb_split(" ", $this->Message->text)) > 3) {
             $Translate = new Translate();
             $lang = $Translate->detectLanguage($this->Message->text);
             if ($lang != 'English') {

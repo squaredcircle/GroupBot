@@ -1,8 +1,8 @@
 <?php
 
-namespace GroupBot\Base;
+namespace GroupBot;
 
-require_once(__DIR__ . '/../Settings.php');
+require_once(__DIR__ . '/Settings.php');
 
 class Telegram
 {

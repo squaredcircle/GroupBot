@@ -16,6 +16,6 @@ class ChatType extends SplEnum
 
     const Individual = 1;
     const Group = 2;
-    const Channel = 3;
-
+    const SuperGroup = 3;
+    const Channel = 4;
 }

@@ -17,6 +17,6 @@ class c_cwstart extends Command
     {
         $bet = $this->isParam() ? $this->getAllParams() : 0;
         $Move = new PlayerMove(PlayerMove::StartGame);
-        return Telegram::getResponse($this->Message, $Move, $bet);
+        return Telegram::getResponse($this->db, $this->Message, $Move, $bet);
     }
 }

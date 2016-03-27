@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
+use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
 class q_tree extends Command

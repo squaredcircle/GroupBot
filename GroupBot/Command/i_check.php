@@ -7,29 +7,25 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Base\Telegram;
-use GroupBot\Brains\Coin\Coin;
+use GroupBot\Brains\Query;
+use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
 class i_check extends Command
 {
     public function i_check()
     {
-        $Coin = new Coin();
-
         if ($this->isParam()) {
-            if ($user = $Coin->SQL->GetUserByName($this->Message->text)) {
-                Telegram::talk($this->Message->Chat->id, "*" . $this->Message->text . "* has " . emoji("0x1F4B0") . $user->getBalance() . ", brah");
-            } else {
-                Telegram::talk($this->Message->Chat->id, emoji("0x1F44E") . " Can't find " . $this->Message->text . " on record, brah");
+            $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam());
+
+            if (is_string($user)) {
+                Telegram::talk($this->Message->Chat->id, $user);
+                return false;
             }
+            Telegram::talk($this->Message->Chat->id, $user->getNameLevelAndTitle() . " has " . emoji("0x1F4B0") . $user->getBalance() . ", brah");
         } else {
-            $balance = $Coin->SQL->GetUserById($this->Message->User->id)->getBalance();
-            if ($balance >= 0) {
-                Telegram::talk($this->Message->Chat->id, "You've got " . emoji("0x1F4B0") . $balance . ", brah");
-            } else {
-                Telegram::talk($this->Message->Chat->id, "You don't seem to have a " . COIN_CURRENCY_NAME . " account, brah. That's weird...");
-            }
+            Telegram::talk($this->Message->Chat->id, "You've got " . emoji("0x1F4B0") . $this->Message->User->getBalance() . ", brah");
         }
+        return true;
     }
 }

@@ -15,10 +15,10 @@ class Player extends \GroupBot\Brains\CardGame\Types\Player
 {
     /** @var Hand  */
     public $Hand;
-    /** @var PlayerState  */
-    public $State;
     public $no_surrenders = 0;
     public $no_wars = 0;
+    /** @var PlayerState  */
+    public $State;
 
     public function construct($user_id, $user_name, \GroupBot\Brains\CardGame\Types\Hand $hand, \GroupBot\Brains\CardGame\Enums\PlayerState $playerState,
                               $player_no, $bet, $free_bet, $id = NULL, $last_move_time = NULL,

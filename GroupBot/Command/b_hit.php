@@ -16,6 +16,6 @@ class b_hit extends Command
     public function b_hit()
     {
         $Move = new PlayerMove(PlayerMove::Hit);
-        return Telegram::getResponse($this->Message, $Move);
+        return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

@@ -14,6 +14,7 @@ use GroupBot\Brains\Blackjack\Types\Game;
 use GroupBot\Brains\Blackjack\Types\Player;
 use GroupBot\Brains\Blackjack\Types\Stats;
 use GroupBot\Brains\CardGame\Enums\GameType;
+use GroupBot\Database\User;
 
 class SQL extends \GroupBot\Brains\CardGame\SQL
 {
@@ -41,8 +42,8 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
         $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no, bet, free_bet, split, last_move_time)
                 VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no, :bet, :free_bet, :split, NOW())';
         $query = $this->db->prepare($sql);
-        $query->bindValue(':user_id', $player->user_id);
-        $query->bindValue(':user_name', $player->user_name);
+        $query->bindValue(':user_id', $player->user->user_id);
+        $query->bindValue(':user_name', $player->user->user_name);
         $query->bindValue(':game_id', $game_id);
         $query->bindValue(':cards', $player->Hand->handToDbString());
         $query->bindValue(':state', $player->State);
@@ -69,7 +70,7 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':id', $player->id);
-        $query->bindValue(':user_id', $player->user_id);
+        $query->bindValue(':user_id', $player->user->user_id);
         $query->bindValue(':game_id', $game_id);
         $query->bindValue(':player_no', $player->player_no);
         $query->bindValue(':cards', $player->Hand->handToDbString());
@@ -110,7 +111,7 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
     public function delete_game($chat_id, $game_id)
     {
         $sql = 'DELETE FROM bj_games WHERE chat_id = :chat_id;
-                DELETE FROM bj_players WHERE game_id = :game_id;';
+                DELETE FROM bj_players WHERE game_id = :game_id';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':game_id', $game_id);
@@ -134,7 +135,7 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
 
         if ($query->rowCount()) {
             $game = $query->fetch();
-            return new Game(new GameType(GameType::Blackjack), $chat_id, $game['id'], $game['turn'], $this->select_players($game['id']));
+            return new Game($this->db, new GameType(GameType::Blackjack), $chat_id, $game['id'], $game['turn'], $this->select_players($game['id']));
         }
         return false;
     }
@@ -158,6 +159,12 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
                 if ($a->player_no == $b->player_no) return 0;
                 return $a->player_no < $b->player_no ? -1 : 1;
             });
+
+            $DbUser = new User($this->db);
+            foreach ($Players as $key => $player) {
+                $Players[$key]->user = $DbUser->getUserFromId($player->user_id);
+                unset($Players[$key]->user_id);
+            }
 
             return $Players;
         }
@@ -195,16 +202,16 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
                   (:user_id, 1, :wins, :losses, :draws, :hits, :stands, :blackjacks, :splits, :doubledowns, :surrenders, :bet, :coin_won, :coin_lost, :free_bets)
                 ON DUPLICATE KEY UPDATE
                   games_played = games_played + 1,
-                  hits = hits + :hits,
-                  stands = stands + :stands,
-                  blackjacks = blackjacks + :blackjacks,
-                  splits = splits + :splits,
-                  doubledowns = doubledowns + :doubledowns,
-                  surrenders = surrenders + :surrenders,
-                  total_coin_bet = total_coin_bet + :bet,
-                  free_bets = free_bets + :free_bets,
-                  coin_won = coin_won + :coin_won,
-                  coin_lost = coin_lost + :coin_lost,
+                  hits = hits + :hits2,
+                  stands = stands + :stands2,
+                  blackjacks = blackjacks + :blackjacks2,
+                  splits = splits + :splits2,
+                  doubledowns = doubledowns + :doubledowns2,
+                  surrenders = surrenders + :surrenders2,
+                  total_coin_bet = total_coin_bet + :bet2,
+                  free_bets = free_bets + :free_bets2,
+                  coin_won = coin_won + :coin_won2,
+                  coin_lost = coin_lost + :coin_lost2,
                   ';
         switch ($player->game_result) {
             case GameResult::Win:
@@ -247,18 +254,33 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
         $query->bindValue(':bet', $player->free_bet ? 0 : $player->bet);
         $query->bindValue(':free_bets', $player->free_bet ? 1 : 0);
 
+        $query->bindValue(':hits2', $player->no_hits);
+        $query->bindValue(':stands2', $player->no_stands);
+        $query->bindValue(':blackjacks2', $player->no_blackjacks);
+        $query->bindValue(':splits2', $player->no_splits);
+        $query->bindValue(':doubledowns2', $player->no_doubledowns);
+        $query->bindValue(':surrenders2', $player->no_surrenders);
+        $query->bindValue(':bet2', $player->free_bet ? 0 : $player->bet);
+        $query->bindValue(':free_bets2', $player->free_bet ? 1 : 0);
+
         if ($player->bet_result > 0) {
             $query->bindValue(':coin_won', $player->bet_result);
             $query->bindValue(':coin_lost', 0);
+            $query->bindValue(':coin_won2', $player->bet_result);
+            $query->bindValue(':coin_lost2', 0);
         } elseif ($player->bet_result < 0) {
             $query->bindValue(':coin_won', 0);
             $query->bindValue(':coin_lost', abs($player->bet_result));
+            $query->bindValue(':coin_won2', 0);
+            $query->bindValue(':coin_lost2', abs($player->bet_result));
         } else {
             $query->bindValue(':coin_won', 0);
             $query->bindValue(':coin_lost', 0);
+            $query->bindValue(':coin_won2', 0);
+            $query->bindValue(':coin_lost2', 0);
         }
 
-        $query->bindValue(':user_id', $player->user_id);
+        $query->bindValue(':user_id', $player->user->user_id);
 
         return $query->execute();
     }

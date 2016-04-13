@@ -51,16 +51,16 @@ abstract class Talk
     {
         $out = emoji(0x1F4B0);
         if ($multiplier > 0) {
-            $out .= $Player->user->user_name . " wins " . ($multiplier * $Player->bet + 0) . " coin!";
+            $out .= "*" . $Player->user->getName() . "* wins " . ($multiplier * $Player->bet + 0) . " coin!";
         } elseif ($multiplier == 0) {
             if ($Player->free_bet) {
-                $out .= $Player->user->user_name . " cannot regain a free bet";
+                $out .= "*" . $Player->user->getName() . "* cannot regain a free bet";
             } else {
-                $out .= $Player->user->user_name . " regains their bet of " . ($Player->bet + 0);
+                $out .= "*" . $Player->user->getName() . "* regains their bet of " . ($Player->bet + 0);
             }
         } elseif ($multiplier < 0) {
             $free = $Player->free_bet ? " free " : " ";
-            $out .= $Player->user->user_name . " loses their" . $free . "bet of " . ($Player->bet + 0);
+            $out .= "*" . $Player->user->getName() . "* loses their" . $free . "bet of " . ($Player->bet + 0);
         }
 
         $out .= " (`" . $Player->user->getBalance() . "`)";
@@ -128,7 +128,12 @@ abstract class Talk
 
     public function bet_free_too_many()
     {
-        $this->addMessage(emoji(0x1F44E) . " Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!");
+        $now = new \DateTime();
+        $future_date = new \DateTime('tomorrow');
+        $interval = $future_date->diff($now);
+        $time = $interval->format("*%h hours* and *%i minutes*");
+
+        $this->addMessage(emoji(0x1F44E) . " Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!\n($time to go)");
     }
 
     public function pay_bet_failed_return()

@@ -5,17 +5,13 @@
  * Date: 8/11/2015
  * Time: 12:30 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\vote;
 
-use GroupBot\Base\Logging;
 use GroupBot\Telegram;
-use GroupBot\Brains\Vote\Enums\VoteType;
-use GroupBot\Brains\Vote\Types\UserVote;
 use GroupBot\Brains\Vote\Vote;
 use GroupBot\Types\Command;
-use GroupBot\Types\User;
 
-class v_allvotes extends Command
+class allvotes extends Command
 {
     private function addOrdinalNumberSuffix($num) {
         if (!in_array(($num % 100),array(11,12,13))){
@@ -29,16 +25,16 @@ class v_allvotes extends Command
         return $num.'th';
     }
 
-    public function v_allvotes()
+    public function main()
     {
-        $Vote = new Vote();
+        $Vote = new Vote($this->db);
         $leaderboard = $Vote->getVoteLeaderboard($this->Message->Chat->id);
 
         $out = '';
         $index = 0;
 
         if (!empty($leaderboard)) {
-            foreach ($leaderboard as $user)
+            foreach ($leaderboard as $uservote)
             {
                 $index++;
                 $out .= "`" . $this->addOrdinalNumberSuffix($index);
@@ -48,10 +44,10 @@ class v_allvotes extends Command
                     $out .= "  `";
                 }
 
-                $vote_prefix = $user->vote_total > 0 ? "+" : "";
-                if (!isset($user->vote_total)) $user->vote_total = 0;
+                $vote_prefix = $uservote->vote_total > 0 ? "+" : "";
+                if (!isset($uservote->vote_total)) $uservote->vote_total = 0;
 
-                $out .= "*" . $user->user->first_name . "* (" . $vote_prefix . $user->vote_total . ")\n";
+                $out .= "*" . $uservote->user->getName() . "* (" . $vote_prefix . $uservote->vote_total . ")\n";
             }
         } else {
             $out .= "No users to display.";

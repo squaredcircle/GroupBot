@@ -50,12 +50,14 @@ class Game extends \GroupBot\Brains\CardGame\Types\Game
         return true;
     }
 
-    public function addDealer()
+    public function addDealer(\PDO $db)
     {
         if (!$this->isGameStarted()) {
             $Player = new Player();
-            $Dealer = new User();
-            $Dealer->construct('-1', 'Dealer', '', 'Dealer');
+            //$Dealer = new User();
+            //$Dealer->construct('-1', 'Dealer', '', 'Dealer');
+            $DbUser = new \GroupBot\Database\User($db);
+            $Dealer = $DbUser->getUserFromId('-1');
             $Player->construct($Dealer, new Hand(), new PlayerState(PlayerState::Dealer), -1, 0, false);
             $Player->Hand->addCard($this->Deck->dealCard());
             $this->Dealer = $Player;

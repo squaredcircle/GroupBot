@@ -5,17 +5,17 @@
  * Date: 8/11/2015
  * Time: 12:14 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\blackjack;
 
 use GroupBot\Brains\Blackjack\Telegram;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Types\Command;
 
-class b_surrender extends Command
+class doubledown extends Command
 {
-    public function b_surrender()
+    public function main()
     {
-        $Move = new PlayerMove(PlayerMove::Surrender);
+        $Move = new PlayerMove(PlayerMove::DoubleDown);
         return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

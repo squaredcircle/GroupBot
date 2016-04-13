@@ -1,6 +1,6 @@
 <?php
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 /**
  * Basic Stack Class.

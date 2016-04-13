@@ -1,6 +1,6 @@
 <?php
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 // fun class that requires the GD libraries to give visual output to the user 
 

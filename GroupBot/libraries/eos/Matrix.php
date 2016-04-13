@@ -10,7 +10,7 @@
  * @subpackage Matrix
  */
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 /**
  * Matrix Class

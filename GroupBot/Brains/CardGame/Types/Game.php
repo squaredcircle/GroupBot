@@ -134,9 +134,10 @@ abstract class Game
     abstract public function startGame();
 
     /**
+     * @param \PDO $db
      * @return bool
      */
-    abstract public function addDealer();
+    abstract public function addDealer(\PDO $db);
 
     /**
      * @param User $user

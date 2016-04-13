@@ -10,6 +10,7 @@ function checkAlias($command)
 {
     $aliases = array(
         'blackjack'     => 'bj',
+        'casinowar'     => 'cw',
         'spookyecho'    => 'x',
         'zalgo'         => 'z',
         'notroll'       => 'roll',

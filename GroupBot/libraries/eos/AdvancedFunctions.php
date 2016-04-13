@@ -3,7 +3,7 @@
  * Created by: Jon Lawrence on 2015-07-13 8:42 AM
  */
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 
 class AdvancedFunctions 

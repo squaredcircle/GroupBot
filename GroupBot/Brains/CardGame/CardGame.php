@@ -100,7 +100,7 @@ abstract class CardGame
         if (!$Game = $this->SQL->select_game($this->chat_id)) {
             $this->SQL->insert_game($this->chat_id);
             $Game = $this->SQL->select_game($this->chat_id);
-            $Game->addDealer();
+            $Game->addDealer($this->db);
             if (!$this->Bets->checkPlayerBet($Game, $this->user, $Game->Dealer->user, $this->bet)) return false;
             $this->bet = $this->Bets->bet;
             $this->free_bet = $this->Bets->free_bet;

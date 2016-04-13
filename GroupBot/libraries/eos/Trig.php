@@ -3,7 +3,7 @@
  * Created by: Jon Lawrence on 2015-07-02 3:10 PM
  */
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 /**
  * Class Trig

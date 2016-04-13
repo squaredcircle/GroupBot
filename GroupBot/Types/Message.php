@@ -14,7 +14,7 @@ use GroupBot\Enums\MessageType;
 
 class Message
 {
-    public $message_id, $date;
+    public $message_id, $date, $callback;
     public $forward_from, $forward_date, $reply_to_message;
 
     /** @var  User */
@@ -54,6 +54,7 @@ class Message
         $this->Chat = Chat::constructFromTelegramUpdate($message['chat'], $this->db);
 
         $this->message_id = $message['message_id'];
+        if (isset($message['callback'])) $this->callback = $message['callback'];
 
         $this->determineMessageContent($message);
         $this->determineMessageType($message);
@@ -76,6 +77,11 @@ class Message
     {
         return ( $this->MessageType == MessageType::Regular || $this->MessageType == MessageType::Forward
             || $this->MessageType == MessageType::Reply);
+    }
+
+    public function isCallback()
+    {
+        return isset($this->callback);
     }
 
     public function Content()
@@ -145,7 +151,7 @@ class Message
             $this->MessageType = new MessageType(MessageType::Forward);
         } elseif (isset($message['new_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::NewChatParticipant);
-            $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $this->db);
+            $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $message['chat'], $this->db);
         } elseif (isset($message['left_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::LeftChatParticipant);
         } elseif (isset($message['new_chat_title'])) {

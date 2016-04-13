@@ -16,7 +16,7 @@ use GroupBot\Brains\CardGame\Types\Player;
 use GroupBot\Brains\Coin\Enums\TransactionType;
 use GroupBot\Brains\Coin\Money\Transact;
 use GroupBot\Brains\Coin\Types\BankTransaction;
-use GroupBot\libraries\eos\Parser;
+use GroupBot\Libraries\eos\Parser;
 use GroupBot\Types\User;
 
 class Bets

@@ -23,14 +23,7 @@ class UserVote
 
     /** @var  VoteType */
     public $vote;
-
-    public function __construct()
-    {
-        $dbcontrol = new DbControl();
-        $this->voter = $dbcontrol->getUserFromId($this->voter);
-        $this->voted_for = $dbcontrol->getUserFromId($this->voted_for);
-    }
-
+    
     public function construct(User $voter, User $voted_for, VoteType $vote)
     {
         $this->voter = $voter;

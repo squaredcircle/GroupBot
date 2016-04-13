@@ -110,14 +110,15 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
      */
     public function delete_game($chat_id, $game_id)
     {
-        $sql = 'DELETE FROM bj_games WHERE chat_id = :chat_id;
-                DELETE FROM bj_players WHERE game_id = :game_id';
+        $sql = 'DELETE FROM bj_games WHERE chat_id = :chat_id';
+        $query1 = $this->db->prepare($sql);
+        $query1->bindParam(':chat_id', $chat_id, \PDO::PARAM_INT);
 
-        $query = $this->db->prepare($sql);
-        $query->bindValue(':game_id', $game_id);
-        $query->bindValue(':chat_id', $chat_id);
+        $sql =  'DELETE FROM bj_players WHERE game_id = :game_id';
+        $query2 = $this->db->prepare($sql);
+        $query2->bindParam(':game_id', $game_id, \PDO::PARAM_INT);
 
-        return $query->execute();
+        return $query1->execute() && $query2->execute();
     }
 
     /**

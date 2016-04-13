@@ -9,7 +9,7 @@
 namespace GroupBot\Types;
 
 
-class Command
+abstract class Command
 {
     /** @var Message  */
     protected $Message;
@@ -46,5 +46,7 @@ class Command
     {
         return $this->Message->text;
     }
+
+    abstract public function main();
 
 }

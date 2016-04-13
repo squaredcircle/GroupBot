@@ -10,7 +10,7 @@ namespace GroupBot\Command;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
-class t_christmas extends Command
+class christmas extends Command
 {
     private function repeat($emoji, $amount)
     {
@@ -32,9 +32,10 @@ class t_christmas extends Command
         $santa = emoji(0x1F385);
         return $this->repeat($santa, $repeat);
     }
-    public function t_christmas()
+
+    public function main()
     {
-        $jokes_file = file(__DIR__ . "/../libraries/jokes_christmas");
+        $jokes_file = file(__DIR__ . "/../Libraries/jokes_christmas");
         $jokes = array();
 
         $joke = "";

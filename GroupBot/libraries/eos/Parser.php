@@ -18,7 +18,7 @@
  * @version 3.0.0
  */
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 
 /**

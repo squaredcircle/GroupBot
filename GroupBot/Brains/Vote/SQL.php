@@ -12,18 +12,24 @@ namespace GroupBot\Brains\Vote;
 use GroupBot\Base\DbControl;
 use GroupBot\Brains\Vote\Enums\VoteType;
 use GroupBot\Brains\Vote\Types\UserVote;
+use GroupBot\Database\DbConnection;
+use GroupBot\Database\User;
+use GroupBot\Telegram;
 
-class SQL
+class SQL extends DbConnection
 {
     /**
-     * @var \PDO
+     * @param UserVote[] $votes
+     * @return UserVote[]
      */
-    protected $db;
-
-    public function __construct()
+    private function map_users($votes)
     {
-        $dbcontrol = new DbControl();
-        $this->db = $dbcontrol->getObject();
+        $DbUser = new User($this->db);
+        foreach ($votes as $vote) {
+            $vote->voter = $DbUser->getUserFromId($vote->voter);
+            $vote->voted_for = $DbUser->getUserFromId($vote->voted_for);
+        }
+        return $votes;
     }
 
     /**
@@ -36,7 +42,9 @@ class SQL
         $query->execute();
 
         if ($query->rowCount()) {
-            return $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote');
+            if ($votes = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote')) {
+                return $this->map_users($votes);
+            }
         }
         return false;
     }
@@ -53,7 +61,9 @@ class SQL
         $query->execute();
 
         if ($query->rowCount()) {
-            return $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote');
+            if ($votes = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote')) {
+                return $this->map_users($votes);
+            }
         }
         return false;
     }
@@ -70,7 +80,9 @@ class SQL
         $query->execute();
 
         if ($query->rowCount()) {
-            return $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote');
+            if ($votes = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Brains\Vote\Types\UserVote')) {
+                return $this->map_users($votes);
+            }
         }
         return false;
     }
@@ -81,26 +93,25 @@ class SQL
      */
     public function update_vote(UserVote $userVote)
     {
-        if ($userVote->vote == VoteType::Neutral)
-        {
+        if ($userVote->vote == VoteType::Neutral) {
             $sql = 'DELETE FROM user_votes WHERE voter = :voter';
 
             $query = $this->db->prepare($sql);
-            $query->bindValue(':voter', $userVote->voter->id);
+            $query->bindValue(':voter', $userVote->voter->user_id);
 
             return $query->execute();
-        }
-        else
-        {
+        } else {
             $sql = 'INSERT INTO user_votes (voter, voted_for, vote)
                     VALUES (:voter, :voted_for, :vote) ON DUPLICATE KEY
-                    UPDATE voted_for = :voted_for, vote = :vote';
+                    UPDATE voted_for = :voted_for2, vote = :vote2';
 
             $query = $this->db->prepare($sql);
-            $query->bindValue(':voter', $userVote->voter->id);
-            $query->bindValue(':voted_for', $userVote->voted_for->id);
+            $query->bindValue(':voter', $userVote->voter->user_id);
+            $query->bindValue(':voted_for', $userVote->voted_for->user_id);
             $query->bindValue(':vote', $userVote->vote);
-
+            $query->bindValue(':voted_for2', $userVote->voted_for->user_id);
+            $query->bindValue(':vote2', $userVote->vote);
+            
             return $query->execute();
         }
     }

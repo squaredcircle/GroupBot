@@ -18,10 +18,13 @@ class InlineQuery
     public function __construct($query)
     {
         $this->id = $query['id'];
-        $this->from = new User();
-        $this->from->construct($query['from']);
         $this->query = $query['query'];
         $this->offset = $query['offset'];
+        $this->from = new User();
+        $this->from->first_name = $query['from']['first_name'];
+        $this->from->last_name = isset($query['from']['last_name']) ? $query['from']['last_name'] : NULL;
+        $this->from->username = isset($query['from']['username']) ? $query['from']['username'] : NULL;
+        $this->from->id = $query['from']['id'];
         $this->parseQuery();
     }
 
@@ -45,7 +48,10 @@ class InlineQuery
             'type' => 'article',
             'id' => strval(intval($this->id) + 1),
             'title' => 'german -> kurwa translation',
-            'message_text' => $out
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
         );
 
         $tmp = mb_strtolower($this->query, 'UTF-8');
@@ -69,19 +75,36 @@ class InlineQuery
             'type' => 'article',
             'id' => strval(intval($this->id) + 2),
             'title' => 'english -> kurwa translation',
-            'message_text' => $out
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
         );
 
         $out = "";
         $tmp = array_reverse(explode(" ", $this->query));
-        foreach($tmp as $word) {
+        foreach ($tmp as $word) {
             $out .= " " . $word;
         }
         $this->results[] = array(
             'type' => 'article',
             'id' => strval(intval($this->id) + 3),
             'title' => 'talk backwards',
-            'message_text' => $out
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
+        );
+
+        $out = "*" . $this->from->getName() . "* " . $this->query;
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 4),
+            'title' => 'me',
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
         );
     }
 }

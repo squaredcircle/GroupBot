@@ -3,7 +3,7 @@
  * Created by: Jon Lawrence on 2015-07-02 2:49 PM
  */
 
-namespace GroupBot\libraries\eos;
+namespace GroupBot\Libraries\eos;
 
 /**
  * Class Math

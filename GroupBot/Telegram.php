@@ -33,6 +33,46 @@ class Telegram
 		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown", "disable_web_page_preview" => "true"));
 	}
 
+	public static function talk_inline_keyboard($chat_id, $text, $keyboard)
+	{
+		self::apiRequestWebhook("sendMessage",
+			array(
+				'chat_id' => $chat_id,
+				"text" => $text,
+				"parse_mode" => "Markdown",
+				"reply_markup" => array(
+					"inline_keyboard" => $keyboard
+				)
+			)
+		);
+	}
+
+	public static function edit_inline_message($chat_id, $message_id, $text, $keyboard = NULL)
+	{
+		if (isset($keyboard)) {
+			self::apiRequestWebhook("editMessageText",
+				array(
+					'chat_id' => $chat_id,
+					'message_id' => $message_id,
+					"text" => $text,
+					"parse_mode" => "Markdown",
+					"reply_markup" => array(
+						"inline_keyboard" => $keyboard
+					)
+				)
+			);
+		} else {
+			self::apiRequestWebhook("editMessageText",
+				array(
+					'chat_id' => $chat_id,
+					'message_id' => $message_id,
+					"text" => $text,
+					"parse_mode" => "Markdown"
+				)
+			);
+		}
+	}
+
 	public static function reply_keyboard($chat_id, $text, $message_id, $keyboard)
 	{
 		self::apiRequestWebhook("sendMessage",

@@ -18,11 +18,14 @@ class Telegram
     {
         $Blackjack = new Blackjack($db, $message->User, $message->Chat->id, $move, $bet);
         if ($Blackjack->Talk->areMessages()) {
-            $keyboard = $Blackjack->Talk->getKeyboard();
-            if ($keyboard) {
-                \GroupBot\Telegram::reply_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $message->message_id, $keyboard);
+            if ($message->Chat->isPrivate()) {
+                $keyboard = $Blackjack->Talk->getKeyboard();
+
+                if ($message->isCallback()) \GroupBot\Telegram::edit_inline_message($message->Chat->id, $message->message_id, $Blackjack->Talk->getMessages(), $keyboard);
+                else \GroupBot\Telegram::talk_inline_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $keyboard);
+
             } else {
-                \GroupBot\Telegram::talk_hide_keyboard($message->Chat->id, $Blackjack->Talk->getMessages());
+                \GroupBot\Telegram::talk($message->Chat->id, $Blackjack->Talk->getMessages());
             }
             return true;
         }

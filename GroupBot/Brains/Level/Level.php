@@ -28,7 +28,7 @@ class Level
 
     public static function getDailyAllowance($level)
     {
-        return COIN_DAILY_INCOME + $level - 1;
+        return COIN_DAILY_INCOME + $level;
     }
 
     public static function buyLevel(User $user, \PDO $db)

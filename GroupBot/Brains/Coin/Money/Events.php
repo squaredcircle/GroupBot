@@ -18,7 +18,7 @@ use GroupBot\Brains\Coin\Enums\Event;
 use GroupBot\Brains\Coin\Types\Transaction;
 use GroupBot\Types\User;
 
-require_once __DIR__ .  '/../../../libraries/common.php';
+require_once __DIR__ .  '/../../../Libraries/common.php';
 
 class Events
 {

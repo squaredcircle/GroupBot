@@ -12,10 +12,11 @@ use GroupBot\Enums\ChatType;
 
 class Chat
 {
-    public $id;
-    public $type;
-    public $title;
+    public $id, $type, $title;
     public $messages_sent_last_min;
+    public $admin_user_id;
+    public $banker_name, $currency_name;
+    public $yandex_api_key, $yandex_enabled, $yandex_language, $yandex_min_words;
 
     public static function constructFromTelegramUpdate($chat_update, \PDO $db)
     {
@@ -23,7 +24,7 @@ class Chat
 
         $chatSQL = new \GroupBot\Database\Chat($db);
         if ($chat = $chatSQL->getChatById($chat_update['id'])) {
-            if (strcmp($chat->title, $chat_update['title']) !== 0) {
+            if (isset($chat_update['title']) && strcmp($chat->title, $chat_update['title']) !== 0) {
                 $chat->title = $chat_update['title'];
                 $changed = true;
             }
@@ -90,5 +91,10 @@ class Chat
                 break;
         }
         return false;
+    }
+
+    public function isPrivate()
+    {
+        return $this->type == ChatType::Individual;
     }
 }

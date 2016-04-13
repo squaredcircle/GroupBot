@@ -23,9 +23,9 @@ class User extends DbConnection
     {
         $sql = "
             INSERT INTO users
-              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today)
+              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference)
             VALUES
-              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today)
+              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today, :handle_preference)
               ON DUPLICATE KEY UPDATE
               first_name = VALUES(first_name),
               user_name = VALUES(user_name),
@@ -34,7 +34,8 @@ class User extends DbConnection
               level = VALUES(level),
               last_activity = VALUES(last_activity),
               received_income_today = VALUES(received_income_today),
-              free_bets_today = VALUES(free_bets_today)
+              free_bets_today = VALUES(free_bets_today),
+              handle_preference = VALUES(handle_preference)
         ";
 
         $query = $this->db->prepare($sql);
@@ -47,6 +48,7 @@ class User extends DbConnection
         $query->bindValue(':last_activity', $user->last_activity);
         $query->bindValue(':received_income_today', $user->received_income_today);
         $query->bindValue(':free_bets_today', $user->free_bets_today);
+        $query->bindValue(':handle_preference', $user->handle_preference);
         return $query->execute();
 
         //return $this->updateObject('users', $user);
@@ -72,7 +74,7 @@ class User extends DbConnection
      */
     public function getUserFromId($user_id)
     {
-        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today FROM users
+        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference FROM users
         WHERE user_id = :user_id';
 
         $query = $this->db->prepare($sql);
@@ -103,6 +105,7 @@ class User extends DbConnection
                     ,u.last_activity
                     ,u.received_income_today
                     ,u.free_bets_today
+                    ,u.handle_preference
                 FROM stats as s
                 INNER JOIN users as u
                 ON s.user_id = u.user_id
@@ -125,7 +128,7 @@ class User extends DbConnection
      */
     public function getUsersWithName($name)
     {
-        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today FROM users
+        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference FROM users
         WHERE :name IN (last_name, first_name, user_name)';
 
         $query = $this->db->prepare($sql);
@@ -144,7 +147,7 @@ class User extends DbConnection
      */
     public function getUserFromUserName($user_name)
     {
-        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today FROM users
+        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference FROM users
         WHERE user_name = :user_name';
 
         $query = $this->db->prepare($sql);
@@ -163,7 +166,7 @@ class User extends DbConnection
      */
     public function getAllUsers($include_bank)
     {
-        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today FROM users';
+        $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference FROM users';
         if (!$include_bank) $sql .= ' WHERE user_name != "'. COIN_TAXATION_BODY . '"';
 
         $query = $this->db->prepare($sql);
@@ -171,6 +174,35 @@ class User extends DbConnection
 
         if ($query->rowCount()) {
             return $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\User');
+        }
+        return false;
+    }
+
+    /**
+     * @param \GroupBot\Types\User $user
+     * @return Chat[]|bool
+     */
+    public function getActiveChatsByUser(\GroupBot\Types\User $user)
+    {
+        $sql = 'SELECT chats.* 
+                FROM stats
+                INNER JOIN chats
+                ON chats.chat_id = stats.chat_id
+                WHERE stats.user_id = :user_id AND stats.user_in_chat = TRUE AND chats.chat_id != :user_id2
+                ORDER BY stats.lastpost_date DESC';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $user->user_id);
+        $query->bindValue(':user_id2', $user->user_id);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            if ($chats = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat')) {
+                foreach ($chats as $chat) {
+                    $chat->id = $chat->chat_id;
+                }
+            }
+            return $chats;
         }
         return false;
     }
@@ -192,6 +224,7 @@ class User extends DbConnection
                     ,u.last_activity
                     ,u.received_income_today
                     ,u.free_bets_today
+                    ,u.handle_preference
                 FROM stats as s
                 INNER JOIN users as u
                 ON s.user_id = u.user_id
@@ -212,7 +245,7 @@ class User extends DbConnection
      * @param Chat $chat
      * @return \GroupBot\Types\User[]
      */
-    public function getAllUsersInChat(Chat $chat)
+    public function getAllUsersInChat($chat_id)
     {
         $sql = 'SELECT
                      s.user_id
@@ -224,13 +257,14 @@ class User extends DbConnection
                     ,u.last_activity
                     ,u.received_income_today
                     ,u.free_bets_today
+                    ,u.handle_preference
                 FROM stats as s
                 INNER JOIN users as u
                 ON s.user_id = u.user_id
                 WHERE s.chat_id = :chat_id AND s.user_in_chat = 1';
 
         $query = $this->db->prepare($sql);
-        $query->bindValue(':chat_id', $chat->id);
+        $query->bindValue(':chat_id', $chat_id);
         $query->execute();
 
         if ($query->rowCount()) {

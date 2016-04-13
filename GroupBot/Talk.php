@@ -102,7 +102,11 @@ class Talk
                 $message = $this->dict->ratings[mt_rand(0,10)];
                 break;
             case MessageType::NewChatParticipant:
-                $message = 'hi new guy';
+                if (strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) === 0) {
+                    $message = 'hey there friends';
+                } else {
+                    $message = 'hi new guy' . $this->Message->new_chat_participant->user_name;
+                }
                 break;
             case MessageType::LeftChatParticipant:
                 $message = 'such is life, brahs';

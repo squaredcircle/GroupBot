@@ -10,9 +10,9 @@ namespace GroupBot\Command;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
-class t_roll extends Command
+class roll extends Command
 {
-    public function t_roll()
+    public function main()
     {
         if ($this->Message->text == 'dubs')
         {
@@ -52,7 +52,7 @@ class t_roll extends Command
                 $test = substr(strval($out), 0 - $key);
                 if (preg_match('/^(.)\1*$/', $test))
                 {
-                    $text = str_repeat(emoji(0x1F389), $key-1) . sprintf('%09d', $out) . "\nnice " . $value . " brah" .  str_repeat("!", $key-1);
+                    $text = str_repeat(emoji(0x1F389), $key-1) . "`" . sprintf('%09d', $out) . "`" . "\nnice " . $value . " brah" .  str_repeat("!", $key-1);
                     Telegram::talk($this->Message->Chat->id, $text);
                     return true;
                 }

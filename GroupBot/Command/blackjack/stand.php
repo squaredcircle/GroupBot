@@ -5,17 +5,17 @@
  * Date: 8/11/2015
  * Time: 12:14 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\blackjack;
 
 use GroupBot\Brains\Blackjack\Telegram;
 use GroupBot\Brains\Blackjack\Enums\PlayerMove;
 use GroupBot\Types\Command;
 
-class b_hit extends Command
+class stand extends Command
 {
-    public function b_hit()
+    public function main()
     {
-        $Move = new PlayerMove(PlayerMove::Hit);
+        $Move = new PlayerMove(PlayerMove::Stand);
         return Telegram::getResponse($this->db, $this->Message, $Move);
     }
 }

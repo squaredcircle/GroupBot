@@ -34,7 +34,7 @@ class Chat extends DbConnection
      */
     public function getChatById($chat_id)
     {
-        $sql = 'SELECT chat_id, type, title, messages_sent_last_min FROM chats WHERE chat_id = :chat_id';
+        $sql = 'SELECT chat_id, type, title, messages_sent_last_min, admin_user_id, banker_name, currency_name, yandex_api_key, yandex_enabled, yandex_language, yandex_min_words FROM chats WHERE chat_id = :chat_id';
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':chat_id', $chat_id);
@@ -42,7 +42,10 @@ class Chat extends DbConnection
 
         if ($query->rowCount()) {
             $query->setFetchMode(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat');
-            return $query->fetch();
+            if ($chat = $query->fetch()) {
+                $chat->id = $chat->chat_id;
+                return $chat;
+            }
         }
         return false;
     }

@@ -7,6 +7,8 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Brains\Query;
+use GroupBot\Brains\Vote\Vote;
 use GroupBot\Database\User;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
@@ -40,10 +42,14 @@ isaaccoin - sucks lol
     {
         $DbUser = new User($this->db);
         $group_chats = $DbUser->getActiveChatsByUser($this->Message->User);
-
+        $Vote = new Vote($this->db);
+        $popularity = $Vote->getVoteTotalForUser($this->Message->User);
+        $ranking = Query::getGlobalRanking($this->db, $this->Message->User);
+        
         $this->out = emoji(0x1F44B) . " Hi *" . $this->Message->User->getName() . "*!"
             . "\nI'm *" . BOT_FRIENDLY_NAME . "*, your _Premier Shitposting Solution_ " . emoji(0x2122) . "."
-            . "\n\n" . emoji(0x1F481) . emoji(0x1F3FB) . "You're a " . $this->Message->User->getLevelAndTitle() . " with `" . $this->Message->User->getBalance() . "` Coin.";
+            . "\n\n" . emoji(0x1F481) . emoji(0x1F3FB) . "You're a " . $this->Message->User->getLevelAndTitle() . " with `" . $this->Message->User->getBalance() . "` Coin."
+            . "\nOverall, your popularity is at `$popularity` points, and you're ranked `" . addOrdinalNumberSuffix($ranking) . "` on the global leaderboard.";
 
         $this->out .= "\n\n*This menu system is currently under development and may be incomplete/broken. You've been warned!*";
 
@@ -62,8 +68,8 @@ isaaccoin - sucks lol
                     'callback_data' => '/help help'
                 ],
                 [
-                    'text' => emoji(0x1F4CA) . ' Check console',
-                    'callback_data' => '/help console'
+                    'text' => emoji(0x1F4BC) . ' Business',
+                    'callback_data' => '/help business'
                 ]
             ],
             [
@@ -277,9 +283,9 @@ isaaccoin - sucks lol
         ];
     }
 
-    public function console()
+    public function business()
     {
-        $this->out = emoji(0x1F4D6) . ' *Control Console*'
+        $this->out = emoji(0x1F4D6) . ' *Brass tacks*'
             . "\n\nHere are some things you can do:"
             . "\n"
             . "\n`   `• /vote for people"
@@ -338,8 +344,8 @@ isaaccoin - sucks lol
                 case 'translation':
                     $this->translation();
                     break;
-                case 'console':
-                    $this->console();
+                case 'business':
+                    $this->business();
                     break;
                 default:
                     $this->main_menu();

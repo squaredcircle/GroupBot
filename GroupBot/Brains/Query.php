@@ -79,4 +79,15 @@ class Query
         }
         return false;
     }
+
+    public static function getGlobalRanking(\PDO $db, \GroupBot\Types\User $user)
+    {
+        $leaderboard = Query::getUsersByMoneyAndLevel($db, NULL, true, false);
+
+        foreach ($leaderboard as $key => $usr) {
+            if ($usr->user_id == $user->user_id) return $key + 1;
+        }
+
+        return false;
+    }
 }

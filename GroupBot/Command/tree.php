@@ -10,7 +10,7 @@ namespace GroupBot\Command;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
-class q_tree extends Command
+class tree extends Command
 {
     private function repeat($emoji, $amount)
     {
@@ -33,7 +33,7 @@ class q_tree extends Command
         return $this->repeat($present, $repeat);
     }
 
-    public function q_tree()
+    public function main()
     {
         $ribbon = emoji(0x1F380);
         $santa = emoji(0x1F385);

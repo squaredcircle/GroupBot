@@ -120,27 +120,35 @@ abstract class CardGame
         {
             $player = $this->Game->getCurrentPlayer();
             if ($this->Game->getCurrentPlayer()->user->user_id == $this->user->user_id
-                && $Move != PlayerMove::JoinGame && $Move != PlayerMove::StartGame) {
+                && $Move != PlayerMove::JoinGame && $Move != PlayerMove::StartGame)
+            {
                 $this->processTurn($Move);
-            } elseif ($player->user->user_id != $this->user->user_id
-                && strtotime("-5 minutes") > strtotime($player->last_move_time)) {
+            }
+            elseif ($player->user->user_id != $this->user->user_id
+                && strtotime("-5 minutes") > strtotime($player->last_move_time))
+            {
                 $this->user->user_id = $player->user->user_id;
                 $this->user->user_name = $player->user->user_name;
                 $this->Talk->turn_expired($player);
                 $this->processTurn($this->newPlayerMove(PlayerMove::DefaultMove));
-            } elseif ($Move == PlayerMove::JoinGame || $Move == PlayerMove::StartGame) {
+            }
+            elseif ($Move == PlayerMove::JoinGame || $Move == PlayerMove::StartGame)
+            {
                 $this->Talk->game_status($this->Game);
             }
         }
         elseif (!$this->Game->isPlayerInGame($this->user->user_id))
         {
-            if ($Move == PlayerMove::JoinGame ) {
+            if ($Move == PlayerMove::JoinGame )
+            {
                 if (!$this->Bets->checkPlayerBet($this->Game, $this->user, $this->Game->Dealer->user, $this->bet)) return false;
                 $this->bet = $this->Bets->bet;
                 $this->free_bet = $this->Bets->free_bet;
                 $player = $this->Game->addPlayer($this->user, $this->Bets, $this->bet, $this->free_bet);
                 $this->Talk->join_game($player);
-            } elseif ($Move == PlayerMove::StartGame) {
+            }
+            elseif ($Move == PlayerMove::StartGame)
+            {
                 if (!$this->Bets->checkPlayerBet($this->Game, $this->user, $this->Game->Dealer->user, $this->bet)) return false;
                 $this->bet = $this->Bets->bet;
                 $this->free_bet = $this->Bets->free_bet;

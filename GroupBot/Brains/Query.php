@@ -25,7 +25,14 @@ class Query
         $userSQL = new User($db);
         $userInChat = true;
 
-        if (!$user_receiving = $userSQL->getUsersInChatWithName($chat, $name)) {
+        if (isset($chat)) {
+            if (!$user_receiving = $userSQL->getUsersInChatWithName($chat, $name)) {
+                if (!$user_receiving = $userSQL->getUsersWithName($name)) {
+                    return emoji("0x1F44E") . " Can't find any users matching `" . $name . "`, brah";
+                }
+                $userInChat = false;
+            }
+        } else {
             if (!$user_receiving = $userSQL->getUsersWithName($name)) {
                 return emoji("0x1F44E") . " Can't find any users matching `" . $name . "`, brah";
             }

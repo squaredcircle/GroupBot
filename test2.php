@@ -1,9 +1,15 @@
 <?php
-$arg = 'T';
-$vehicle = (    ($arg == 'B') ? 'bus' :
-                ($arg == 'A') ? 'airplane' :
-                ($arg == 'T') ? 'train' :
-                ($arg == 'C') ? 'car' :
-                ($arg == 'H') ? 'horse' :
-                    'feet');
-echo $vehicle;
+
+$var = [
+    [
+        'hehge'=>2,
+        'asdfasdfafsa'=>'sdfds'
+
+    ],
+    [
+        2=>2
+    ]
+];
+
+$output = print_r($var, true);
+file_put_contents('/root/groupbot.log', $output, FILE_APPEND | LOCK_EX);

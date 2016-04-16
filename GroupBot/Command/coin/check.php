@@ -5,15 +5,15 @@
  * Date: 8/11/2015
  * Time: 12:27 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\coin;
 
 use GroupBot\Brains\Query;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
-class i_check extends Command
+class check extends Command
 {
-    public function i_check()
+    public function main()
     {
         if ($this->isParam()) {
             $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam());
@@ -22,9 +22,9 @@ class i_check extends Command
                 Telegram::talk($this->Message->Chat->id, $user);
                 return false;
             }
-            Telegram::talk($this->Message->Chat->id, $user->getNameLevelAndTitle() . " has " . emoji("0x1F4B0") . $user->getBalance() . ", brah");
+            Telegram::talk($this->Message->Chat->id, $user->getNameLevelAndTitle() . " has " . emoji("0x1F4B0") . "*" . $user->getBalance() . "*, brah");
         } else {
-            Telegram::talk($this->Message->Chat->id, "You've got " . emoji("0x1F4B0") . $this->Message->User->getBalance() . ", brah");
+            Telegram::talk($this->Message->Chat->id, "You've got " . emoji("0x1F4B0") . "*" . $this->Message->User->getBalance() . "*, brah");
         }
         return true;
     }

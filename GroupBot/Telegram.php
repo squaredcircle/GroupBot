@@ -18,9 +18,14 @@ class Telegram
 		self::apiRequest("sendMessage", array('chat_id' => '@' . $channel, "text" => $text, "parse_mode" => "Markdown"));
 	}
 	
-	public static function talk($chat_id, $text)
+	public static function talk($chat_id, $text, $disable_web_page_preview = false)
 	{
-		self::apiRequestWebhook("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));
+		self::apiRequestWebhook("sendMessage", array(
+			'chat_id' => $chat_id,
+			"text" => $text,
+			"parse_mode" => "Markdown",
+			"disable_web_page_preview" => $disable_web_page_preview
+		));
 	}
 
 	public static function talkForced($chat_id, $text)

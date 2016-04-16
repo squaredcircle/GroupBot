@@ -11,31 +11,22 @@ use GroupBot\Brains\Query;
 use GroupBot\Telegram;
 use GroupBot\Brains\Vote\Enums\VoteType;
 use GroupBot\Brains\Vote\Types\UserVote;
+use GroupBot\Types\Chat;
 use GroupBot\Types\Command;
 use GroupBot\Types\User;
 
 class vote extends Command
 {
-    private function addOrdinalNumberSuffix($num)
-    {
-        if (!in_array(($num % 100), array(11, 12, 13))) {
-            switch ($num % 10) {
-                // Handle 1st, 2nd, 3rd
-                case 1:
-                    return $num . 'st';
-                case 2:
-                    return $num . 'nd';
-                case 3:
-                    return $num . 'rd';
-            }
-        }
-        return $num . 'th';
-    }
+    /** @var  Chat */
+    private $chat;
+    private $out;
+    private $keyboard;
+    private $vote_cast = false;
 
     private function leaderboard()
     {
         $Vote = new \GroupBot\Brains\Vote\Vote($this->db);
-        $leaderboard = $Vote->getVoteLeaderboard($this->Message->Chat->id);
+        $leaderboard = $Vote->getVoteLeaderboard($this->chat->id);
 
         $out = '';
         $index = 0;
@@ -43,7 +34,7 @@ class vote extends Command
         if (!empty($leaderboard)) {
             foreach ($leaderboard as $uservote) {
                 $index++;
-                $out .= "`" . $this->addOrdinalNumberSuffix($index);
+                $out .= "`" . addOrdinalNumberSuffix($index);
                 if ($index >= 10) {
                     $out .= " `";
                 } else {
@@ -65,10 +56,9 @@ class vote extends Command
 
     private function performVote()
     {
-        $DbUser = new \GroupBot\Database\User($this->db);
-        
-        $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam(0));
-        if (is_string($user)) return $user;
+        $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->chat, $this->getParam(0));
+        if (is_string($user))
+            return $user;
 
         if (strcasecmp($this->getParam(0), BOT_FRIENDLY_NAME) === 0) {
             return "wow, thx brah! " . emoji(0x1F618);
@@ -101,22 +91,120 @@ class vote extends Command
         $Vote = new \GroupBot\Brains\Vote\Vote($this->db);
         $Vote->SQL->update_vote($userVote);
 
+        $this->vote_cast = true;
+
         return emoji(0x1F528) . " Vote updated.";
+    }
+
+    private function displayLeaderboard()
+    {
+        if (isset($this->chat)) {
+            if ($this->vote_cast) {
+                $out = "\nThe leaderboard for *" . $this->chat->title . "* is now:\n\n";
+            } else {
+                $out = "Voting leaderboard for *" . $this->chat->title . "*:\n\n";
+            }
+        } else {
+            if ($this->vote_cast) {
+                $out = "\nThe *global* voting leaderboard is now:\n\n";
+            } else {
+                $out = "*Global* voting leaderboard:\n\n";
+            }
+        }
+
+        $out .= $this->leaderboard();
+
+        return $out;
+    }
+
+    private function displayInstructions()
+    {
+        if (!$this->Message->Chat->isPrivate()) {
+            if ($this->vote_cast) {
+                $out = "\nYou can see your votes with /myvotes.";
+            } else {
+                $out = "\nYou can vote for others like this " . emoji("0x1F449") . "  `/vote richardstallman up`\nYou can see your votes with /myvotes.";
+            }
+        } else {
+            $out = "\nYou can vote for others like this " . emoji("0x1F449") . "  `/vote richardstallman up`"
+                    ."\nYou can view the leaderboards for these recent chats:";
+            $this->keyboard = $this->keyboard();
+        }
+        return $out;
+    }
+
+    private function keyboard()
+    {
+        $DbUser = new \GroupBot\Database\User($this->db);
+        $chats = $DbUser->getActiveChatsByUser($this->Message->User);
+        $keyboard =
+            [
+                [
+                    [
+                        'text' => 'Global',
+                        'callback_data' => '/vote'
+                    ]
+                ],
+                [
+                    [
+                        'text' => emoji(0x1F4BC) . ' Back to business menu',
+                        'callback_data' => '/help business'
+                    ],
+                    [
+                        'text' => emoji(0x1F6AA) . ' Back to main menu',
+                        'callback_data' => '/help'
+                    ]
+                ]
+            ];
+        $index = 0;
+        foreach ($chats as $chat) {
+            if ($index++ > 3)
+                break;
+            $keyboard[0][] = [
+                'text' => $chat->title,
+                'callback_data' => '/vote _view_chat ' . $chat->id
+            ];
+        }
+        return $keyboard;
     }
 
     public function main()
     {
-        if ($this->noParams() == 2) {
-            $out = $this->performVote();
-            $out .= "\nThe leaderboard for *" . $this->Message->Chat->title . "* is now:\n\n";
-            $out .= $this->leaderboard();
-            $out .= "\nYou can see your votes with /myvotes.";
+        if ($this->Message->Chat->isPrivate()) {
+            $this->chat = NULL;
         } else {
-            $out = "Voting leaderboard for *" . $this->Message->Chat->title . "*:\n\n";
-            $out .= $this->leaderboard();
-            $out .= "\nYou can vote for others like this " . emoji("0x1F449") . "  `/vote richardstallman up`\nYou can see your votes with /myvotes.";
+            $this->chat = $this->Message->Chat;
         }
 
-        Telegram::talk($this->Message->Chat->id, $out);
+        if ($this->noParams() == 2) {
+            if (strcmp($this->getParam(), '_view_chat') === 0) {
+                $DbChat = new \GroupBot\Database\Chat($this->db);
+                if ($this->chat = $DbChat->getChatById($this->getParam(1))) {
+                    $out = $this->displayLeaderboard();
+                    $out .= $this->displayInstructions();
+                } else {
+                    $out = emoji(0x1F44E) . " Can't find that chat, displaying the Global Leaderboard instead.\n\n";
+                    $this->chat = NULL;
+                    $out .= $this->displayLeaderboard();
+                    $out .= $this->displayInstructions();
+                }
+            } else {
+                $out = $this->performVote();
+                $out .= $this->displayLeaderboard();
+                $out .= $this->displayInstructions();
+            }
+        } else {
+            $out = $this->displayLeaderboard();
+            $out .= $this->displayInstructions();
+        }
+
+        if ($this->Message->Chat->isPrivate()) {
+            if ($this->Message->isCallback())
+                Telegram::edit_inline_message($this->Message->Chat->id, $this->Message->message_id, $out, $this->keyboard);
+            else Telegram::talk_inline_keyboard($this->Message->Chat->id, $out, $this->keyboard);
+        } else {
+            Telegram::talk($this->Message->Chat->id, $out);
+        }
+        return true;
     }
 }

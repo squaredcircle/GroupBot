@@ -115,6 +115,16 @@ class leaderboard extends Command
                         'text' => 'Global',
                         'callback_data' => '/leaderboard global'
                     ]
+                ],
+                [
+                    [
+                        'text' => emoji(0x1F4BC) . ' Back to business menu',
+                        'callback_data' => '/help business'
+                    ],
+                    [
+                        'text' => emoji(0x1F6AA) . ' Back to main menu',
+                        'callback_data' => '/help'
+                    ]
                 ]
             ];
         $index = 0;
@@ -147,7 +157,9 @@ class leaderboard extends Command
 
         if ($this->Message->Chat->isPrivate()) {
             $out .= "\nYou can also view these recent group chat leaderboards:";
-            Telegram::talk_inline_keyboard($this->Message->Chat->id, $out, $this->keyboard());
+            if ($this->Message->isCallback())
+                Telegram::edit_inline_message($this->Message->Chat->id, $this->Message->message_id, $out, $this->keyboard());
+            else Telegram::talk_inline_keyboard($this->Message->Chat->id, $out, $this->keyboard());
         } else {
             Telegram::talk($this->Message->Chat->id, $out);
         }

@@ -100,7 +100,11 @@ class Vote
     public function getVoteLeaderboard($chat_id)
     {
         $DbUser = new \GroupBot\Database\User($this->db);
-        $users = $DbUser->getAllUsersInChat($chat_id);
+        if (isset($chat_id)) {
+            $users = $DbUser->getAllUsersInChat($chat_id);
+        } else {
+            $users = $DbUser->getAllUsers(true);
+        }
         $votes = $this->SQL->get_all_votes();
 
         $tallies = array();

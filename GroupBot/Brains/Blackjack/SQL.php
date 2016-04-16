@@ -225,6 +225,13 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
                 $sql .= 'draws = draws + 1';
                 break;
         }
+        error_reporting(E_ALL);
+
+        $output = print_r($player, true);
+        file_put_contents('/home/log/groupbot.log', $output, FILE_APPEND | LOCK_EX);
+
+        $output = print_r($sql, true);
+        file_put_contents('/home/log/groupbot.log', $output, FILE_APPEND | LOCK_EX);
 
         $query = $this->db->prepare($sql);
 

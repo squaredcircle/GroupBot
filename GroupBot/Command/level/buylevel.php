@@ -20,7 +20,7 @@ class buylevel extends Command
         $greetings = array("Arise", "Congratulations");
 
         if ($Level->buyLevel($user, $this->db)) {
-            $out = emoji(0x1F4EF) . " " . $greetings[mt_rand(0, count($greetings) - 1)] . " *" . $user->first_name . "*, you are now a *Level ". $user->level . " " . $user->getTitle() . "*!"
+            $out = emoji(0x1F4EF) . " " . $greetings[mt_rand(0, count($greetings) - 1)] . " *" . $user->getName() . "*, you are now a *Level ". $user->level . " " . $user->getTitle() . "*!"
                 . "\nYou may rise to Level " . ($user->level + 1) . " for a price of " . $Level->getLevelPrice($user->level+1) . " Coin.";
         } else {
             $out = emoji(0x1F44E) . " Sorry, you need " . $Level->getLevelPrice($user->level+1) . " Coin to rise to Level " . ($user->level+1) . ".";

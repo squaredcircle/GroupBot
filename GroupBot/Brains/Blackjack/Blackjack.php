@@ -196,6 +196,10 @@ class Blackjack extends CardGame
                     $this->Bets->payPlayer($Player, $Dealer->user, 1.5);
                 }
             }
+            elseif ($Player->State == PlayerState::Surrender)
+            {
+                $Player->game_result = new GameResult(GameResult::Loss);
+            }
         }
     }
 

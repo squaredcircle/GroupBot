@@ -29,7 +29,7 @@ class User
 
     public static function constructFromTelegramUpdate($user_update, $chat, \PDO $db)
     {
-        if (strcmp($user_update['username'], BOT_FULL_USER_NAME) === 0) {
+        if (isset($user_update['username']) &&  strcmp($user_update['username'], BOT_FULL_USER_NAME) === 0) {
             $user = new User();
             $user->user_name = BOT_FULL_USER_NAME;
             return $user;
@@ -59,7 +59,7 @@ class User
             Telegram::talkForced($chat['id'],
                 emoji(0x1F4EF) . " Arise, *" . $user->getName(). "*."
                 . "\n\nYou have risen from squalor to become a *Level 1 " . $user->getTitle() . "*."
-                . "\nYou find " . $user->getBalance() . " `" . COIN_CURRENCY_NAME . "` in a money bag on your person."
+                . "\nYou find `" . $user->getBalance() . " *" . COIN_CURRENCY_NAME . "* in a money bag on your person."
                 . "\n\nBest of luck, brave traveller. Use /help to get started.");
             $changed = true;
         }

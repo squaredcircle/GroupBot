@@ -49,7 +49,7 @@ isaaccoin - sucks lol
         $this->out = emoji(0x1F44B) . " Hi *" . $this->Message->User->getName() . "*!"
             . "\nI'm *" . BOT_FRIENDLY_NAME . "*, your _Premier Shitposting Solution_ " . emoji(0x2122) . "."
             . "\n\n" . emoji(0x1F481) . emoji(0x1F3FB) . "You're a " . $this->Message->User->getLevelAndTitle() . " with `" . $this->Message->User->getBalance() . "` Coin."
-            . "\nOverall, your popularity is at `$popularity` points, and you're ranked `" . addOrdinalNumberSuffix($ranking) . "` on the global leaderboard.";
+            . "\nOverall, your popularity is at *$popularity* points, and you're ranked *" . addOrdinalNumberSuffix($ranking) . "* on the global leaderboard.";
 
         $this->out .= "\n\n*This menu system is currently under development and may be incomplete/broken. You've been warned!*";
 
@@ -285,26 +285,34 @@ isaaccoin - sucks lol
 
     public function business()
     {
-        $this->out = emoji(0x1F4D6) . ' *Brass tacks*'
-            . "\n\nHere are some things you can do:"
+        $this->out = emoji(0x1F4BC) . ' *Brass tacks*'
+            . "\n\nYou can access the following facilities:"
             . "\n"
-            . "\n`   `• /vote for people"
-            . "\n`   `• /leaderboard to see where everybody is at"
-            . "\n`   `• /level to increase your status"
-            . "\n`   `• /income to get some coin right now"
+            . "\n`   `• *Leaderboards* per chat or globally"
+            . "\n`   `• *Voting* system"
+            . "\n`   `• *Level* purchases"
+            . "\n`   `• Daily *income*"
             . "\n"
-            . "\n`   `• /roll for a good time"
-            . "\n`   `• /time in case you don't live in my time zone"
-            . "\n`   `• /help brings up the main menu"
-            . "\n"
-            . "\n`   `• /christmas if you're feeling cheery"
-            . "\n"
-            . "\nThis list doesn't include other specific types of commands, like games or settings.";
+            . "\nWhat would you like to do?";
         $this->keyboard = [
             [
                 [
-                    'text' => emoji(0x2754) . ' Back to help menu',
-                    'callback_data' => '/help help'
+                    'text' => emoji(0x1F3C6) . ' Leaderboards',
+                    'callback_data' => '/leaderboard'
+                ],
+                [
+                    'text' => emoji(0x270F) . ' Votes',
+                    'callback_data' => '/vote'
+                ],
+                [
+                    'text' => emoji(0x1F482) . ' Buy Level',
+                    'callback_data' => '/buylevel'
+                ],
+            ],
+            [
+                [
+                    'text' => emoji(0x1F4B8) . ' Receive Income',
+                    'callback_data' => '/income'
                 ],
                 [
                     'text' => emoji(0x1F6AA) . ' Main menu',

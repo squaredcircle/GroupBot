@@ -112,6 +112,25 @@ class Telegram
 		self::apiRequestWebhook("answerInlineQuery", array('inline_query_id' => $inline_query_id, 'cache_time' => 0, 'results' => $results));
 	}
 
+
+	public static function sendDocument($chat_id, $file_path)
+	{
+		$url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendDocument?chat_id=" . $chat_id ;
+
+		$post_fields = array(
+			'chat_id'   => $chat_id,
+			'document'     => new \CURLFile(realpath($file_path))
+		);
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+		//curl_setopt($ch, CURLOPT_INFILESIZE, filesize($file_path));
+		return curl_exec($ch);
+	}
+
 	public static function customPhotoSender($chat_id, $file_path)
 	{
 		$url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendPhoto?chat_id=" . $chat_id ;

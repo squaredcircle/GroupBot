@@ -15,4 +15,11 @@ class Realtime
     public $state;
 
     public $air_temp;
+
+    public function __construct($name, $state, $air_temp)
+    {
+        $this->name = $name;
+        $this->state = $state;
+        $this->air_temp = $air_temp;
+    }
 }

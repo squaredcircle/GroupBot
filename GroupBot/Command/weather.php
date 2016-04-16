@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Brains\Weather\Realtime;
+use GroupBot\Libraries\Carbon;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
@@ -15,16 +15,32 @@ class weather extends Command
 {
     public function main()
     {
-        $today = $this->today();
-        $index = $this->uv_index();
-        $sun = $this->sun();
+        $realtime = \GroupBot\Brains\Weather\Weather::realtime();
+        $uv = \GroupBot\Brains\Weather\Weather::uv_index();
+        $sunrise = \GroupBot\Brains\Weather\Weather::sunrise();
+        $forecast = \GroupBot\Brains\Weather\Weather::forecast();
 
-        $out = emoji(0x26C5) . " Weather for *" . $header->name . "*, *" . $header->state . "*."
+        $today = $forecast[Carbon::today()->format('l')];
+        $tomorrow = $forecast[Carbon::tomorrow()->format('l')];
+
+        $today_icon = \GroupBot\Brains\Weather\Weather::$icon_map[$today['forecast_icon_code']];
+        $tomorrow_icon = \GroupBot\Brains\Weather\Weather::$icon_map[$tomorrow['forecast_icon_code']];
+
+        $out = emoji(0x1F321) . " Weather for *" . $realtime->name . "*, *" . $realtime->state . "*."
             . "\n"
-            . "\n`   `• Currently *" . $now->air_temp . "°C*"
-            . "\n`   `• " . $today[1] . " Max *" . $today[0] . "°C* today"
-            . "\n`   `• The UV index is at *" . $index . "* ([" . $this->uv_code($index)[1] . "](http://www.arpansa.gov.au/uvindex/realtime/images//per_rt.gif))"
-            . "\n`   `• Sunrise is at *$sun[0]* today, and sunset at *$sun[1]*";
+            . "\n" . emoji($today_icon) . " *Now:*"
+            . "\n`   `• It's currently *" . $realtime->air_temp . "°C*"
+            . "\n`   `• The UV index is at *" . $uv->value . "* ([" . $uv->description . "](http://www.arpansa.gov.au/uvindex/realtime/images//per_rt.gif))"
+            . "\n"
+            . "\n" . emoji($today_icon) . " *Today:*"
+            . "\n`   `• " . $today['forecast']
+            . "\n`   `• *" . $today['probability_of_precipitation'] . "* chance of rain"
+            . "\n`   `• Sunrise is at *$sunrise->sunrise* today, and sunset at *$sunrise->sunset*"
+            . "\n"
+            . "\n" . emoji($tomorrow_icon) . " *Tomorrow:*"
+            . "\n`   `• Minimum of *" . $tomorrow['air_temperature_minimum'] . "°C*, maximum of *" . $tomorrow['air_temperature_maximum'] . "°C*"
+            . "\n`   `• *" . $tomorrow['probability_of_precipitation'] . "* chance of rain"
+            . "\n`   `• " . $tomorrow['forecast'];
 
 
         Telegram::talk($this->Message->Chat->id, $out, true);

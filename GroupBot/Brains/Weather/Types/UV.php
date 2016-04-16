@@ -6,7 +6,7 @@
  * Time: 2:30 PM
  */
 
-namespace GroupBot\Brains\Weather;
+namespace GroupBot\Brains\Weather\Types;
 
 
 class UV

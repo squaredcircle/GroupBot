@@ -149,6 +149,11 @@ class Telegram
 		return curl_exec($ch);
 	}
 
+	public static function fileIdDocumentSender($chat_id, $file_id)
+	{
+		self::apiRequestWebhook("sendDocument", array('chat_id' => $chat_id, 'document' => $file_id));
+	}
+
 	public static function fileIdPhotoSender($chat_id, $file_id)
 	{
 		self::apiRequestWebhook("sendPhoto", array('chat_id' => $chat_id, 'photo' => $file_id));

@@ -54,4 +54,25 @@ class Photo extends DbConnection
         return false;
     }
 
+    public function getRadarPhotoId($local_path)
+    {
+        $sql = 'SELECT file_id
+                FROM photos
+                WHERE local_path = :local_path';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':local_path', $local_path);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return $query->fetch()['file_id'];
+        }
+        return false;
+
+        $no_rows = $query->fetchColumn();
+
+        if ($no_rows == 1) return $query->fetch()['file_id'];
+        return false;
+    }
+
 }

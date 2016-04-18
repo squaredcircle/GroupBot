@@ -19,6 +19,6 @@ class radar extends Command
         $img = '/var/www/html/bot/radar/' . time() . '.gif';
         file_put_contents($img, file_get_contents($url));
 
-        Telegram::sendDocument($this->Message->Chat->id, $img);
+        Telegram::customPhotoSender($this->Message->Chat->id, $img);
     }
 }

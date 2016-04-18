@@ -40,7 +40,7 @@ class Chat
             );
             $changed = true;
         }
-
+        
         if ($changed) $chatSQL->updateChat($chat);
         return $chat;
     }

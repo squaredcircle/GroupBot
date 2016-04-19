@@ -82,14 +82,20 @@ class radar extends Command
         $photoSQL = new Photo($this->db);
         $photoSQL->addServerPhotoId($file_id, '', $this->filename);
     }
+    
+
+    private function setTitle($filenames)
+    {
+        $last_filename = end($filenames);
+        $info = pathinfo($last_filename);
+        $this->title = $info['filename'] . '.gif';
+        $this->filename =  '/var/www/html/bot/radar/' . $this->title;
+    }
 
     private function sendMovingGIF()
     {
         $filenames = $this->get_images();
-        $last_filename = end($filenames);
-        $last_filename= explode('/', $last_filename);
-        $this->title = end($last_filename);
-        $this->filename =  '/var/www/html/bot/radar/' . $this->title;
+        $this->setTitle($filenames);
 
         if (!$this->sendIfExists()) {
             $images = $this->overlay($filenames);

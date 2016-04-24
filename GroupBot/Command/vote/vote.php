@@ -56,7 +56,11 @@ class vote extends Command
 
     private function performVote()
     {
-        $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->chat, $this->getParam(0));
+        if (isset($this->chat)) {
+            $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->chat, $this->getParam(0));
+        } else {
+            $user = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam(0));
+        }
         if (is_string($user))
             return $user;
 

@@ -65,7 +65,7 @@ class GroupBot
         if ($this->Message->isCommand()) {
             $this->processCommand();
         } else {
-            $Talk = new Talk($this->Message);
+            $Talk = new Talk($this->Message, $this->db);
             $Talk->processMessage();
         }
 
@@ -96,7 +96,7 @@ class GroupBot
 
     private function runCommand($cmd)
     {
-        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote'] as $folder) {
+        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc'] as $folder) {
             if (is_null($folder)) {
                 $class = "GroupBot\\Command\\$cmd";
                 $class_staging = "GroupBot\\CommandStaging\\$cmd";

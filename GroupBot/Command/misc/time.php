@@ -5,7 +5,7 @@
  * Date: 7/11/2015
  * Time: 3:07 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\misc;
 
 use GroupBot\Telegram;
 use GroupBot\Types\Command;

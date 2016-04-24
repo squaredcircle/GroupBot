@@ -34,13 +34,14 @@ class weather extends Command
             . "\n"
             . "\n" . emoji($today_icon) . " *Today:*"
             . "\n`   `• " . $today['forecast']
+            . "\n`   `• Maximum of *" . $today['air_temperature_maximum'] . "°C*"
             . "\n`   `• *" . $today['probability_of_precipitation'] . "* chance of rain"
             . "\n`   `• Sunrise is at *$sunrise->sunrise* today, and sunset at *$sunrise->sunset*"
             . "\n"
             . "\n" . emoji($tomorrow_icon) . " *Tomorrow:*"
+            . "\n`   `• " . $tomorrow['forecast']
             . "\n`   `• Minimum of *" . $tomorrow['air_temperature_minimum'] . "°C*, maximum of *" . $tomorrow['air_temperature_maximum'] . "°C*"
-            . "\n`   `• *" . $tomorrow['probability_of_precipitation'] . "* chance of rain"
-            . "\n`   `• " . $tomorrow['forecast'];
+            . "\n`   `• *" . $tomorrow['probability_of_precipitation'] . "* chance of rain";
 
 
         Telegram::talk($this->Message->Chat->id, $out, true);

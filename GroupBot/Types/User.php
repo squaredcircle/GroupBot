@@ -58,8 +58,8 @@ class User
             $user->construct($user_update['id'], $user_update['first_name'], $last_name, $username);
             Telegram::talkForced($chat['id'],
                 emoji(0x1F4EF) . " Arise, *" . $user->getName(). "*."
-                . "\n\nYou have risen from squalor to become a *Level 1 " . $user->getTitle() . "*."
-                . "\nYou find `" . $user->getBalance() . " *" . COIN_CURRENCY_NAME . "* in a money bag on your person."
+                . "\n\nYou have risen from squalor to become a " . $user->getLevelAndTitle() . "."
+                . "\nYou find *" . $user->getBalance() . " " . COIN_CURRENCY_NAME . "* in a money bag on your person."
                 . "\n\nBest of luck, brave traveller. Use /help to get started.");
             $changed = true;
         }

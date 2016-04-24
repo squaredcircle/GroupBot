@@ -12,6 +12,7 @@ namespace GroupBot;
 use GroupBot\Brains\Translate;
 use GroupBot\Enums\MessageType;
 use GroupBot\Libraries\Dictionary;
+use GroupBot\Types\Command;
 use GroupBot\Types\Message;
 
 class Talk
@@ -22,9 +23,13 @@ class Talk
     /** @var Dictionary  */
     private $dict;
 
-    public function __construct(Message $message)
+    /** @var \PDO  */
+    private $db;
+
+    public function __construct(Message $message, \PDO $db)
     {
         $this->Message  = $message;
+        $this->db = $db;
         $this->dict = new Dictionary();
     }
 
@@ -66,13 +71,12 @@ class Talk
         foreach ($keys as $i) {
             if (stripos($this->Message->text, $i) !== false) {
 
-                $command = "t_" . $commands[$i];
-                $class = "GroupBot\\Command\\" . $command;
+                $class = "GroupBot\\Command\\" . $commands[$i];
 
-                if (class_exists($class))
-                {
-                    $obj = new $class($this->Message);
-                    $obj->$command();
+                if (class_exists($class)) {
+                    /** @var Command $obj */
+                    $obj = new $class($this->Message, $this->db);
+                    $obj->main();
                     return true;
                 }
             }
@@ -105,7 +109,7 @@ class Talk
                 if (strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) === 0) {
                     $message = 'hey there friends';
                 } else {
-                    $message = 'hi new guy' . $this->Message->new_chat_participant->user_name;
+                    $message = 'hi there new guy';
                 }
                 break;
             case MessageType::LeftChatParticipant:

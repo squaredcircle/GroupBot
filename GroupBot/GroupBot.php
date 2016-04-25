@@ -96,7 +96,7 @@ class GroupBot
 
     private function runCommand($cmd)
     {
-        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc'] as $folder) {
+        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder'] as $folder) {
             if (is_null($folder)) {
                 $class = "GroupBot\\Command\\$cmd";
                 $class_staging = "GroupBot\\CommandStaging\\$cmd";

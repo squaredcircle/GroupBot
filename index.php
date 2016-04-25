@@ -8,4 +8,6 @@ spl_autoload_register( function ($class) {
 		return false;
 });
 
+require 'vendor/autoload.php';
+
 $ShitBot = new GroupBot\GroupBot();

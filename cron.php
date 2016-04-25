@@ -11,6 +11,9 @@ spl_autoload_register( function ($class) {
     return include(__DIR__ . '/' . $include_path);
 });
 
+require 'vendor/autoload.php';
+
+require(__DIR__ . '/GroupBot/Libraries/common.php');
 require(__DIR__ . '/GroupBot/Settings.php');
 
 function createPDO()
@@ -25,14 +28,18 @@ if (isset($argv[1]))
 {
     $db = createPDO();
 
-    if ($argv[1] == 'resetDailyCounters')
-    {
-        $db = new \GroupBot\Database\Cron($db);
-        $db->resetDailyCounters();
-    }
-    elseif ($argv[1] == 'runRandomEvent')
-    {
-        $Coin = new \GroupBot\Brains\Coin\Coin();
-        $Coin->runRandomEvent();
+    switch ($argv[1]) {
+        case 'resetDailyCounters':
+            $db = new \GroupBot\Database\Cron($db);
+            $db->resetDailyCounters();
+            break;
+        case 'runRandomEvent':
+            $Coin = new \GroupBot\Brains\Coin\Money\Events($db);
+            //$Coin->eventRoulette();
+            break;
+        case 'sendReminders':
+            $Reminder = new GroupBot\Brains\Reminder\Control($db);
+            $Reminder->sendReminders();
+            break;
     }
 }

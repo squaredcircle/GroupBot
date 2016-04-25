@@ -7,7 +7,7 @@
  */
 namespace GroupBot\Command;
 
-use GroupBot\Libraries\Carbon;
+use GroupBot\Libraries\Carbon\Carbon;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 

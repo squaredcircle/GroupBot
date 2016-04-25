@@ -134,6 +134,19 @@ abstract class Talk
         $time = $interval->format("*%h hours* and *%i minutes*");
 
         $this->addMessage(emoji(0x1F44E) . " Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!\n($time to go)");
+
+        $this->keyboard = [
+            [
+                [
+                    'text' => emoji(0x1F3AE) . ' Games Menu',
+                    'callback_data' => '/help games'
+                ],
+                [
+                    'text' => emoji(0x1F6AA) . ' Main menu',
+                    'callback_data' => '/help'
+                ]
+            ]
+        ];
     }
 
     public function pay_bet_failed_return()

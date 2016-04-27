@@ -39,7 +39,7 @@ class Casinowar extends CardGame
      * @param $user_name
      * @return Talk
      */
-    protected function newTalk($user_name)
+    protected function newTalk()
     {
         return new Talk();
     }

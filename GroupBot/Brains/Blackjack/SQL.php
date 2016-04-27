@@ -39,11 +39,10 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
      */
     public function insert_player($game_id, \GroupBot\Brains\CardGame\Types\Player $player)
     {
-        $sql = 'INSERT INTO bj_players (user_id, user_name, game_id, cards, state, player_no, bet, free_bet, split, last_move_time)
-                VALUES (:user_id, :user_name, :game_id, :cards, :state, :player_no, :bet, :free_bet, :split, NOW())';
+        $sql = 'INSERT INTO bj_players (user_id, game_id, cards, state, player_no, bet, free_bet, split, last_move_time)
+                VALUES (:user_id, :game_id, :cards, :state, :player_no, :bet, :free_bet, :split, NOW())';
         $query = $this->db->prepare($sql);
         $query->bindValue(':user_id', $player->user->user_id);
-        $query->bindValue(':user_name', $player->user->user_name);
         $query->bindValue(':game_id', $game_id);
         $query->bindValue(':cards', $player->Hand->handToDbString());
         $query->bindValue(':state', $player->State);

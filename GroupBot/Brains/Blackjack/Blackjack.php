@@ -216,7 +216,7 @@ class Blackjack extends CardGame
      * @param $user_name
      * @return \GroupBot\Brains\Blackjack\Talk
      */
-    protected function newTalk($user_name)
+    protected function newTalk()
     {
         return new Talk();
     }

@@ -63,7 +63,7 @@ abstract class CardGame
 
         $this->db = $db;
         $this->SQL = $this->newSQL($db);
-        $this->Talk = $this->newTalk($this->user->user_name);
+        $this->Talk = $this->newTalk();
         $this->Transact = new Transact($db);
         $this->Bets = new Bets($this->Talk, $db);
 
@@ -82,7 +82,7 @@ abstract class CardGame
      * @param $user_name
      * @return Talk
      */
-    abstract protected function newTalk($user_name);
+    abstract protected function newTalk();
 
     /**
      * @param $playerMove
@@ -128,7 +128,6 @@ abstract class CardGame
                 && strtotime("-5 minutes") > strtotime($player->last_move_time))
             {
                 $this->user->user_id = $player->user->user_id;
-                $this->user->user_name = $player->user->user_name;
                 $this->Talk->turn_expired($player);
                 $this->processTurn($this->newPlayerMove(PlayerMove::DefaultMove));
             }

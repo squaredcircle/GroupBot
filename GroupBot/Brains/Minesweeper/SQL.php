@@ -37,4 +37,19 @@ class SQL extends DbConnection
 
         return $query->execute();
     }
+
+    public function delete_game(Game $game)
+    {
+        $sql = 'DELETE FROM ms_games WHERE chat_id = :chat_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':chat_id', $game->chat_id);
+
+        return $query->execute();
+    }
+
+    public function select_game($chat_id)
+    {
+        
+    }
 }

@@ -33,6 +33,24 @@ class SQL extends DbConnection
     }
 
     /**
+     * @param UserVote $userVote
+     * @return bool
+     */
+    public function check_if_vote_exists(UserVote $userVote)
+    {
+        $sql = 'SELECT vote FROM user_votes WHERE voter = :voter AND voted_for = :voted_for AND vote = :vote';
+
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':voter', $userVote->voter->user_id);
+        $query->bindValue(':voted_for', $userVote->voted_for->user_id);
+        $query->bindValue(':vote', $userVote->vote);
+        $query->execute();
+
+        return (bool)$query->rowCount();
+    }
+
+    /**
      * @return UserVote[]|bool
      */
     public function get_all_votes()
@@ -94,10 +112,11 @@ class SQL extends DbConnection
     public function update_vote(UserVote $userVote)
     {
         if ($userVote->vote == VoteType::Neutral) {
-            $sql = 'DELETE FROM user_votes WHERE voter = :voter';
+            $sql = 'DELETE FROM user_votes WHERE voter = :voter AND voted_for = :voted_for';
 
             $query = $this->db->prepare($sql);
             $query->bindValue(':voter', $userVote->voter->user_id);
+            $query->bindValue(':voted_for', $userVote->voted_for->user_id);
 
             return $query->execute();
         } else {

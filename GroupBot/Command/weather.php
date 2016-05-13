@@ -15,6 +15,8 @@ class weather extends Command
 {
     public function main()
     {
+        Telegram::sendChatTypingStatus($this->Message->Chat->id);
+
         $realtime = \GroupBot\Brains\Weather\Weather::realtime();
         $uv = \GroupBot\Brains\Weather\Weather::uv_index();
         $sunrise = \GroupBot\Brains\Weather\Weather::sunrise();

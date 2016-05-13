@@ -107,23 +107,54 @@ class Talk
                 break;
             case MessageType::NewChatParticipant:
                 if (strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) === 0) {
-                    $message = 'hey there friends';
+                    $message = $this->dict->join_chat;
+                    $this->Message->Chat->admin_user_id = $this->Message->User->user_id;
+                    $this->Message->Chat->save($this->db);
                 } else {
-                    $message = 'hi there new guy';
+                    $message = $this->dict->new_chat_member;
                 }
                 break;
             case MessageType::LeftChatParticipant:
-                $message = 'such is life, brahs';
+                $message = $this->dict->chat_member_left;
                 break;
             case MessageType::DeleteChatPhoto:
-                $message = 'why, fam?';
+                $message = $this->dict->chat_photo_deleted;
                 break;
         }
         if (isset($message)) Telegram::talk($this->Message->Chat->id, $message);
     }
 
+    private function translate()
+    {
+        if ($this->Message->MessageType == MessageType::Forward && strcmp($this->Message->forward_from->user_name, BOT_FULL_USER_NAME) === 0) return false;
+        if (count(mb_split(" ", $this->Message->text)) > 3) {
+            $Translate = new Translate();
+            $lang = $Translate->detectLanguage($this->Message->text);
+            if ($lang != 'English') {
+                $translation = $Translate->translate($this->Message->text, 'English');
+                Telegram::talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
+            }
+        }
+        return true;
+    }
+
+    private function greetUser()
+    {
+        if ($this->Message->User->welcome_sent) return false;
+        Telegram::talk($this->Message->Chat->id,
+            emoji(0x1F4EF) . " Arise, *" . $this->Message->User->getName(). "*."
+            . "\n\nYou have risen from squalor to become a " . $this->Message->User->getLevelAndTitle() . "."
+            . "\nYou find *" . $this->Message->User->getBalance() . " " . COIN_CURRENCY_NAME . "* in a money bag on your person."
+            . "\n\nBest of luck, brave traveller. Use /help to get started.");
+        $this->Message->User->welcome_sent = true;
+        $this->Message->User->save($this->db);
+        return true;
+    }
+
     public function processMessage()
     {
+        if ($this->greetUser()) return true;
+
         if ($this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
@@ -139,14 +170,8 @@ class Talk
             }
         }
 
-        if (count(mb_split(" ", $this->Message->text)) > 3) {
-            $Translate = new Translate();
-            $lang = $Translate->detectLanguage($this->Message->text);
-            if ($lang != 'English') {
-                $translation = $Translate->translate($this->Message->text, 'English');
-                Telegram::talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
-            }
-        }
+        $this->translate();
+
         return true;
     }
 }

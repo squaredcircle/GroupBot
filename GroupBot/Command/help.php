@@ -45,7 +45,7 @@ isaaccoin - sucks lol
         $Vote = new Vote($this->db);
         $popularity = $Vote->getVoteTotalForUser($this->Message->User);
         $ranking = Query::getGlobalRanking($this->db, $this->Message->User);
-        
+
         $this->out = emoji(0x1F44B) . " Hi *" . $this->Message->User->getName() . "*!"
             . "\nI'm *" . BOT_FRIENDLY_NAME . "*, your _Premier Shitposting Solution_ " . emoji(0x2122) . "."
             . "\n\n" . emoji(0x1F481) . emoji(0x1F3FB) . "You're a " . $this->Message->User->getLevelAndTitle() . " with `" . $this->Message->User->getBalance() . "` Coin."
@@ -92,20 +92,30 @@ isaaccoin - sucks lol
             . "\n\n`   `• I maintain an *economy* and *level* system for all users"
             . "\n`   `• I will automatically *translate* any non-english messages"
             . "\n`   `• I let you play a few different *games*"
+            . "\n`   `• I let you *vote* users up and down"
+            . "\n`   `• I can send you *reminders* whenever you wish"
             . "\n`   `• I host a lot of miscellaneous *commands*"
-            . "\n\nI'm written in PHP by @richardstallman. Development occurs semi-frequently.";
+            . "\n\nI'm written in `PHP` by @richardstallman. Development occurs semi-frequently.";
         $this->keyboard = [
             [
                 [
-                    'text' => emoji(0x1F4D6) . ' What commands?',
+                    'text' => emoji(0x1F4D6) . ' Commands?',
                     'callback_data' => '/help commands'
                 ],
                 [
-                    'text' => emoji(0x1F3AE) . ' What games?',
+                    'text' => emoji(0x1F3AE) . ' Games?',
                     'callback_data' => '/help games_help'
+                ],
+                [
+                    'text' => emoji(0x23F2) . ' Reminders?',
+                    'callback_data' => '/help reminders'
                 ]
             ],
             [
+                [
+                    'text' => emoji(0x1F5F3) . ' Votes?',
+                    'callback_data' => '/help votes'
+                ],
                 [
                     'text' => emoji(0x1F4B0) . ' Economy?',
                     'callback_data' => '/help economy'
@@ -113,7 +123,9 @@ isaaccoin - sucks lol
                 [
                     'text' => emoji(0x1F30E) . ' Translation?',
                     'callback_data' => '/help translation'
-                ],
+                ]
+            ],
+            [
                 [
                     'text' => emoji(0x1F6AA) . ' Main menu',
                     'callback_data' => '/help'
@@ -127,7 +139,6 @@ isaaccoin - sucks lol
         $this->out = emoji(0x1F4D6) . ' *Commands*'
             . "\n\nHere are some things you can do:"
             . "\n"
-            . "\n`   `• /vote for people"
             . "\n`   `• /leaderboard to see where everybody is at"
             . "\n`   `• /level to increase your status"
             . "\n`   `• /income to get some coin right now"
@@ -230,6 +241,65 @@ isaaccoin - sucks lol
             . "\n`   `• /roll for a good time"
             . "\n\nMore to come, m80s. Bitch to @richardstallman if I break.";
         return true;
+    }
+
+    private function votes()
+    {
+        $this->out = emoji(0x1F5F3) . ' *Voting System*'
+            . "\n"
+            . "\nYou can cast votes for users that I know about. You can vote like so:"
+            . "\n"
+            . "\n`   `• `/vote richardstallman up`"
+            . "\n"
+            . "\nIf you want to see the voting leaderboard, you can use `/vote` or click the button below."
+            . "\n"
+            . "\n`   `• The vote options are *up*, *down* or *neutral*"
+            . "\n`   `• You can change your vote at any time."
+            . "\n";
+        $this->keyboard = [
+            [
+                [
+                    'text' => emoji(0x270F) . ' Voting leaderboards',
+                    'callback_data' => '/vote'
+                ]
+            ],
+            [
+                [
+                    'text' => emoji(0x2754) . ' Back to help menu',
+                    'callback_data' => '/help help'
+                ],
+                [
+                    'text' => emoji(0x1F6AA) . ' Main menu',
+                    'callback_data' => '/help'
+                ]
+            ]
+        ];
+    }
+
+    private function reminders()
+    {
+        $this->out = emoji(0x23F2) . ' *Reminders*'
+            . "\n"
+            . "\nI can send you text reminders at any time or date in the future. Here's some examples:"
+            . "\n"
+            . "\n`   `• `/remind` *+2 hours* `to` *pick up the milk*"
+            . "\n`   `• `/remind` *2:25PM 26th April* `to` *look out the window*"
+            . "\n`   `• `/remind` *tomorrow 5PM* `to` *go outside*"
+            . "\n`   `• `/remind` *monday 2AM* `to` *go to sleep*"
+            . "\n"
+            . "\nMy timezone is *GMT+8*, and it's now *" . date('g:i A') . "* on the *" . date('jS') . "*.";
+        $this->keyboard = [
+            [
+                [
+                    'text' => emoji(0x2754) . ' Back to help menu',
+                    'callback_data' => '/help help'
+                ],
+                [
+                    'text' => emoji(0x1F6AA) . ' Main menu',
+                    'callback_data' => '/help'
+                ]
+            ]
+        ];
     }
 
     private function economy()
@@ -345,6 +415,12 @@ isaaccoin - sucks lol
                     break;
                 case 'games_help':
                     $this->games_help();
+                    break;
+                case 'votes':
+                    $this->votes();
+                    break;
+                case 'reminders':
+                    $this->reminders();
                     break;
                 case 'economy':
                     $this->economy();

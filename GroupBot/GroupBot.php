@@ -41,6 +41,9 @@ class GroupBot
         if (!$update)
             return false;
 
+//        Telegram::talkForced('56390227', print_r($update, true));
+//        return true;
+
         if (isset($update["message"])) {
             $this->processMessage($update['message']);
         } elseif (isset($update["inline_query"])) {
@@ -72,7 +75,7 @@ class GroupBot
         $this->processStats();
     }
 
-    private function createPDO()
+    public function createPDO()
     {
         $pdo = new \PDO('mysql:host=' . BOT_DB_HOST . ';dbname=' . BOT_DB_NAME . ';charset=utf8', BOT_DB_USER, BOT_DB_PASSWORD);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

@@ -66,7 +66,8 @@ class leaderboard extends Command
                 $ascending = true;
             }
         }
-        return Query::getUsersByMoneyAndLevel($this->db, $this->chat, true, $ascending, $no_users);
+        return Query::getUsersByLevel($this->db, $this->chat, true, $ascending, $no_users);
+        //return Query::getUsersByMoneyAndLevel($this->db, $this->chat, true, $ascending, $no_users);
     }
 
     /**

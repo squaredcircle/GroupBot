@@ -14,24 +14,44 @@ use GroupBot\Libraries\Dictionary;
 
 class User
 {
+    /** @var  integer */
     public $user_id;
+    
+    /** @var  string */
     public $first_name;
+    
+    /** @var  string */
     public $user_name;
+    
+    /** @var  string */
     public $last_name;
 
+    /** @var  float */
     public $balance;
+    
+    /** @var  integer */
     public $level;
+    
     public $last_activity;
 
+    /** @var  boolean */
     public $received_income_today;
+
+    /** @var  integer */
     public $free_bets_today;
+
+    /** @var  string */
     public $handle_preference;
 
-    public static function constructFromTelegramUpdate($user_update, $chat, \PDO $db)
+    /** @var  boolean */
+    public $welcome_sent;
+
+    public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {
         if (isset($user_update['username']) &&  strcmp($user_update['username'], BOT_FULL_USER_NAME) === 0) {
             $user = new User();
             $user->user_name = BOT_FULL_USER_NAME;
+            $user->welcome_sent = true;
             return $user;
         }
 
@@ -56,11 +76,7 @@ class User
             $last_name = isset($user_update['last_name']) ? $user_update['last_name'] : NULL;
             $username = isset($user_update['username']) ? $user_update['username'] : NULL;
             $user->construct($user_update['id'], $user_update['first_name'], $last_name, $username);
-            Telegram::talkForced($chat['id'],
-                emoji(0x1F4EF) . " Arise, *" . $user->getName(). "*."
-                . "\n\nYou have risen from squalor to become a " . $user->getLevelAndTitle() . "."
-                . "\nYou find *" . $user->getBalance() . " " . COIN_CURRENCY_NAME . "* in a money bag on your person."
-                . "\n\nBest of luck, brave traveller. Use /help to get started.");
+
             $changed = true;
         }
         if ($changed) $user->save($db);

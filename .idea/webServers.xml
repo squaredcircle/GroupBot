@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="bdb6278f-aeaa-4f1d-b17f-9fbf743b979e" name="Hosthatch" url="https://bot.crazyserver.net.au/telegram_groupbot">
-        <fileTransfer host="www.crazyserver.net.au" port="22" rootFolder="/var/www/html/bot/telegram_groupbot" accessType="SFTP" password="dfeddfcedf98df92dfcedffadfc6dfccdfc9dfd3" username="root">
+        <fileTransfer host="www.drinkwatchprogram.com" port="22" rootFolder="/var/www/html/bot/telegram_groupbot" accessType="SFTP" password="dfeddfcedf98df92dfcedffadfc6dfccdfc9dfd3" username="root">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

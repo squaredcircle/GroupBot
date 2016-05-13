@@ -35,6 +35,8 @@ class myvotes extends Command
             $out .= "You haven't cast any votes.";
         }
 
+        $out .= "\nYou can see the voting leaderboard with /vote";
+
         Telegram::talk($this->Message->Chat->id, $out);
     }
 }

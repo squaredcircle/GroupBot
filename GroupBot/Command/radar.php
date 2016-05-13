@@ -94,10 +94,12 @@ class radar extends Command
 
     private function sendMovingGIF()
     {
+        Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
         $filenames = $this->get_images();
         $this->setTitle($filenames);
 
         if (!$this->sendIfExists()) {
+            Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
             $images = $this->overlay($filenames);
             $this->animate($images);
             $this->sendGIFThroughTelegram();

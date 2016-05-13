@@ -26,26 +26,46 @@ class vote extends Command
     private function leaderboard()
     {
         $Vote = new \GroupBot\Brains\Vote\Vote($this->db);
-        $leaderboard = $Vote->getVoteLeaderboard($this->chat->id);
+        $leaderboard = $Vote->getVoteLeaderboard(isset($this->chat->id) ? $this->chat->id : NULL);
 
         $out = '';
         $index = 0;
 
         if (!empty($leaderboard)) {
             foreach ($leaderboard as $uservote) {
-                $index++;
-                $out .= "`" . addOrdinalNumberSuffix($index);
-                if ($index >= 10) {
-                    $out .= " `";
-                } else {
-                    $out .= "  `";
-                }
 
                 $vote_prefix = $uservote->vote_total > 0 ? "+" : "";
                 if (!isset($uservote->vote_total))
                     $uservote->vote_total = 0;
 
-                $out .= "*" . $uservote->user->getName() . "* (" . $vote_prefix . $uservote->vote_total . ")\n";
+                $index++;
+                $out .= "`" . addOrdinalNumberSuffix($index);
+
+
+                if ($uservote->vote_total != 0) {
+                    if ($index >= 10) {
+                        $out .= " `";
+                    } else {
+                        $out .= "  `";
+                    }
+                    if ($uservote->vote_total >= 10) {
+                        $out .= "_$vote_prefix" . $uservote->vote_total . "  _ * ";
+                    } elseif ($uservote->vote_total <= -10) {
+                        $out .= " _$vote_prefix" . $uservote->vote_total . "  _ * ";
+                    } elseif ($uservote->vote_total < 0) {
+                        $out .= "_ $vote_prefix" . $uservote->vote_total . "     _ * ";
+                    } else {
+                        $out .= "_ $vote_prefix" . $uservote->vote_total . "    _ * ";
+                    }
+                } else {
+                    if ($index >= 10) {
+                        $out .= " `_" . $uservote->vote_total . "   _ * ";
+                    } else {
+                        $out .= "   `_" . $uservote->vote_total . "     _ * ";
+                    }
+                }
+
+                $out .= $uservote->user->getName() . "*\n";
             }
         } else {
             $out .= "No users to display.";
@@ -87,17 +107,21 @@ class vote extends Command
                 return emoji(0x1F44E) . " Your vote must be either *up*, *down* or *neutral*.";
         }
 
-        $voted_for = new User();
-        $voted_for->user_id = $user->user_id;
+        $DbUser = new \GroupBot\Database\User($this->db);
+        $voted_for = $DbUser->getUserFromId($user->user_id);
         $userVote = new UserVote();
         $userVote->construct($this->Message->User, $voted_for, $voteType);
 
         $Vote = new \GroupBot\Brains\Vote\Vote($this->db);
+        if ($Vote->SQL->check_if_vote_exists($userVote)) {
+            $this->vote_cast = true;
+            return emoji(0x1F528) . " Vote unchanged - you've voted this way before!";
+        }
         $Vote->SQL->update_vote($userVote);
-
         $this->vote_cast = true;
-
-        return emoji(0x1F528) . " Vote updated.";
+        $rank = $Vote->getVoteTotalForUserInChat($userVote->voted_for, $this->Message->Chat->id);
+        $vote_prefix = $rank > 0 ? "+" : "";
+        return emoji(0x1F528) . " Vote updated. *" . $userVote->voted_for->getName() . "* is now on *$vote_prefix$rank*";
     }
 
     private function displayLeaderboard()
@@ -194,7 +218,7 @@ class vote extends Command
                 }
             } else {
                 $out = $this->performVote();
-                $out .= $this->displayLeaderboard();
+                //$out .= $this->displayLeaderboard();
                 $out .= $this->displayInstructions();
             }
         } else {

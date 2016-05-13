@@ -122,20 +122,21 @@ class Zalgo
     }
 
 
-    public function speak($text)
+    public static function speak($text, $mood = null)
     {
-        $this->out = '';
+        $Zalgo = new Zalgo($mood);
+        $Zalgo->out = '';
 
         $text = iconv('UTF-8', 'ASCII//TRANSLIT', $text);
 
         foreach (str_split($text) as $word) {
-            if ($this->contains($word)) {
+            if ($Zalgo->contains($word)) {
                 continue;
             }
-            $this->out .= $word;
-            $this->zalgoify();
+            $Zalgo->out .= $word;
+            $Zalgo->zalgoify();
         }
 
-        return $this->out;
+        return $Zalgo->out;
     }
 }

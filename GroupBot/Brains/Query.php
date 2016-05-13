@@ -50,6 +50,48 @@ class Query
         return $user_receiving[0];
     }
 
+    public static function getUsersByLevel(\PDO $db, Chat $chat = NULL, $include_bank = true, $ascending = true, $no_users = NULL)
+    {
+        if (isset($chat)) {
+            $sql = 'SELECT
+                     s.user_id
+                    ,u.user_name
+                    ,u.first_name
+                    ,u.last_name
+                    ,u.balance
+                    ,u.level
+                    ,u.last_activity
+                    ,u.received_income_today
+                    ,u.free_bets_today
+                    ,u.handle_preference
+                FROM stats AS s
+                INNER JOIN users AS u
+                ON s.user_id = u.user_id
+                WHERE s.chat_id = :chat_id AND s.user_in_chat = 1';
+            if (!$include_bank)
+                $sql .= ' AND user_id != ' . COIN_BANK_ID;
+        } else {
+            $sql = 'SELECT user_id, user_name, first_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference FROM users';
+            if (!$include_bank)
+                $sql .= ' WHERE user_id != ' . COIN_BANK_ID;
+        }
+        $sql .= ' ORDER BY level ' . ($ascending ? 'ASC ' : 'DESC ') . ', balance '. ($ascending ? 'ASC ' : 'DESC ');
+        if (isset($no_users))
+            $sql .= 'LIMIT :no_users';
+
+        $query = $db->prepare($sql);
+        if (isset($chat))
+            $query->bindValue(':chat_id', $chat->id);
+        if (isset($no_users))
+            $query->bindValue(':no_users', $no_users, \PDO::PARAM_INT);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\User');
+        }
+        return false;
+    }
+
     public static function getUsersByMoneyAndLevel(\PDO $db, Chat $chat = NULL, $include_bank = true, $ascending = true, $no_users = NULL)
     {
         if (isset($chat)) {

@@ -15,7 +15,10 @@ use GroupBot\Enums\MessageType;
 class Message
 {
     public $message_id, $date, $callback;
-    public $forward_from, $forward_date, $reply_to_message;
+    public $forward_date, $reply_to_message;
+
+    /** @var  User */
+    public $forward_from;
 
     /** @var  User */
     public $new_chat_participant;
@@ -50,7 +53,7 @@ class Message
     public function __construct($message, \PDO $db)
     {
         $this->db = $db;
-        $this->User = User::constructFromTelegramUpdate($message['from'], $message['chat'], $this->db);
+        $this->User = User::constructFromTelegramUpdate($message['from'], $this->db);
         $this->Chat = Chat::constructFromTelegramUpdate($message['chat'], $this->db);
 
         $this->message_id = $message['message_id'];
@@ -148,10 +151,12 @@ class Message
         if (isset($message['reply_to_message'])) {
             $this->MessageType = new MessageType(MessageType::Reply);
         } elseif (isset($message['forward_from'])) {
+            $this->forward_from = new User();
+            $this->forward_from->constructFromTelegramUpdate($message['forward_from'], $this->db);
             $this->MessageType = new MessageType(MessageType::Forward);
         } elseif (isset($message['new_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::NewChatParticipant);
-            $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $message['chat'], $this->db);
+            $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $this->db);
         } elseif (isset($message['left_chat_participant'])) {
             $this->MessageType = new MessageType(MessageType::LeftChatParticipant);
         } elseif (isset($message['new_chat_title'])) {

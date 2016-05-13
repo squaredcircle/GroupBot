@@ -10,6 +10,8 @@
 namespace GroupBot\Types;
 
 
+use GroupBot\Brains\Zalgo;
+
 class InlineQuery
 {
     public $id, $from, $query, $offset;
@@ -101,6 +103,17 @@ class InlineQuery
             'type' => 'article',
             'id' => strval(intval($this->id) + 4),
             'title' => 'me',
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
+        );
+
+        $out = Zalgo::speak($this->query);
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 5),
+            'title' => 'zalgo',
             'input_message_content' => [
                 'message_text' => $out,
                 'parse_mode' => 'markdown'

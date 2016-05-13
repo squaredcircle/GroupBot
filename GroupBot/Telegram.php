@@ -17,7 +17,23 @@ class Telegram
 	{
 		self::apiRequest("sendMessage", array('chat_id' => '@' . $channel, "text" => $text, "parse_mode" => "Markdown"));
 	}
-	
+
+	public static function kick($chat_id, $user_id)
+	{
+		self::apiRequest("kickChatMember", array(
+			'chat_id' => $chat_id,
+			"user_id" => $user_id
+		));
+	}
+
+	public static function kick2($chat_id, $user_id)
+	{
+		return self::apiRequest("kickChatMember", array(
+			'chat_id' => $chat_id,
+			"user_id" => $user_id
+		));
+	}
+
 	public static function talk($chat_id, $text, $disable_web_page_preview = false)
 	{
 		self::apiRequestWebhook("sendMessage", array(
@@ -112,6 +128,15 @@ class Telegram
 		self::apiRequestWebhook("answerInlineQuery", array('inline_query_id' => $inline_query_id, 'cache_time' => 0, 'results' => $results));
 	}
 
+	public static function sendChatTypingStatus($chat_id)
+	{
+		self::apiRequest("sendChatAction", array('chat_id' => $chat_id, 'action' => 'typing'));
+	}
+
+	public static function sendChatSendingPhotoStatus($chat_id)
+	{
+		self::apiRequest("sendChatAction", array('chat_id' => $chat_id, 'action' => 'upload_photo'));
+	}
 
 	public static function sendDocument($chat_id, $file_path)
 	{

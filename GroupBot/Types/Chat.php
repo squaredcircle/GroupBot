@@ -12,11 +12,44 @@ use GroupBot\Enums\ChatType;
 
 class Chat
 {
-    public $id, $type, $title;
+    /** @var  integer */
+    public $id;
+
+    /** @var  ChatType */
+    public $type;
+
+    /** @var  string */
+    public $title;
+
+    /** @var  integer */
     public $messages_sent_last_min;
+
+    /** @var  integer */
     public $admin_user_id;
-    public $banker_name, $currency_name;
-    public $yandex_api_key, $yandex_enabled, $yandex_language, $yandex_min_words;
+
+    /** @var  string */
+    public $banker_name;
+
+    /** @var  string */
+    public $currency_name;
+
+    /** @var  boolean */
+    public $welcome_enabled;
+
+    /** @var  boolean */
+    public $no_spam_mode;
+
+    /** @var  string */
+    public $yandex_api_key;
+
+    /** @var  boolean */
+    public $yandex_enabled;
+
+    /** @var  string */
+    public $yandex_language;
+
+    /** @var  integer */
+    public $yandex_min_words;
 
     public static function constructFromTelegramUpdate($chat_update, \PDO $db)
     {
@@ -41,8 +74,14 @@ class Chat
             $changed = true;
         }
         
-        if ($changed) $chatSQL->updateChat($chat);
+        if ($changed) $chat->save($db);
         return $chat;
+    }
+
+    public function save(\PDO $db)
+    {
+        $userSQL = new \GroupBot\Database\Chat($db);
+        return $userSQL->updateChat($this);
     }
 
     public function construct($id, ChatType $type, $title, $messages_sent_last_min)

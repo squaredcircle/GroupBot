@@ -10,6 +10,7 @@
 namespace GroupBot\Types;
 
 
+use GroupBot\Brains\Translate;
 use GroupBot\Brains\Zalgo;
 
 class InlineQuery
@@ -32,57 +33,6 @@ class InlineQuery
 
     private function parseQuery()
     {
-        $tmp = mb_strtolower($this->query, 'UTF-8');
-        $tmp = str_ireplace('v', 'w', $tmp);
-        $tmp = preg_replace('/(\w)\1+/', '$1', $tmp);
-        $tmp = str_ireplace('sh', 'sz', $tmp);
-        $tmp = str_ireplace('sch', 'sz', $tmp);
-        $tmp = str_ireplace('ch', 'cz', $tmp);
-        $tmp = str_ireplace('ö', 'ó', $tmp);
-        $tmp = str_ireplace('ü', 'ó', $tmp);
-        $tmp = str_ireplace('zei', 'caj', $tmp);
-        $tmp = str_ireplace('ei', 'aj', $tmp);
-        $tmp = str_ireplace('sie', 'się', $tmp);
-
-        $out = "kurwa, " . $tmp;
-
-        $this->results[] = array(
-            'type' => 'article',
-            'id' => strval(intval($this->id) + 1),
-            'title' => 'german -> kurwa translation',
-            'input_message_content' => [
-                'message_text' => $out,
-                'parse_mode' => 'markdown'
-            ]
-        );
-
-        $tmp = mb_strtolower($this->query, 'UTF-8');
-        $tmp = str_ireplace('v', 'w', $tmp);
-        $tmp = str_ireplace('oo', 'ó', $tmp);
-        $tmp = preg_replace('/(\w)\1+/', '$1', $tmp);
-        $tmp = str_ireplace('sh', 'sz', $tmp);
-        $tmp = str_ireplace('sch', 'sz', $tmp);
-        $tmp = str_ireplace('ch', 'cz', $tmp);
-        $tmp = str_ireplace('ei', 'aj', $tmp);
-        $tmp = str_ireplace('w', 'ł', $tmp);
-        $tmp = str_ireplace('y', 'j', $tmp);
-        $tmp = str_ireplace('ts', 'c', $tmp);
-        $tmp = str_ireplace('ow', 'ą', $tmp);
-        $tmp = str_ireplace('ds', 'dz', $tmp);
-        $tmp = str_ireplace('isi', 'iżi', $tmp);
-
-        $out = "kurwa, " . $tmp;
-
-        $this->results[] = array(
-            'type' => 'article',
-            'id' => strval(intval($this->id) + 2),
-            'title' => 'english -> kurwa translation',
-            'input_message_content' => [
-                'message_text' => $out,
-                'parse_mode' => 'markdown'
-            ]
-        );
-
         $out = "";
         $tmp = array_reverse(explode(" ", $this->query));
         foreach ($tmp as $word) {
@@ -90,8 +40,8 @@ class InlineQuery
         }
         $this->results[] = array(
             'type' => 'article',
-            'id' => strval(intval($this->id) + 3),
-            'title' => 'talk backwards',
+            'id' => strval(intval($this->id) + 1),
+            'title' => 'backwards',
             'input_message_content' => [
                 'message_text' => $out,
                 'parse_mode' => 'markdown'
@@ -101,7 +51,7 @@ class InlineQuery
         $out = "*" . $this->from->getName() . "* " . $this->query;
         $this->results[] = array(
             'type' => 'article',
-            'id' => strval(intval($this->id) + 4),
+            'id' => strval(intval($this->id) + 2),
             'title' => 'me',
             'input_message_content' => [
                 'message_text' => $out,
@@ -112,12 +62,71 @@ class InlineQuery
         $out = Zalgo::speak($this->query);
         $this->results[] = array(
             'type' => 'article',
-            'id' => strval(intval($this->id) + 5),
+            'id' => strval(intval($this->id) + 3),
             'title' => 'zalgo',
             'input_message_content' => [
                 'message_text' => $out,
                 'parse_mode' => 'markdown'
             ]
+        );
+
+        $out = "*" . $this->query . "*";
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 4),
+            'title' => 'bold',
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
+        );
+
+        $out = "_" . $this->query . "_";
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 5),
+            'title' => 'italic',
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
+        );
+
+
+        $Translate = new Translate();
+        $lang = $Translate->detectLanguage($this->query);
+        if ($lang != 'English') {
+            $translation = $Translate->translate($this->query, 'English');
+            $out = "_(" . $translation['lang_source'] . ")_* " . $this->query . "*"
+                . "\n"
+                . "_(English)_* " . $translation['result'][0] . "*";
+        } else {
+            $out = $this->query;
+        }
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 6),
+            'title' => 'translate to english',
+            'input_message_content' => [
+                'message_text' => $out,
+                'parse_mode' => 'markdown'
+            ]
+        );
+        
+        $file = \GroupBot\Brains\Speak::createAudioFile($this->query);
+        $this->results[] = array(
+            'type' => 'voice',
+            'id' => strval(intval($this->id) + 7),
+            'title' => 'vocalise with hts',
+            'voice_url' => "https://www.drinkwatchprogram.com/bot/speech/$file"
+        );
+
+        $file = \GroupBot\Brains\Speak::createAudioFile($this->query, 'espeak');
+        $this->results[] = array(
+            'type' => 'voice',
+            'id' => strval(intval($this->id) + 8),
+            'title' => 'vocalise with espeak',
+            'voice_url' => "https://www.drinkwatchprogram.com/bot/speech/$file"
         );
     }
 }

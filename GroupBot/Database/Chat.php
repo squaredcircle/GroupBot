@@ -74,6 +74,25 @@ class Chat extends DbConnection
         return false;
     }
 
+    public function getChatsByAdmin($admin_user_id)
+    {
+        $sql = 'SELECT * FROM chats WHERE admin_user_id = :admin_user_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':admin_user_id', $admin_user_id);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            if ($chats = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat')) {
+                foreach ($chats as $chat) {
+                    $chat->id = $chat->chat_id;
+                }
+            }
+            return $chats;
+        }
+        return false;
+    }
+
     public function getNoChats()
     {
         $sql = 'SELECT chat_id FROM chats';

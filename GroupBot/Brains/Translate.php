@@ -102,7 +102,7 @@ class Translate
         $data = $this->execute('detect', array(
             'text' => $text
         ));
-        return $this->languages[$data['lang']];
+        return isset($this->languages[$data['lang']]) ? $this->languages[$data['lang']] : false;
     }
 
     public function translate($text, $language, $html = false, $options = 0)

@@ -38,7 +38,10 @@ class Message
 
     /** @var  MessageType */
     public $MessageType;
-    
+
+    /** @var  MessageEntity[] */
+    public $MessageEntities;
+
     /** @var User  */
     public $User;
 
@@ -61,6 +64,7 @@ class Message
 
         $this->determineMessageContent($message);
         $this->determineMessageType($message);
+        $this->determineMessageEntities($message);
 
         if ($this->MessageContent == MessageContent::Text)
             $this->parseMessage($message);
@@ -119,6 +123,15 @@ class Message
         }
 
         return true;
+    }
+    
+    private function determineMessageEntities($message)
+    {
+        if (isset($message['entities'])) {
+            foreach ($message['entities'] as $entity) {
+                $this->MessageEntities[] = new MessageEntity($entity['type'], $entity['offset'], $entity['length'], isset($entity['url']) ? $entity['url'] : NULL);
+            }
+        }
     }
 
     private function determineMessageContent($message)

@@ -138,6 +138,39 @@ class Telegram
 		self::apiRequest("sendChatAction", array('chat_id' => $chat_id, 'action' => 'upload_photo'));
 	}
 
+    public static function sendVoice($chat_id, $file_path)
+    {
+        $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendVoice?chat_id=" . $chat_id ;
+
+        $post_fields = array(
+            'chat_id'   => $chat_id,
+            'voice'     => new \CURLFile(realpath($file_path))
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+        return curl_exec($ch);
+    }
+	public static function sendAudio($chat_id, $file_path)
+	{
+		$url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendAudio?chat_id=" . $chat_id ;
+
+		$post_fields = array(
+			'chat_id'   => $chat_id,
+			'audio'     => new \CURLFile(realpath($file_path))
+		);
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type:multipart/form-data"));
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+		return curl_exec($ch);
+	}
+
 	public static function sendDocument($chat_id, $file_path)
 	{
 		$url = "https://api.telegram.org/bot" . BOT_TOKEN . "/sendDocument?chat_id=" . $chat_id ;

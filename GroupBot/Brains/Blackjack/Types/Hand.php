@@ -16,6 +16,11 @@ class Hand extends \GroupBot\Brains\CardGame\Types\Hand
         return (count($this->Cards) == 2 && $this->Cards[0]->value == $this->Cards[1]->value);
     }
 
+    public function canSurrender()
+    {
+        return (count($this->Cards) <= 2);
+    }
+
     public function isBust()
     {
         return ($this->Value > 21);

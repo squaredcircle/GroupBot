@@ -17,7 +17,8 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
 {
     public function turn_expired(\GroupBot\Brains\CardGame\Types\Player $player)
     {
-        $this->addMessage(emoji(0x231B) . " *" . $player->user->getName() . "* hasn't made a move in over 5 minutes. They automatically stand.");
+        $this->addMessage(emoji(0x1F4E2) . " A game is in progress."
+                            ."\n" . emoji(0x231B) . " *" . $player->user->getPrefixedUserName() . "* hasn't made a move in over 5 minutes. They will automatically stand.");
     }
 
     /**
@@ -134,10 +135,9 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
     {
         /** @var Player $Player */
         $Player = $game->getCurrentPlayer();
-        $split = "";
 
         if ($Player->State == PlayerState::Join && $Player->Hand->canSplit()) {
-            $split = "/split, ";
+            $this->addMessage(emoji(0x1F449) . " You can /hit, /stand, /split, /doubledown or /surrender");
             $this->keyboard = [
                 [
                     [
@@ -164,7 +164,8 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                     ]
                 ]
             ];
-        } else {
+        } elseif ($Player->State == PlayerState::Join) {
+            $this->addMessage(emoji(0x1F449) . " You can /hit, /stand, /doubledown or /surrender");
             $this->keyboard = [
                 [
                     [
@@ -187,9 +188,25 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                     ]
                 ]
             ];
+        } else {
+            $this->addMessage(emoji(0x1F449) . " You can /hit, /stand or /doubledown");
+            $this->keyboard = [
+                [
+                    [
+                        'text' => "Hit",
+                        'callback_data' => '/hit'
+                    ],
+                    [
+                        'text' => "Stand",
+                        'callback_data' => "/stand"
+                    ],
+                    [
+                        'text' => "Double down",
+                        'callback_data' => "/doubledown"
+                    ]
+                ]
+            ];
         }
-        $this->addMessage(emoji(0x1F449) . " You can /hit, /stand, " . $split . "/doubledown or /surrender");
-
     }
 
     private function player_state(Player $Player)
@@ -292,7 +309,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             $this->addMessage("Dealer's hand: " . $Game->Dealer->Hand->getHandString() . " (" . $Game->Dealer->Hand->Value . ")");
         }
         if ($Game->getNumberOfPlayers() > 1) {
-            $out = "It is now *" . $Player->user->getName() . "'s* turn";
+            $out = "It is now *" . $Player->user->getPrefixedUserName() . "'s* turn";
             if ($Player->split == 1) {
                 $out .= " (hand one)";
             } elseif ($Player->split == 2) {

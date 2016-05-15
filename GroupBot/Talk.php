@@ -10,6 +10,7 @@
 namespace GroupBot;
 
 use GroupBot\Brains\Translate;
+use GroupBot\Enums\MessageEntityType;
 use GroupBot\Enums\MessageType;
 use GroupBot\Libraries\Dictionary;
 use GroupBot\Types\Command;
@@ -127,6 +128,15 @@ class Talk
     private function translate()
     {
         if ($this->Message->MessageType == MessageType::Forward && strcmp($this->Message->forward_from->user_name, BOT_FULL_USER_NAME) === 0) return false;
+        if (isset($this->Message->MessageEntities)) {
+            $bold = false;
+            $italic = false;
+            foreach ($this->Message->MessageEntities as $entity) {
+                if ($entity->type == MessageEntityType::bold) $bold = true;
+                if ($entity->type == MessageEntityType::italic) $italic = true;
+            }
+            if ($bold && $italic) return false;
+        }
         if (count(mb_split(" ", $this->Message->text)) > 3) {
             $Translate = new Translate();
             $lang = $Translate->detectLanguage($this->Message->text);

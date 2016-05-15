@@ -83,7 +83,7 @@ class User
         return $user;
     }
 
-    public function construct($user_id, $first_name, $last_name = NULL, $user_name = NULL, $balance = 0, $level = 1, $last_activity = NULL, $received_income_today = 0, $free_bets_today = 0, $handle_preference = 'username')
+    public function construct($user_id, $first_name, $last_name = NULL, $user_name = NULL, $balance = 0, $level = 1, $last_activity = NULL, $received_income_today = 0, $free_bets_today = 0, $handle_preference = 'username', $welcome_sent = false)
     {
         $this->user_id = $user_id;
         $this->first_name = $first_name;
@@ -95,6 +95,7 @@ class User
         $this->received_income_today = $received_income_today;
         $this->free_bets_today = $free_bets_today;
         $this->handle_preference  = $handle_preference;
+        $this->welcome_sent = $welcome_sent;
     }
 
     public function save(\PDO $db)
@@ -113,6 +114,13 @@ class User
         if (isset($this->last_name)) return $this->first_name . " " . $this->last_name;
         return $this->first_name;
     }
+
+    public function getPrefixedUserName()
+    {
+        if (isset($this->user_name)) return "@" . $this->user_name;
+        return $this->getName();
+    }
+
 
     public function getBalance($high_precision = false)
     {

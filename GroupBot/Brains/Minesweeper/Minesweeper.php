@@ -34,9 +34,9 @@ class Minesweeper
     private function newGame()
     {
         $board = new Board();
-        $board->width = 10;
-        $board->height = 10;
-        $board->generateNewBoard(12);
+        $board->width = 8;
+        $board->height = 12;
+        $board->generateNewBoard(15);
         $game = new Game($board, $this->chat->id, null);
         return $game;
     }
@@ -67,7 +67,7 @@ class Minesweeper
             if (!$tile->mine && $tile->number == 0) {
                 $this->game->board->revealAdjacentEmptyTiles($x, $y);
             }
-            
+
             if ($tile->mine) {
                 
             }

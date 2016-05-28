@@ -36,9 +36,80 @@ class Weather
             19 => 0x1F300   // Cyclone
         ];
 
-    public static function realtime()
+    public static $locations =
+        [
+            'brisbane',
+            'melbourne',
+            'sydney',
+            'canberra',
+            'hobart',
+            'darwin',
+            'perth',
+            'adelaide'
+        ];
+
+    private static $realtime =
+        [
+            'brisbane' => 'http://www.bom.gov.au/fwo/IDQ60901/IDQ60901.94576.json',
+            'melbourne' => 'http://www.bom.gov.au/fwo/IDV60901/IDV60901.95936.json',
+            'sydney' => 'http://www.bom.gov.au/fwo/IDN60901/IDN60901.94768.json',
+            'canberra' => 'http://www.bom.gov.au/fwo/IDN60903/IDN60903.94926.json',
+            'hobart' => 'http://www.bom.gov.au/fwo/IDT60901/IDT60901.94970.json',
+            'darwin' => 'http://www.bom.gov.au/fwo/IDD60901/IDD60901.94120.json',
+            'perth' => 'http://www.bom.gov.au/fwo/IDW60901/IDW60901.94608.json',
+            'adelaide' => 'http://www.bom.gov.au/fwo/IDS60901/IDS60901.94675.json'
+        ];
+
+    private static $forecast =
+        [
+            'brisbane' => 'IDQ10095',
+            'melbourne' => 'IDV10450',
+            'sydney' => 'IDN10064',
+            'canberra' => 'IDN10035',
+            'hobart' => 'IDT13600',
+            'darwin' => 'IDD10150',
+            'adelaide' => 'IDS10034',
+            'perth' => 'IDW12300'
+        ];
+
+    private static $forecast_subcodes =
+        [
+            'brisbane' => ['QLD_ME001', 'QLD_PT001'],
+            'melbourne' => ['VIC_ME001', 'VIC_PT042'],
+            'sydney' => ['NSW_ME001', 'NSW_PT131'],
+            'canberra' => ['NSW_ME001', 'NSW_PT027'],
+            'hobart' => ['TAS_ME001', 'TAS_PT021'],
+            'darwin' => ['NT_ME001', 'NT_PT001'],
+            'adelaide' => ['SA_ME001', 'SA_PT001'],
+            'perth' => ['WA_ME001', 'WA_PT053']
+        ];
+
+    private static $coordinates =
+        [
+            'brisbane' => [27.4710, 153.0234, 10],
+            'melbourne' => [37.8141, 144.9633, 10],
+            'sydney' => [33.8675, 151.2070, 10],
+            'canberra' => [35.2820, 149.1287, 10],
+            'hobart' => [42.8819, 147.3238, 10],
+            'darwin' => [12.4628, 130.8418, 9.5],
+            'adelaide' => [34.9286, 138.6000, 9.5],
+            'perth' => [31.9535, 115.8570, 8]
+        ];
+
+    private static $uv_map =
+        [
+            'brisbane' => 'bri',
+            'melbourne' => 'mel',
+            'sydney' => 'syd',
+            'canberra' => 'can',
+            'darwin' => 'dar',
+            'adelaide' => 'adl',
+            'perth' => 'per'
+        ];
+
+    public static function realtime($selection = 'perth')
     {
-        $json = file_get_contents('http://www.bom.gov.au/fwo/IDW60901/IDW60901.94608.json');
+        $json = file_get_contents(self::$realtime[$selection]);
         $weather = json_decode($json);
 
         $header = $weather->observations->header[0];
@@ -47,9 +118,9 @@ class Weather
         return new Realtime($header->name, $header->state, $data->air_temp);
     }
 
-    public static function forecast()
+    public static function forecast($selection = 'perth')
     {
-        $xml = file_get_contents("ftp://ftp2.bom.gov.au/anon/gen/fwo/IDW12300.xml");
+        $xml = file_get_contents('ftp://ftp2.bom.gov.au/anon/gen/fwo/' . self::$forecast[$selection] . '.xml');
         $bom = new \SimpleXMLElement($xml);
 
         $forecast = [];
@@ -62,7 +133,7 @@ class Weather
                 $start_time = (string)$forecast_period['start-time-local'];
                 $dayOfWeek = \GroupBot\Libraries\Carbon::parse($start_time)->format('l');
 
-                if ($area['aac'] == 'WA_ME001' || $area['aac'] == 'WA_PT053') {
+                if ($area['aac'] == self::$forecast_subcodes[$selection][0] || $area['aac'] == self::$forecast_subcodes[$selection][1]) {
                     foreach ($forecast_period->element as $value) {
                         $type = (string)$value['type'];
                         $forecast[$dayOfWeek][$type] = (string)$value;
@@ -103,8 +174,11 @@ class Weather
      * @return Sunrise
      * Defaults to Perth, Western Australia
      */
-    public static function sunrise($latitude = -31.9535, $longitude = 115.8570, $zenith = 90 + 50 / 60, $gmt = 8)
+    public static function sunrise($selection = 'perth', $zenith = 90 + 50 / 60)
     {
+        $latitude = self::$coordinates[$selection][0];
+        $longitude = self::$coordinates[$selection][1];
+        $gmt = self::$coordinates[$selection][2];
         $sunrise = date_sunrise(time(), SUNFUNCS_RET_STRING, $latitude, $longitude, $zenith, $gmt);
         $sunset = date_sunset(time(), SUNFUNCS_RET_STRING, $latitude, $longitude, $zenith, $gmt);
         return new Sunrise($latitude, $longitude, $zenith, $gmt, "Perth", $sunrise, $sunset);
@@ -113,13 +187,15 @@ class Weather
     /**
      * @return bool|UV
      */
-    public static function uv_index()
+    public static function uv_index($selection = 'perth')
     {
         $xml = file_get_contents("http://www.arpansa.gov.au/uvindex/realtime/xml/uvvalues.xml");
         $arpansa = new \SimpleXMLElement($xml);
 
+        $code = self::$uv_map[$selection];
+
         foreach ($arpansa as $location) {
-            if (strcmp($location->name, 'per') === 0) {
+            if (strcmp($location->name, $code) === 0) {
                 $descr = self::uv_description($location->index);
                 return new UV($location->index, $descr[0], $descr[1]);
             }

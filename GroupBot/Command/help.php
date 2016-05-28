@@ -143,7 +143,7 @@ isaaccoin - sucks lol
             . "\n`   `• /level to increase your status"
             . "\n`   `• /income to get some coin right now"
             . "\n"
-            . "\n`   `• /roll for a good time"
+            . "\n`   `• /roll for a good time"  
             . "\n`   `• /time in case you don't live in my time zone"
             . "\n`   `• /help brings up the main menu"
             . "\n"

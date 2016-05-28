@@ -18,6 +18,9 @@ class preferences extends Command
     private $out;
     private $keyboard;
 
+    /** @var  \GroupBot\Types\Chat */
+    private $chat;
+
     private function all_options()
     {
         $DbChat = new Chat($this->db);
@@ -52,7 +55,8 @@ class preferences extends Command
                     $keyboard = [];
                 }
             }
-            if (isset($keyboard)) $this->keyboard[] = $keyboard;
+            if (isset($keyboard))
+                $this->keyboard[] = $keyboard;
 
             $this->out .= "\n"
                 . "\nPlease click on a chat name below to change its settings.";
@@ -147,6 +151,105 @@ class preferences extends Command
         }
     }
 
+    public function chat_options($updated = false)
+    {
+        if ($updated) {
+            $this->out = emoji(0x2714) . " Preference updated! \n\n";
+        } else {
+            $this->out = '';
+        }
+
+        $DbUser = new \GroupBot\Database\User($this->db);
+        $admin = $DbUser->getUserFromId($this->chat->admin_user_id);
+        $this->out .=
+            emoji(0x2699) . " Current preferences for `" . $this->chat->title . "`:"
+            . "\n"
+            . "\n`   `• My admin for this chat is " . ($admin ? "*" . $admin->getName() . "*" : "_nobody?_")
+            . "\n`   `• Reduced spam mode is " . ($this->chat->no_spam_mode ? "*on*" : "*off*")
+            . "\n`   `• Yandex auto-translate is " . ($this->chat->yandex_enabled ? "*on*" : "*off*");
+
+        if ($this->chat->yandex_enabled) {
+            $this->out .= "\n`   `• It will translate messages of at least *" . $this->chat->yandex_min_words . "* foreign words to *" . $this->chat->yandex_language . "*";
+        }
+
+        $this->out .= "\n\nYou can change these settings below.";
+
+        $this->keyboard = [];
+        $this->keyboard[] =
+            [
+                [
+                    'text' => emoji($this->chat->no_spam_mode ? 0x1F534 : 0x1F535) . ' Turn reduced spam mode ' . ($this->chat->no_spam_mode ? 'OFF' : 'ON'),
+                    'callback_data' => '/preferences chatset ' . $this->chat->id . ' no_spam_mode ' . ($this->chat->no_spam_mode ? '0' : '1')
+                ]
+            ];
+        if ($this->chat->yandex_enabled) {
+            $this->keyboard[] =
+                [
+                    [
+                        'text' => emoji(0x1F534) . ' Turn Yandex auto-translate OFF',
+                        'callback_data' => '/preferences chatset ' . $this->chat->id . ' yandex_enabled 0'
+                    ]
+                ];
+            $this->keyboard[] =
+                [
+                    [
+                        'text' => 'Change Yandex settings',
+                        'callback_data' => '/preferences yandex ' . $this->chat->id
+                    ]
+                ];
+        } else {
+            $this->keyboard[] =
+                [
+                    [
+                        'text' => emoji(0x1F535) . ' Turn Yandex auto-translate ON',
+                        'callback_data' => '/preferences chatset ' . $this->chat->id . ' yandex_enabled 1'
+                    ]
+                ];
+        }
+        $this->keyboard[] =
+            [
+                [
+                    'text' => emoji(0x2699) . ' Back to preferences',
+                    'callback_data' => '/preferences'
+                ],
+                [
+                    'text' => emoji(0x1F6AA) . ' Back to main menu',
+                    'callback_data' => '/help'
+                ]
+            ];
+        return true;
+    }
+
+    private function set_boolean_option($parameter, $value)
+    {
+        if (strcmp($value, '0') === 0) {
+            $this->chat->$parameter = false;
+            return $this->chat->save($this->db);
+        } elseif (strcmp($value, '1') === 0) {
+            $this->chat->$parameter = true;
+            return $this->chat->save($this->db);
+        }
+        return false;
+    }
+
+    public function set_option($parameter, $value)
+    {
+        $DbUser = new \GroupBot\Database\User($this->db);
+        $admin = $DbUser->getUserFromId($this->chat->admin_user_id);
+
+        if ($admin->user_id == $this->Message->User->user_id) {
+            switch ($parameter) {
+                case 'no_spam_mode':
+                    return $this->set_boolean_option('no_spam_mode', $value);
+                    break;
+                case 'yandex_enabled':
+                    return $this->set_boolean_option('yandex_enabled', $value);
+                    break;
+            }
+        }
+        return false;
+    }
+
     public function main()
     {
         if (!$this->Message->Chat->isPrivate()) {
@@ -161,6 +264,33 @@ class preferences extends Command
             switch ($this->getParam()) {
                 case 'name':
                     $this->change_name();
+                    break;
+                case 'chat':
+                    if ($this->noParams() == 2) {
+                        $DbChat = new \GroupBot\Database\Chat($this->db);
+                        if ($this->chat = $DbChat->getChatById($this->getParam(1))) {
+                            $this->chat_options(false);
+                            break;
+                        }
+                    }
+                    $this->all_options();
+                    break;
+                case 'chatset':
+                    if ($this->noParams() == 4) {
+                        $DbChat = new \GroupBot\Database\Chat($this->db);
+                        if ($this->chat = $DbChat->getChatById($this->getParam(1))) {
+                            if ($this->set_option($this->getParam(2), $this->getParam(3))) {
+                                $this->chat_options(true);
+                            } else {
+                                $this->chat_options(false);
+                            }
+                            break;
+                        }
+                    }
+                    $this->all_options();
+                    break;
+                case 'yandex':
+
                     break;
                 default:
                     $this->all_options();

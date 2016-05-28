@@ -12,13 +12,23 @@ namespace GroupBot\Brains\Blackjack;
 use GroupBot\Brains\Blackjack\Enums\PlayerState;
 use GroupBot\Brains\Blackjack\Types\Game;
 use GroupBot\Brains\Blackjack\Types\Player;
+use GroupBot\Command\misc\emoji;
+use GroupBot\Types\Chat;
 
 class Talk extends \GroupBot\Brains\CardGame\Talk
 {
+    /** @var Chat */
+    private $chat;
+
+    public function __construct(Chat $chat)
+    {
+        $this->chat = $chat;
+    }
+
     public function turn_expired(\GroupBot\Brains\CardGame\Types\Player $player)
     {
         $this->addMessage(emoji(0x1F4E2) . " A game is in progress."
-                            ."\n" . emoji(0x231B) . " *" . $player->user->getPrefixedUserName() . "* hasn't made a move in over 5 minutes. They will automatically stand.");
+            . "\n" . emoji(0x231B) . " *" . $player->user->getPrefixedUserName() . "* hasn't made a move in over 5 minutes. They will automatically stand.");
     }
 
     /**
@@ -83,9 +93,35 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         } else {
             $out .= ".";
         }
+        $out .= "\nOthers can join the game with the buttons below.";
+
         $this->addMessage($out);
-        $this->addMessage(emoji(0x1F449) . " Others can also join the game with /blackjack");
-        $this->addMessage(emoji(0x1F449) . " You can start the game with /bjstart");
+
+        $this->keyboard =
+            [
+                [
+                    [
+                        'text' => emoji(0x1F4B5) . " Join game - default bet",
+                        'callback_data' => '/bjstart'
+                    ]
+                ],
+                [
+                    [
+                        'text' => emoji(0x1F4B0) . " Join game - bet half",
+                        'callback_data' => '/bjstart all/2'
+                    ],
+                    [
+                        'text' => emoji(0x1F4B0) . " Join game - bet all",
+                        'callback_data' => '/bjstart all'
+                    ]
+                ],
+                [
+                    [
+                        'text' => emoji(0x1F0CF) . ' Start game',
+                        'callback_data' => '/bjstart'
+                    ]
+                ]
+            ];
     }
 
     /**
@@ -337,23 +373,56 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             $this->addMessage('The dealer stands.');
         }
 
-        $this->keyboard = [
-            [
+        if ($this->chat->isPrivate()) {
+            $this->keyboard =
                 [
-                    'text' => "Play again - default bet",
-                    'callback_data' => '/bjstart'
-                ]
-            ],
-            [
+                    [
+                        [
+                            'text' => emoji(0x1F4B5) . " Play again - default bet",
+                            'callback_data' => '/bjstart'
+                        ]
+                    ],
+                    [
+                        [
+                            'text' => emoji(0x1F4B0) . " Play again - bet half",
+                            'callback_data' => '/bjstart all/2'
+                        ],
+                        [
+                            'text' => emoji(0x1F4B0) . " Play again - bet all",
+                            'callback_data' => '/bjstart all'
+                        ]
+                    ],
+                    [
+                        [
+                            'text' => emoji(0x1F3AE) . ' Back to games menu',
+                            'callback_data' => '/help games'
+                        ],
+                        [
+                            'text' => emoji(0x1F6AA) . ' Main menu',
+                            'callback_data' => '/help'
+                        ]
+                    ]
+                ];
+        } else {
+            $this->keyboard =
                 [
-                    'text' => "Play again - bet half",
-                    'callback_data' => '/bjstart all/2'
-                ],
-                [
-                    'text' => "Play again - bet all",
-                    'callback_data' => '/bjstart all'
-                ]
-            ]
-        ];
+                    [
+                        [
+                            'text' => emoji(0x1F4B5) . " New game - default bet",
+                            'callback_data' => '/blackjack'
+                        ]
+                    ],
+                    [
+                        [
+                            'text' => emoji(0x1F4B0) . " New game - bet half",
+                            'callback_data' => '/blackjack all/2'
+                        ],
+                        [
+                            'text' => emoji(0x1F4B0) . " New game - bet all",
+                            'callback_data' => '/blackjack all'
+                        ]
+                    ]
+                ];
+        }
     }
 }

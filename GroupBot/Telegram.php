@@ -34,6 +34,13 @@ class Telegram
 		));
 	}
 
+	public static function getChatAdministrators($chat_id)
+	{
+		return self::apiRequest("getChatAdministrators", array(
+			'chat_id' => $chat_id
+		));
+	}
+
 	public static function talk($chat_id, $text, $disable_web_page_preview = false)
 	{
 		self::apiRequestWebhook("sendMessage", array(

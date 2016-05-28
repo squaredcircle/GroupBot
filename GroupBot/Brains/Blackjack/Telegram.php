@@ -16,17 +16,13 @@ class Telegram
 {
     public static function getResponse(\PDO $db, Message $message, PlayerMove $move, $bet = NULL)
     {
-        $Blackjack = new Blackjack($db, $message->User, $message->Chat->id, $move, $bet);
+        $Blackjack = new Blackjack($db, $message->User, $message->Chat, $move, $bet);
         if ($Blackjack->Talk->areMessages()) {
-            if ($message->Chat->isPrivate()) {
-                $keyboard = $Blackjack->Talk->getKeyboard();
+            $keyboard = $Blackjack->Talk->getKeyboard();
 
-                if ($message->isCallback()) \GroupBot\Telegram::edit_inline_message($message->Chat->id, $message->message_id, $Blackjack->Talk->getMessages(), $keyboard);
-                else \GroupBot\Telegram::talk_inline_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $keyboard);
+            if ($message->isCallback()) \GroupBot\Telegram::edit_inline_message($message->Chat->id, $message->message_id, $Blackjack->Talk->getMessages(), $keyboard);
+            else \GroupBot\Telegram::talk_inline_keyboard($message->Chat->id, $Blackjack->Talk->getMessages(), $keyboard);
 
-            } else {
-                \GroupBot\Telegram::talk($message->Chat->id, $Blackjack->Talk->getMessages());
-            }
             return true;
         }
         return false;

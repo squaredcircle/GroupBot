@@ -127,6 +127,7 @@ class Talk
 
     private function translate()
     {
+        if (!$this->Message->Chat->yandex_enabled) return false;
         if ($this->Message->MessageType == MessageType::Forward && strcmp($this->Message->forward_from->user_name, BOT_FULL_USER_NAME) === 0) return false;
         if (isset($this->Message->MessageEntities)) {
             $bold = false;
@@ -150,6 +151,7 @@ class Talk
 
     private function greetUser()
     {
+        if ($this->Message->Chat->no_spam_mode) return false;
         if ($this->Message->User->welcome_sent) return false;
         Telegram::talk($this->Message->Chat->id,
             emoji(0x1F4EF) . " Arise, *" . $this->Message->User->getName(). "*."

@@ -99,6 +99,9 @@ class GroupBot
 
     private function runCommand($cmd)
     {
+        $Dictionary = new Dictionary();
+        if (in_array($cmd, $Dictionary->spam_commands) && $this->Message->Chat->no_spam_mode) return false;
+
         foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder'] as $folder) {
             if (is_null($folder)) {
                 $class = "GroupBot\\Command\\$cmd";

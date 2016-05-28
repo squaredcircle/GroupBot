@@ -218,7 +218,7 @@ class Blackjack extends CardGame
      */
     protected function newTalk()
     {
-        return new Talk();
+        return new Talk($this->chat);
     }
 
     /**

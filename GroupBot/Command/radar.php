@@ -21,6 +21,11 @@ class radar extends Command
             '128km' => 'IDR703',
             '256km' => 'IDR702',
             '512km' => 'IDR701'
+        ],
+        'perthairport' => [
+            '128km' => 'IDR263',
+            '256km' => 'IDR262',
+            '512km' => 'IDR261'
         ]
     ];
 
@@ -97,6 +102,11 @@ class radar extends Command
         Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
         $filenames = $this->get_images();
         $this->setTitle($filenames);
+
+        if (count($filenames) < 2) {
+            Telegram::talk($this->Message->Chat->id, emoji(0x274C) . " Something went wrong getting the radar images fam. The radar might be down. Check here to see if it's working: \n \nhttp://www.bom.gov.au/products/" . $this->choice . ".loop.shtml#skip");
+            return false;
+        }
 
         if (!$this->sendIfExists()) {
             Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);

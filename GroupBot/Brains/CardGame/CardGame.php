@@ -11,13 +11,18 @@ namespace GroupBot\Brains\CardGame;
 
 use GroupBot\Brains\CardGame\Enums\PlayerMove;
 use GroupBot\Brains\Coin\Money\Transact;
+use GroupBot\Types\Chat;
 use GroupBot\Types\User;
 use GroupBot\Brains\CardGame\Types\Game;
 
 abstract class CardGame
 {
 
-    protected $chat_id, $bet, $free_bet;
+    protected $bet, $free_bet;
+
+    /** @var  Chat */
+    protected $chat;
+
     /** @var  User */
     protected $user;
 
@@ -50,13 +55,14 @@ abstract class CardGame
      * CardGame constructor.
      * @param \PDO $db
      * @param User $user
-     * @param $chat_id
+     * @param Chat $chat
      * @param PlayerMove $Move
      * @param $bet
+     * @internal param $chat_id
      */
-    public function __construct(\PDO $db, User $user, $chat_id, PlayerMove $Move, $bet)
+    public function __construct(\PDO $db, User $user, Chat $chat, PlayerMove $Move, $bet)
     {
-        $this->chat_id = $chat_id;
+        $this->chat = $chat;
         $this->user = $user;
         $this->bet = $bet;
         $this->free_bet = false;
@@ -97,9 +103,9 @@ abstract class CardGame
      */
     private function loadOrCreateGame(PlayerMove $Move)
     {
-        if (!$Game = $this->SQL->select_game($this->chat_id)) {
-            $this->SQL->insert_game($this->chat_id);
-            $Game = $this->SQL->select_game($this->chat_id);
+        if (!$Game = $this->SQL->select_game($this->chat->id)) {
+            $this->SQL->insert_game($this->chat->id);
+            $Game = $this->SQL->select_game($this->chat->id);
             $Game->addDealer($this->db);
             if (!$this->Bets->checkPlayerBet($Game, $this->user, $Game->Dealer->user, $this->bet)) return false;
             $this->bet = $this->Bets->bet;

@@ -16,11 +16,22 @@ class weather extends Command
     public function main()
     {
         Telegram::sendChatTypingStatus($this->Message->Chat->id);
-
-        $realtime = \GroupBot\Brains\Weather\Weather::realtime();
-        $uv = \GroupBot\Brains\Weather\Weather::uv_index();
-        $sunrise = \GroupBot\Brains\Weather\Weather::sunrise();
-        $forecast = \GroupBot\Brains\Weather\Weather::forecast();
+        
+        if ($this->isParam()) {
+            if (in_array($this->getParam(), \GroupBot\Brains\Weather\Weather::$locations)) {
+                $city = $this->getParam();
+            } else {
+                Telegram::talk($this->Message->Chat->id, "I don't have that city on record, fam.\nTry an Australian capitol city.");
+                return false;
+            }
+        } else {
+            $city = 'perth';
+        }
+        
+        $realtime = \GroupBot\Brains\Weather\Weather::realtime($city);
+        $uv = \GroupBot\Brains\Weather\Weather::uv_index($city);
+        $sunrise = \GroupBot\Brains\Weather\Weather::sunrise($city);
+        $forecast = \GroupBot\Brains\Weather\Weather::forecast($city);
 
         $today = $forecast[Carbon::today()->format('l')];
         $tomorrow = $forecast[Carbon::tomorrow()->format('l')];

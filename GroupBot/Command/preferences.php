@@ -134,6 +134,7 @@ class preferences extends Command
             . "\n"
             . "\n`   `• My admin for this chat is " . ($admin ? "*" . $admin->getName() . "*" : "_nobody?_")
             . "\n`   `• Reduced spam mode is " . ($this->Message->Chat->no_spam_mode ? "*on*" : "*off*")
+            . "\n`   `• Bot kick mode is " . ($this->Message->Chat->bot_kick_mode ? "*on*" : "*off*")
             . "\n`   `• Yandex auto-translate is " . ($this->Message->Chat->yandex_enabled ? "*on*" : "*off*");
 
         if ($this->Message->Chat->yandex_enabled) {
@@ -166,6 +167,7 @@ class preferences extends Command
             . "\n"
             . "\n`   `• My admin for this chat is " . ($admin ? "*" . $admin->getName() . "*" : "_nobody?_")
             . "\n`   `• Reduced spam mode is " . ($this->chat->no_spam_mode ? "*on*" : "*off*")
+            . "\n`   `• Bot kick mode is " . ($this->chat->bot_kick_mode ? "*on*" : "*off*")
             . "\n`   `• Yandex auto-translate is " . ($this->chat->yandex_enabled ? "*on*" : "*off*");
 
         if ($this->chat->yandex_enabled) {
@@ -180,6 +182,13 @@ class preferences extends Command
                 [
                     'text' => emoji($this->chat->no_spam_mode ? 0x1F534 : 0x1F535) . ' Turn reduced spam mode ' . ($this->chat->no_spam_mode ? 'OFF' : 'ON'),
                     'callback_data' => '/preferences chatset ' . $this->chat->id . ' no_spam_mode ' . ($this->chat->no_spam_mode ? '0' : '1')
+                ]
+            ];
+        $this->keyboard[] =
+            [
+                [
+                    'text' => emoji($this->chat->bot_kick_mode ? 0x1F534 : 0x1F535) . ' Turn bot kicking mode ' . ($this->chat->bot_kick_mode ? 'OFF' : 'ON'),
+                    'callback_data' => '/preferences chatset ' . $this->chat->id . ' bot_kick_mode ' . ($this->chat->bot_kick_mode ? '0' : '1')
                 ]
             ];
         if ($this->chat->yandex_enabled) {
@@ -241,6 +250,9 @@ class preferences extends Command
             switch ($parameter) {
                 case 'no_spam_mode':
                     return $this->set_boolean_option('no_spam_mode', $value);
+                    break;
+                case 'bot_kick_mode':
+                    return $this->set_boolean_option('bot_kick_mode', $value);
                     break;
                 case 'yandex_enabled':
                     return $this->set_boolean_option('yandex_enabled', $value);

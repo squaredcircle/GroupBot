@@ -46,6 +46,9 @@ class User
     /** @var  boolean */
     public $welcome_sent;
 
+    /** @var  string */
+    public $timezone;
+
     public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {
         if (isset($user_update['username']) &&  strcmp($user_update['username'], BOT_FULL_USER_NAME) === 0) {
@@ -83,7 +86,7 @@ class User
         return $user;
     }
 
-    public function construct($user_id, $first_name, $last_name = NULL, $user_name = NULL, $balance = 0, $level = 1, $last_activity = NULL, $received_income_today = 0, $free_bets_today = 0, $handle_preference = 'username', $welcome_sent = false)
+    public function construct($user_id, $first_name, $last_name = NULL, $user_name = NULL, $balance = 0, $level = 1, $last_activity = NULL, $received_income_today = 0, $free_bets_today = 0, $handle_preference = 'username', $welcome_sent = false, $timezone = NULL)
     {
         $this->user_id = $user_id;
         $this->first_name = $first_name;
@@ -96,6 +99,7 @@ class User
         $this->free_bets_today = $free_bets_today;
         $this->handle_preference  = $handle_preference;
         $this->welcome_sent = $welcome_sent;
+        $this->timezone = $timezone;
     }
 
     public function save(\PDO $db)

@@ -9,6 +9,8 @@
 namespace GroupBot\Brains\Minesweeper\Types;
 
 
+use GroupBot\Brains\Minesweeper\Enums\GameState;
+
 class Game
 {
     /** @var  Board */
@@ -22,16 +24,15 @@ class Game
 
     /** @var  integer */
     public $game_id;
+    
+    /** @var  GameState */
+    public $state;
 
     public function __construct(Board $board, $chat_id, $game_id)
     {
         $this->board = $board;
         $this->chat_id = $chat_id;
         $this->game_id = $game_id;
-    }
-
-    public function newGame()
-    {
-
+        $this->state = new GameState(GameState::Reveal);
     }
 }

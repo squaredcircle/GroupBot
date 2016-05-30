@@ -238,6 +238,7 @@ isaaccoin - sucks lol
             . "\n`   `• /level to increase your status"
             . "\n`   `• /blackjack to earn coin"
             . "\n`   `• /income to get some coin right now"
+            . "\n`   `• /reload if you're feeling dangerous"
             . "\n`   `• /roll for a good time"
             . "\n\nMore to come, m80s. Bitch to @richardstallman if I break.";
         return true;

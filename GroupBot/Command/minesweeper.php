@@ -7,6 +7,8 @@
  */
 namespace GroupBot\Command;
 
+use GroupBot\Brains\Minesweeper\Enums\GameState;
+use GroupBot\Brains\Minesweeper\Types\Game;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
@@ -21,6 +23,9 @@ class minesweeper extends Command
 
     public function display()
     {
+        if ($this->minesweeper->game->state == GameState::Lose) $this->state = 'lose';
+        if ($this->minesweeper->game->state == GameState::Win) $this->state = 'win';
+
         if (strcmp($this->state, 'surrender') === 0)
         {
             $this->out = "You surrendered. Game over!";
@@ -45,15 +50,43 @@ class minesweeper extends Command
                     ]
                 ];
         }
-        else
+        elseif (strcmp($this->state, 'win') === 0)
+        {
+            $this->out = "Victory! You uncovered all the non-mined tiles.";
+            $this->keyboard = $this->minesweeper->getBoard(true);
+            $this->keyboard[] =
+                [
+                    [
+                        'text' => emoji(0x21A9) . " Play again",
+                        'callback_data' => "/minesweeper"
+                    ]
+                ];
+        }
+        elseif (strcmp($this->state, 'reveal_mode') === 0)
         {
             $this->out = "Click mode: *uncover mine*";
             $this->keyboard = $this->minesweeper->getBoard();
             $this->keyboard[] =
                 [
                     [
-                        'text' => emoji(0x1F6A9) . " Toggle Flags",
-                        'callback_data' => "/minesweeper flags"
+                        'text' => emoji(0x1F6A9) . " Toggle Flags ON",
+                        'callback_data' => "/minesweeper flag_mode"
+                    ],
+                    [
+                        'text' => emoji(0x1F6AA) . " Surrender",
+                        'callback_data' => "/minesweeper surrender"
+                    ]
+                ];
+        }
+        else
+        {
+            $this->out = "Click mode: *place flag*";
+            $this->keyboard = $this->minesweeper->getBoard();
+            $this->keyboard[] =
+                [
+                    [
+                        'text' => emoji(0x1F6A9) . " Toggle Flags OFF",
+                        'callback_data' => "/minesweeper reveal_mode"
                     ],
                     [
                         'text' => emoji(0x1F6AA) . " Surrender",
@@ -71,16 +104,25 @@ class minesweeper extends Command
                 $this->display();
                 $this->minesweeper->endGame();
                 break;
-            case 'flags':
-                $this->state = 'flags';
+            case 'flag_mode':
+                $this->state = 'flag_mode';
+                $this->minesweeper->game->state = new GameState(GameState::Flag);
+                return $this->display();
+                break;
+            case 'reveal_mode':
+                $this->state = 'reveal_mode';
+                $this->minesweeper->game->state = new GameState(GameState::Reveal);
+                return $this->display();
                 break;
             case 'flag':
+                $this->state = 'flag_mode';
                 $coords = explode(',', $parameter);
                 if (count($coords) == 2)
                     $this->minesweeper->flagTile(intval($coords[0]), intval($coords[1]));
                 return $this->display();
                 break;
             case 'reveal':
+                $this->state = 'reveal_mode';
                 $coords = explode(',', $parameter);
                 if (count($coords) == 2)
                     $this->minesweeper->revealTile(intval($coords[0]), intval($coords[1]));
@@ -92,11 +134,7 @@ class minesweeper extends Command
 
     public function main()
     {
-
         $this->minesweeper = new \GroupBot\Brains\Minesweeper\Minesweeper($this->db, $this->Message->Chat);
-//
-//        Telegram::talk($this->Message->Chat->id, 'nmui');
-//        return true;
 
         $this->out = '';
 

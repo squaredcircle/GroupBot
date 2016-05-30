@@ -51,6 +51,9 @@ class Chat
     /** @var  integer */
     public $yandex_min_words;
 
+    /** @var  boolean */
+    public $bot_kick_mode;
+
     public static function constructFromTelegramUpdate($chat_update, \PDO $db)
     {
         $changed = false;

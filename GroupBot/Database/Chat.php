@@ -18,9 +18,9 @@ class Chat extends DbConnection
     public function updateChat(\GroupBot\Types\Chat $chat)
     {
         $sql = "INSERT INTO chats 
-                  (chat_id, type, title, messages_sent_last_min, admin_user_id, banker_name, currency_name, welcome_enabled, no_spam_mode, yandex_api_key, yandex_enabled, yandex_language, yandex_min_words) 
+                  (chat_id, type, title, messages_sent_last_min, admin_user_id, banker_name, currency_name, welcome_enabled, no_spam_mode, yandex_api_key, yandex_enabled, yandex_language, yandex_min_words, bot_kick_mode) 
                 VALUES
-                  (:chat_id, :type, :title, :messages_sent_last_min, :admin_user_id, :banker_name, :currency_name, :welcome_enabled, :no_spam_mode, :yandex_api_key, :yandex_enabled, :yandex_language, :yandex_min_words)
+                  (:chat_id, :type, :title, :messages_sent_last_min, :admin_user_id, :banker_name, :currency_name, :welcome_enabled, :no_spam_mode, :yandex_api_key, :yandex_enabled, :yandex_language, :yandex_min_words, :bot_kick_mode)
                 ON DUPLICATE KEY UPDATE 
                   type = VALUES(type),
                   title = VALUES(title),
@@ -33,7 +33,8 @@ class Chat extends DbConnection
                   yandex_api_key = VALUES(yandex_api_key),
                   yandex_enabled = VALUES(yandex_enabled), 
                   yandex_language = VALUES(yandex_language), 
-                  yandex_min_words = VALUES(yandex_min_words)";
+                  yandex_min_words = VALUES(yandex_min_words),
+                  bot_kick_mode = VALUES(bot_kick_mode)";
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':chat_id', $chat->id);
@@ -49,6 +50,7 @@ class Chat extends DbConnection
         $query->bindValue(':yandex_enabled', $chat->yandex_enabled);
         $query->bindValue(':yandex_language', $chat->yandex_language);
         $query->bindValue(':yandex_min_words', $chat->yandex_min_words);
+        $query->bindValue(':bot_kick_mode', $chat->bot_kick_mode);
         return $query->execute();
     }
 

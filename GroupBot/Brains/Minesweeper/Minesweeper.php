@@ -9,6 +9,7 @@
 namespace GroupBot\Brains\Minesweeper;
 
 
+use GroupBot\Brains\Minesweeper\Enums\GameState;
 use GroupBot\Brains\Minesweeper\Types\Board;
 use GroupBot\Brains\Minesweeper\Types\Game;
 use GroupBot\Types\Chat;
@@ -37,7 +38,7 @@ class Minesweeper
         $board->width = 8;
         $board->height = 12;
         $board->generateNewBoard(15);
-        $game = new Game($board, $this->chat->id, null);
+        $game = new Game($board, $this->chat->id, null, new GameState(GameState::Reveal));
         return $game;
     }
 
@@ -61,7 +62,11 @@ class Minesweeper
 
     public function revealTile($x, $y)
     {
-        if ($tile = $this->game->board->getTile($x, $y)) {
+        $this->game->state = new GameState(GameState::Reveal);
+        if ($tile = $this->game->board->getTile($x, $y))
+        {
+            if ($tile->flagged) return false;
+
             $tile->revealed = true;
 
             if (!$tile->mine && $tile->number == 0) {
@@ -69,10 +74,12 @@ class Minesweeper
             }
 
             if ($tile->mine) {
-                
+                $this->game->state = new GameState(GameState::Lose);
+                $this->endGame();
+            } else {
+                $this->saveGame();
             }
 
-            $this->saveGame();
             return true;
         }
         return false;
@@ -80,8 +87,9 @@ class Minesweeper
     
     public function flagTile($x, $y)
     {
+        $this->game->state = new GameState(GameState::Flag);
         if ($tile = $this->game->board->getTile($x, $y)) {
-            $tile->flagged = true;
+            $tile->flagged = !$tile->flagged;
             $this->saveGame();
             return true;
         }
@@ -90,6 +98,6 @@ class Minesweeper
     
     public function getBoard($reveal = false)
     {
-        return $this->game->board->getBoardTelegramKeyboard($reveal);
+        return $this->game->board->getBoardTelegramKeyboard($reveal, $this->game->state);
     }
 }

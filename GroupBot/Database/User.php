@@ -23,9 +23,9 @@ class User extends DbConnection
     {
         $sql = "
             INSERT INTO users
-              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference, welcome_sent)
+              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference, welcome_sent, timezone)
             VALUES
-              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today, :handle_preference, :welcome_sent)
+              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today, :handle_preference, :welcome_sent, :timezone)
               ON DUPLICATE KEY UPDATE
               first_name = VALUES(first_name),
               user_name = VALUES(user_name),
@@ -36,7 +36,8 @@ class User extends DbConnection
               received_income_today = VALUES(received_income_today),
               free_bets_today = VALUES(free_bets_today),
               handle_preference = VALUES(handle_preference),
-              welcome_sent = VALUES(welcome_sent)
+              welcome_sent = VALUES(welcome_sent),
+              timezone = VALUES(timezone)
         ";
 
         $query = $this->db->prepare($sql);
@@ -51,6 +52,7 @@ class User extends DbConnection
         $query->bindValue(':free_bets_today', $user->free_bets_today);
         $query->bindValue(':handle_preference', $user->handle_preference);
         $query->bindValue(':welcome_sent', $user->welcome_sent);
+        $query->bindValue(':timezone', $user->timezone);
         return $query->execute();
 
         //return $this->updateObject('users', $user);

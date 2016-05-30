@@ -31,7 +31,12 @@ class Blackjack extends CardGame
             $this->Talk->blackjack($Player);
         } elseif ($Player->State == PlayerState::Join || $Player->State == PlayerState::Hit) {
             switch ($Move) {
-                case PlayerMove::Stand || PlayerMove::DefaultMove:
+                case PlayerMove::DefaultMove:
+                    $Player->State =  new PlayerState(PlayerState::Stand);
+                    $Player->no_stands++;
+                    $this->Talk->stand($Player);
+                    break;
+                case PlayerMove::Stand:
                     $Player->State =  new PlayerState(PlayerState::Stand);
                     $Player->no_stands++;
                     $this->Talk->stand($Player);

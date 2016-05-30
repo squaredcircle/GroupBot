@@ -107,7 +107,16 @@ class Talk
                 $message = $this->dict->ratings[mt_rand(0,10)];
                 break;
             case MessageType::NewChatParticipant:
-                if (strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) === 0) {
+                if (strcasecmp(substr($this->Message->new_chat_participant->user_name,-3), 'bot') === 0 &&
+                    strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) != 0) {
+                    if ($this->Message->Chat->bot_kick_mode) {
+                        Telegram::kick($this->Message->Chat->id, $this->Message->new_chat_participant->user_id);
+                        $message = emoji(0x26A0) . " *Bot detected!*\n\n`Bot kicking mode is online. Kicking bot.`";
+                    } else {
+                        $message = emoji(0x26A0) . " *Bot detected!*";
+                    }
+                }
+                elseif (strcmp($this->Message->new_chat_participant->user_name, BOT_FULL_USER_NAME) === 0) {
                     $message = $this->dict->join_chat;
                     $this->Message->Chat->admin_user_id = $this->Message->User->user_id;
                     $this->Message->Chat->save($this->db);
@@ -138,8 +147,8 @@ class Talk
             }
             if ($bold && $italic) return false;
         }
-        if (count(mb_split(" ", $this->Message->text)) > 3) {
-            $Translate = new Translate();
+        $Translate = new Translate();
+        if (count(mb_split(" ", $this->Message->text)) > 3 || $Translate->isJapanese($this->Message->text)) {
             $lang = $Translate->detectLanguage($this->Message->text);
             if ($lang != 'English') {
                 $translation = $Translate->translate($this->Message->text, 'English');
@@ -167,7 +176,7 @@ class Talk
     {
         if ($this->greetUser()) return true;
 
-        if ($this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
+        if (!$this->Message->Chat->no_spam_mode && $this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
         if ($this->isBotMentioned())

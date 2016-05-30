@@ -36,7 +36,7 @@ class Translate
         'el' => 'Greek',
         'ka' => 'Georgian',
         'da' => 'Danish',
-        'he' => 'Yiddish',
+        'he' => 'Jewish',
         'id' => 'Indonesian',
         'ga' => 'Irish',
         'it' => 'Italian',
@@ -73,13 +73,13 @@ class Translate
         'tr' => 'Turkish',
         'uz' => 'Uzbek',
         'uk' => 'Ukrainian',
-        'fi' => 'Finish',
+        'fi' => 'Finnish',
         'fr' => 'French',
         'hr' => 'Croatian',
         'cs' => 'Czech',
         'sv' => 'Swedish',
         'et' => 'Estonian',
-        'ja' => 'Japanese'
+        'ja' => 'Weebish'
     );
 
     protected $handler;
@@ -95,6 +95,22 @@ class Translate
         return $this->execute('getLangs', array(
             'ui' => $culture
         ));
+    }
+
+    private function isKanji($str) {
+        return preg_match('/[\x{4E00}-\x{9FBF}]/u', $str) > 0;
+    }
+
+    private function isHiragana($str) {
+        return preg_match('/[\x{3040}-\x{309F}]/u', $str) > 0;
+    }
+
+    private function isKatakana($str) {
+        return preg_match('/[\x{30A0}-\x{30FF}]/u', $str) > 0;
+    }
+
+    public function isJapanese($str) {
+        return $this->isKanji($str) || $this->isHiragana($str) || $this->isKatakana($str);
     }
 
     public function detectLanguage($text)

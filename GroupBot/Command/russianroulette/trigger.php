@@ -51,14 +51,14 @@ class trigger extends Command
                     . "\n" . emoji(0x2620) . " *" . $this->Message->User->getName() . "* killed themselves."
                     . "\n /reload to play again.";
                 Telegram::talkForced($this->Message->Chat->id, $out);
-                Telegram::kick($this->Message->Chat->id, $this->Message->User->user_id);
+                //Telegram::kick($this->Message->Chat->id, $this->Message->User->user_id);
             } else {
                 $out = $this->getFace() . emoji(0x1F52B) . " `Click.`";
+                Telegram::talk($this->Message->Chat->id, $out);
             }
         } else {
             $out = emoji(0x1F449) . " The revolver isn't loaded. Use /reload first.";
+            Telegram::talk($this->Message->Chat->id, $out);
         }
-
-        Telegram::talk($this->Message->Chat->id, $out);
     }
 }

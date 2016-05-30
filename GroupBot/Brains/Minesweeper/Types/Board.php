@@ -9,6 +9,8 @@
 namespace GroupBot\Brains\Minesweeper\Types;
 
 
+use GroupBot\Brains\Minesweeper\Enums\GameState;
+
 class Board
 {
     /** @var  Tile[] */
@@ -109,17 +111,29 @@ class Board
         return true;
     }
 
-    public function getBoardTelegramKeyboard($reveal = false)
+    public function getBoardTelegramKeyboard($reveal = false, GameState $state)
     {
         $keyboard = [];
         $n = 0;
         for ($i = 0; $i < $this->height; $i++) {
             $row = [];
             for ($j = 0; $j < $this->width; $j++) {
-                $row[] = [
-                    'text' => $this->tiles[$n]->getTileEmoji($reveal),
-                    'callback_data' => "/minesweeper reveal $j,$i"
-                ];
+                if ($state == GameState::Reveal) {
+                    $row[] = [
+                        'text' => $this->tiles[$n]->getTileEmoji($reveal),
+                        'callback_data' => "/minesweeper reveal $j,$i"
+                    ];
+                } elseif ($state == GameState::Flag) {
+                    $row[] = [
+                        'text' => $this->tiles[$n]->getTileEmoji($reveal),
+                        'callback_data' => "/minesweeper flag $j,$i"
+                    ];
+                } elseif (($state == GameState::Lose) || ($state == GameState::Win)) {
+                    $row[] = [
+                        'text' => $this->tiles[$n]->getTileEmoji(true),
+                        'callback_data' => " "
+                    ];
+                }
                 $n++;
             }
             $keyboard[] = $row;

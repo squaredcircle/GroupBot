@@ -28,7 +28,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
     public function turn_expired(\GroupBot\Brains\CardGame\Types\Player $player)
     {
         $this->addMessage(emoji(0x1F4E2) . " A game is in progress."
-            . "\n" . emoji(0x231B) . " *" . $player->user->getPrefixedUserName() . "* hasn't made a move in over 5 minutes. They will automatically stand.");
+            . "\n" . emoji(0x231B) . " " . $player->user->getPrefixedUserName() . " hasn't made a move in over 5 minutes. They will automatically stand.");
     }
 
     /**
@@ -81,7 +81,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             }
             $out .= "\n*" . $player->user->getName() . "*: " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
         }
-        $out .= "\n" . emoji(0x1F449) . "It is now *" . $game->getCurrentPlayer()->user->getName() . "'s* turn.";
+        $out .= "\n" . emoji(0x1F449) . "It is now " . $game->getCurrentPlayer()->user->getName() . "'s turn.";
         $this->addMessage($out);
     }
 
@@ -102,17 +102,21 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                 [
                     [
                         'text' => emoji(0x1F4B5) . " Join game - default bet",
-                        'callback_data' => '/bjstart'
-                    ]
+                        'callback_data' => '/blackjack'
+                    ],
+                    [
+                        'text' => emoji(0x1F4B0) . " Join game - bet double",
+                        'callback_data' => '/blackjack ' . 2 * $player->bet
+                    ],
                 ],
                 [
                     [
                         'text' => emoji(0x1F4B0) . " Join game - bet half",
-                        'callback_data' => '/bjstart all/2'
+                        'callback_data' => '/blackjack all/2'
                     ],
                     [
                         'text' => emoji(0x1F4B0) . " Join game - bet all",
-                        'callback_data' => '/bjstart all'
+                        'callback_data' => '/blackjack all'
                     ]
                 ],
                 [
@@ -380,7 +384,11 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                         [
                             'text' => emoji(0x1F4B5) . " Play again - default bet",
                             'callback_data' => '/bjstart'
-                        ]
+                        ],
+                        [
+                            'text' => emoji(0x1F4B0) . " Play again - bet double",
+                            'callback_data' => '/bjstart ' . 2 * $Game->getCurrentPlayer()->bet
+                        ],
                     ],
                     [
                         [
@@ -410,7 +418,11 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                         [
                             'text' => emoji(0x1F4B5) . " New game - default bet",
                             'callback_data' => '/blackjack'
-                        ]
+                        ],
+                        [
+                            'text' => emoji(0x1F4B0) . " Play again - bet double",
+                            'callback_data' => '/blackjack ' . 2 * $Game->getCurrentPlayer()->bet
+                        ],
                     ],
                     [
                         [

@@ -17,7 +17,9 @@ class emoji extends Command
         $count = ($this->isParam() && is_numeric($this->getParam()))
             ? intval($this->getParam()) : 1;
 
+        if ($count < 1) $count = 1;
         if ($count > 4096) $count = 4096;
+
         $out = '';
         for ($i = 0; $i < $count; $i++) $out .= randomEmoji();
 

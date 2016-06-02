@@ -8,57 +8,118 @@
 namespace GroupBot\Command\misc;
 
 
+use Carbon\Carbon;
 use GroupBot\Database\User;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
+class TimeData
+{
+    /** @var  string[] */
+    public $users;
+
+    /** @var  Carbon */
+    public $date;
+
+    public function __construct(array $users, Carbon $date)
+    {
+        $this->users = $users;
+        $this->date = $date;
+    }
+}
+
 class time extends Command
 {
-    private function getChatTimeZones()
+    private function getUserTimeZones()
     {
         $DbUser = new User($this->db);
-        $users = $DbUser->getAllUsersInChat($this->Message->Chat->id);
 
+        if ($this->Message->Chat->id == '56390227') {
+            $users = $DbUser->getAllUsersInChat('-1001033369096');
+        } else {
+            $users = $DbUser->getAllUsersInChat($this->Message->Chat->id);
+        }
         $timezones = [];
-
         foreach ($users as $user) {
             if (isset($user->timezone)) {
                 $timezones[$user->timezone][] = $user->getName();
             }
         }
         $timezones['Australia/Perth'][] = 'ShitBot';
+        return $timezones;
+    }
+
+    /**
+     * @param $timezones
+     * @return TimeData[]
+     */
+    private function sortTimeZones($timezones)
+    {
+        $tzs = [];
+        foreach ($timezones as $timezone => $users) {
+            $tzs[] = new TimeData($users, Carbon::now($timezone));
+        }
+        usort($tzs, function ($a, $b) {
+            if ($a->date->eq($b->date)) return 0;
+            if ($a->date->gt($b->date)) return 1;
+            return -1;
+        });
+        return $tzs;
+    }
+
+    private function getClockEmoji(Carbon $time)
+    {
+        $hour = $time->format('g');
+        $minute = ($time->format('i') > 30) ? '30' : '00';
+
+        if ($minute == '30') {
+            return emoji(0x1F55B + (int)$hour);
+        } else {
+            return emoji(0x1F550 + (int)$hour);
+        }
+    }
+
+    private function printTimeZones()
+    {
+        $timezones = $this->getUserTimeZones();
+        $tzs = $this->sortTimeZones($timezones);
 
         $out = '';
 
-        foreach ($timezones as $timezone => $people) {
-            $date = new \DateTime("now", new \DateTimeZone($timezone));
-            $out .= emoji(0x1F551) . " *" . $timezone . "*: `" . $date->format('g:i A') . "`";
-            $out .= "\n`       `_(";
-            foreach ($people as $person) {
-                $out .= "$person, ";
+        foreach ($tzs as $tz) {
+            $out .= $this->getClockEmoji($tz->date) . " <code>" . $tz->date->format('D h:iA') . " </code><b> " . $tz->date->tzName . "</b> <i>(";
+            foreach ($tz->users as $user) {
+                $out .= $user . ", ";
             }
             $out = substr($out,0,-2);
-            $out .= ")_\n\n";
+            $out .= ")</i>\n";
         }
 
         return $out;
     }
 
+    private function updateTimeZone(\GroupBot\Types\User $user, $timezone)
+    {
+        if (in_array($timezone, timezone_identifiers_list())) {
+            $user->timezone = $this->getParam();
+            return $user->save($this->db);
+        }
+        return false;
+    }
+
     public function main()
     {
         if ($this->isParam()) {
-            if (in_array($this->getParam(), timezone_identifiers_list())) {
-                $this->Message->User->timezone = $this->getParam();
-                $this->Message->User->save($this->db);
+            if ($this->updateTimeZone($this->Message->User, $this->getParam())) {
                 $out = emoji(0x1F44D) . " Your timezone has been updated!\n\n";
-                $out .= $this->getChatTimeZones();
+                $out .= $this->printTimeZones();
             } else {
-                $out = emoji(0x274C) . " Can't find that timezone. Take a look here: http://php.net/manual/en/timezones.php \n\n";
+                $out = emoji(0x274C) . " Can't find that timezone. Try something like: \n<code>   /time {Continent}/{City}</code>.\n\nTake a look here for all the options available:\n http://php.net/manual/en/timezones.php";
             }
         } else {
-            $out = $this->getChatTimeZones();
+            $out = $this->printTimeZones();
         }
 
-        Telegram::talk($this->Message->Chat->id, $out);
+        Telegram::talk_html($this->Message->Chat->id, $out);
     }
 }

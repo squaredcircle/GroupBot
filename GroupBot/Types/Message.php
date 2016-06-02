@@ -15,7 +15,10 @@ use GroupBot\Enums\MessageType;
 class Message
 {
     public $message_id, $date, $callback;
-    public $forward_date, $reply_to_message;
+    public $forward_date;
+
+    /** @var  Message */
+    public $reply_to_message;
 
     /** @var  User */
     public $forward_from;
@@ -163,6 +166,7 @@ class Message
     {
         if (isset($message['reply_to_message'])) {
             $this->MessageType = new MessageType(MessageType::Reply);
+            $this->reply_to_message = new Message($message['reply_to_message'], $this->db);
         } elseif (isset($message['forward_from'])) {
             $this->forward_from = new User();
             $this->forward_from->constructFromTelegramUpdate($message['forward_from'], $this->db);

@@ -92,6 +92,21 @@ class InlineQuery
             ]
         );
 
+        $word = strlen($this->query) > 10 ? substr($this->query, 10) : $this->query;
+        $word = strtoupper($word);
+        $out = implode(' ', str_split($word));
+        foreach (str_split(substr($word,1)) as $char) {
+            $out .= "\n$char";
+        }
+        $this->results[] = array(
+            'type' => 'article',
+            'id' => strval(intval($this->id) + 6),
+            'title' => 'L O N D O N',
+            'input_message_content' => [
+                'message_text' => "*$out*",
+                'parse_mode' => 'markdown'
+            ]
+        );
 
         $Translate = new Translate();
         $lang = $Translate->detectLanguage($this->query);
@@ -105,7 +120,7 @@ class InlineQuery
         }
         $this->results[] = array(
             'type' => 'article',
-            'id' => strval(intval($this->id) + 6),
+            'id' => strval(intval($this->id) + 7),
             'title' => 'translate to english',
             'input_message_content' => [
                 'message_text' => $out,
@@ -116,7 +131,7 @@ class InlineQuery
         $file = \GroupBot\Brains\Speak::createAudioFile($this->query);
         $this->results[] = array(
             'type' => 'voice',
-            'id' => strval(intval($this->id) + 7),
+            'id' => strval(intval($this->id) + 8),
             'title' => 'vocalise with hts',
             'voice_url' => "https://www.drinkwatchprogram.com/bot/speech/$file"
         );
@@ -124,7 +139,7 @@ class InlineQuery
         $file = \GroupBot\Brains\Speak::createAudioFile($this->query, 'espeak');
         $this->results[] = array(
             'type' => 'voice',
-            'id' => strval(intval($this->id) + 8),
+            'id' => strval(intval($this->id) + 9),
             'title' => 'vocalise with espeak',
             'voice_url' => "https://www.drinkwatchprogram.com/bot/speech/$file"
         );

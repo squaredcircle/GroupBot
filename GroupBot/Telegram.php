@@ -41,6 +41,16 @@ class Telegram
 		));
 	}
 
+	public static function talk_html($chat_id, $text, $disable_web_page_preview = false)
+	{
+		self::apiRequestWebhook("sendMessage", array(
+			'chat_id' => $chat_id,
+			"text" => $text,
+			"parse_mode" => "HTML",
+			"disable_web_page_preview" => $disable_web_page_preview
+		));
+	}
+
 	public static function talk($chat_id, $text, $disable_web_page_preview = false)
 	{
 		self::apiRequestWebhook("sendMessage", array(

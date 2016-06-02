@@ -21,7 +21,7 @@ class weather extends Command
             if (in_array($this->getParam(), \GroupBot\Brains\Weather\Weather::$locations)) {
                 $city = $this->getParam();
             } else {
-                Telegram::talk($this->Message->Chat->id, "I don't have that city on record, fam.\nTry an Australian capitol city.");
+                Telegram::talk($this->Message->Chat->id, "I don't have that city on record, fam.\nTry an Australian capital city.");
                 return false;
             }
         } else {

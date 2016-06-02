@@ -132,13 +132,13 @@ class preferences extends Command
         $this->out =
             emoji(0x2699) . " Current preferences for `" . $this->Message->Chat->title . "`:"
             . "\n"
-            . "\n`   `• My admin for this chat is " . ($admin ? "*" . $admin->getName() . "*" : "_nobody?_")
-            . "\n`   `• Reduced spam mode is " . ($this->Message->Chat->no_spam_mode ? "*on*" : "*off*")
-            . "\n`   `• Bot kick mode is " . ($this->Message->Chat->bot_kick_mode ? "*on*" : "*off*")
-            . "\n`   `• Yandex auto-translate is " . ($this->Message->Chat->yandex_enabled ? "*on*" : "*off*");
+            . "\n`   ` " . emoji(0x1F574) . "`     ` My admin for this chat is " . ($admin ? "*" . $admin->getName() . "*" : "_nobody?_")
+            . "\n`   ` " . emoji(0x1F4AC) . "`     ` Reduced spam mode is " . ($this->Message->Chat->no_spam_mode ? "*on*" : "*off*")
+            . "\n`   ` " . emoji(0x1F916) . "`     ` Bot kick mode is " . ($this->Message->Chat->bot_kick_mode ? "*on*" : "*off*")
+            . "\n`   ` " . emoji(0x1F4D6) . "`     ` Yandex auto-translate is " . ($this->Message->Chat->yandex_enabled ? "*on*" : "*off*");
 
         if ($this->Message->Chat->yandex_enabled) {
-            $this->out .= "\n`   `• It will translate messages of at least *" . $this->Message->Chat->yandex_min_words . "* foreign words to *" . $this->Message->Chat->yandex_language . "*";
+            $this->out .= "\n`          ` It will translate messages of at least *" . $this->Message->Chat->yandex_min_words . "* foreign words to *" . $this->Message->Chat->yandex_language . "*";
         }
 
         if ($admin->user_id == $this->Message->User->user_id) {

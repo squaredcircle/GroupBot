@@ -10,6 +10,7 @@
 namespace GroupBot;
 
 use GroupBot\Brains\Translate;
+use GroupBot\Database\User;
 use GroupBot\Enums\MessageEntityType;
 use GroupBot\Enums\MessageType;
 use GroupBot\Libraries\Dictionary;
@@ -124,6 +125,11 @@ class Talk
                     $message = $this->dict->new_chat_member;
                 }
                 break;
+            case MessageType::GroupChatCreated:
+                $message = $this->dict->join_chat;
+                $this->Message->Chat->admin_user_id = $this->Message->User->user_id;
+                $this->Message->Chat->save($this->db);
+                break;
             case MessageType::LeftChatParticipant:
                 $message = $this->dict->chat_member_left;
                 break;
@@ -132,6 +138,20 @@ class Talk
                 break;
         }
         if (isset($message)) Telegram::talk($this->Message->Chat->id, $message);
+    }
+
+    private function validateText(Translate $translate, $text)
+    {
+        return
+            (
+                (
+                    count(mb_split(" ", $text)) > 3
+                    && strlen(array_reduce(str_word_count($text, 1), function ($v, $p) {
+                        return strlen($v) > strlen($p) ? $v : $p;
+                    })) > 1 // Longest word must be over 1 char long
+                )
+                || $translate->isJapanese($text)
+            );
     }
 
     private function translate()
@@ -148,7 +168,7 @@ class Talk
             if ($bold && $italic) return false;
         }
         $Translate = new Translate();
-        if (count(mb_split(" ", $this->Message->text)) > 3 || $Translate->isJapanese($this->Message->text)) {
+        if ($this->validateText($Translate, $this->Message->text)) {
             $lang = $Translate->detectLanguage($this->Message->text);
             if ($lang != 'English') {
                 $translation = $Translate->translate($this->Message->text, 'English');
@@ -172,12 +192,37 @@ class Talk
         return true;
     }
 
+    private function sed()
+    {
+        $s = explode('/', $this->Message->text);
+        if (count($s) == 3 && $s[0] == 's')
+        {
+            if ($this->Message->MessageType == MessageType::Reply)
+            {
+                $out = preg_replace("/" . $s[1] . "/", $s[2], $this->Message->reply_to_message->text);
+                if (strcmp($out, $this->Message->reply_to_message->text) === 0) return false;
+            }
+            else
+            {
+                $DbUser = new User($this->db);
+                $last_message = $DbUser->getUserPostStatsInChat($this->Message->Chat, $this->Message->User)->lastpost;
+                $out = preg_replace("/" . $s[1] . "/", $s[2], $last_message);
+                if (strcmp($out, $last_message) === 0) return false;
+            }
+            Telegram::talk($this->Message->Chat->id, "*$out*");
+            return true;
+        }
+        return false;
+    }
+
     public function processMessage()
     {
         if ($this->greetUser()) return true;
 
         if (!$this->Message->Chat->no_spam_mode && $this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
+
+        if ($this->sed()) return true;
 
         if ($this->isBotMentioned())
         {

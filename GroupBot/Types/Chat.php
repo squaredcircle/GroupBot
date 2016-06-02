@@ -87,7 +87,7 @@ class Chat
         return $userSQL->updateChat($this);
     }
 
-    public function construct($id, ChatType $type, $title, $messages_sent_last_min, $admin_user_id = NULL, $banker_name = "The Bank", $currency_name = "Coin", $welcome_enabled = true, $no_spam_mode = false, $yandex_api_key = NULL, $yandex_enabled = true, $yandex_language = "English", $yandex_min_words = 4)
+    public function construct($id, ChatType $type, $title, $messages_sent_last_min, $admin_user_id = NULL, $banker_name = "The Bank", $currency_name = "Coin", $welcome_enabled = true, $no_spam_mode = false, $yandex_api_key = NULL, $yandex_enabled = true, $yandex_language = "English", $yandex_min_words = 4, $bot_kick_mode = false)
     {
         $this->id = $id;
         $this->type = $type;
@@ -102,6 +102,7 @@ class Chat
         $this->yandex_enabled = $yandex_enabled;
         $this->yandex_language = $yandex_language;
         $this->yandex_min_words = $yandex_min_words;
+        $this->bot_kick_mode = $bot_kick_mode;
     }
 
     public function waitBeforeSend()

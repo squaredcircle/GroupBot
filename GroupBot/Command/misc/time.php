@@ -60,8 +60,8 @@ class time extends Command
             $tzs[] = new TimeData($users, Carbon::now($timezone));
         }
         usort($tzs, function ($a, $b) {
-            if ($a->date->eq($b->date)) return 0;
-            if ($a->date->gt($b->date)) return 1;
+            if ($a->date->offset == $b->date->offset) return 0;
+            if ($a->date->offset > $b->date->offset) return 1;
             return -1;
         });
         return $tzs;

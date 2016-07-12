@@ -9,6 +9,7 @@ namespace GroupBot\Command\coin;
 
 use GroupBot\Brains\Coin\Money\Events;
 use GroupBot\Brains\Level\Level;
+use GroupBot\Command\misc\emoji;
 use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
@@ -25,8 +26,11 @@ class income extends Command
             $interval = $future_date->diff($now);
             $time = $interval->format("*%h hours* and *%i minutes*");
 
-            $out = emoji(0x1F44E) . " You've already received your allowance today!"
-                 . "\nThere's still $time to go until tomorrow";
+            $out = emoji(0x1F4E2) . " " . $this->Message->User->getNameLevelAndTitle() . "..."
+                . "\n\n" . emoji(0x1F44E) . " You must wait $time until you can add to your collection of `" .$this->Message->User->getBalance() . "` coin.";
+
+            //$out = emoji(0x1F44E) . " You've already received your allowance today!"
+            //     . "\nThere's still $time to go until tomorrow";
             Telegram::talk($this->Message->Chat->id, $out);
         }
     }

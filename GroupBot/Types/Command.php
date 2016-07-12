@@ -42,6 +42,11 @@ abstract class Command
         return explode(' ', $this->Message->text)[$no];
     }
 
+    public function getParamsAsArray()
+    {
+        return explode(' ', $this->Message->text);
+    }
+
     public function getAllParams()
     {
         return $this->Message->text;

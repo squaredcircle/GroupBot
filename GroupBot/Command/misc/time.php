@@ -61,7 +61,7 @@ class time extends Command
         }
         usort($tzs, function ($a, $b) {
             if ($a->date->offset == $b->date->offset) return 0;
-            if ($a->date->offset > $b->date->offset) return 1;
+            if ($a->date->offset < $b->date->offset) return 1;
             return -1;
         });
         return $tzs;
@@ -69,13 +69,25 @@ class time extends Command
 
     private function getClockEmoji(Carbon $time)
     {
-        $hour = $time->format('g');
-        $minute = ($time->format('i') > 30) ? '30' : '00';
+        if ($time->format('i') >= 45) {
+            $hour = $time->addHour()->format('g');
+            $minute = '00';
+            $time->subHour(1);
+        } elseif ($time->format('i') >= 15) {
+            $hour = $time->format('g');
+            $minute = '30';
+        } else {
+            $hour = $time->format('g');
+            $minute = '00';
+        }
+
+        //$hour = $time->format('g');
+        //$minute = ($time->format('i') > 30) ? '30' : '00';
 
         if ($minute == '30') {
             return emoji(0x1F55B + (int)$hour);
         } else {
-            return emoji(0x1F550 + (int)$hour);
+            return emoji(0x1F550 + (int)$hour - 1);
         }
     }
 

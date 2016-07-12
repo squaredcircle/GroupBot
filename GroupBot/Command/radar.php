@@ -8,6 +8,7 @@
 namespace GroupBot\Command;
 
 
+use GroupBot\Brains\Weather\Radar\Radar_Codes;
 use GroupBot\Database\Photo;
 use GroupBot\Libraries\AnimGif;
 use GroupBot\Telegram;
@@ -15,112 +16,9 @@ use GroupBot\Types\Command;
 
 class radar extends Command
 {
-    private $choices = [
-        'perth' => [
-            '64km' => 'IDR704',
-            '128km' => 'IDR703',
-            '256km' => 'IDR702',
-            '512km' => 'IDR701'
-        ],
-        'perthairport' => [
-            '128km' => 'IDR263',
-            '256km' => 'IDR262',
-            '512km' => 'IDR261'
-        ]
-    ];
-
-    private $choice = 'IDR703';
-    private $title, $filename;
-
-    private function get_images()
+    private function getBasicImage($radar_string)
     {
-        $conn_id = ftp_connect("ftp2.bom.gov.au");
-        ftp_login($conn_id, "anonymous", "guest");
-        $contents = ftp_nlist($conn_id, '/anon/gen/radar/');
-        $matches = preg_grep("/" . $this->choice . ".T/", $contents);
-
-        $web_filenames = [];
-        foreach ($matches as $match)
-            $web_filenames[] = "ftp://ftp2.bom.gov.au/$match";
-
-        ftp_close($conn_id);
-
-        return $web_filenames;
-    }
-
-    private function overlay($filenames)
-    {
-        $images = [];
-        foreach ($filenames as $filename) {
-            $background = imagecreatefrompng("/var/www/html/bot/radar/" . $this->choice . "-template-simple.png");
-            $radar = imagecreatefrompng($filename);
-            imagecopymerge($background, $radar, 0, 0, 0, 0, imagesx($radar), imagesy($radar), 100);
-            $images[] = $background;
-        }
-        return $images;
-    }
-
-    private function animate($images)
-    {
-        $gc = new AnimGif();
-        $gc->create($images);
-        $gc->save($this->filename);
-        return true;
-    }
-
-    private function sendIfExists()
-    {
-        $photoSQL = new Photo($this->db);
-        $file_id = $photoSQL->getRadarPhotoId($this->filename);
-        if (!$file_id) return false;
-
-        Telegram::fileIdDocumentSender($this->Message->Chat->id, $file_id);
-        return true;
-    }
-
-    private function sendGIFThroughTelegram()
-    {
-        $back = Telegram::sendDocument($this->Message->Chat->id, $this->filename);
-        $back = json_decode($back, true);
-        $file_id = $back['result']['document']['file_id'];
-
-        $photoSQL = new Photo($this->db);
-        $photoSQL->addServerPhotoId($file_id, '', $this->filename);
-    }
-    
-
-    private function setTitle($filenames)
-    {
-        $last_filename = end($filenames);
-        $info = pathinfo($last_filename);
-        $this->title = $info['filename'] . '.gif';
-        $this->filename =  '/var/www/html/bot/radar/' . $this->title;
-    }
-
-    private function sendMovingGIF()
-    {
-        Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
-        $filenames = $this->get_images();
-        $this->setTitle($filenames);
-
-        if (count($filenames) < 2) {
-            Telegram::talk($this->Message->Chat->id, emoji(0x274C) . " Something went wrong getting the radar images fam. The radar might be down. Check here to see if it's working: \n \nhttp://www.bom.gov.au/products/" . $this->choice . ".loop.shtml#skip");
-            return false;
-        }
-
-        if (!$this->sendIfExists()) {
-            Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
-            $images = $this->overlay($filenames);
-            $this->animate($images);
-            $this->sendGIFThroughTelegram();
-        }
-
-        return true;
-    }
-
-    private function getBasicImage()
-    {
-        $url = 'ftp://ftp2.bom.gov.au/anon/gen/radar/' . $this->choice . '.gif';
+        $url = 'ftp://ftp2.bom.gov.au/anon/gen/radar/' . $radar_string . '.gif';
         $img = '/var/www/html/bot/radar/' . time() . '.gif';
         file_put_contents($img, file_get_contents($url));
         return $img;
@@ -128,25 +26,45 @@ class radar extends Command
 
     public function main()
     {
-        if ($this->isParam()) {
-            $city = $this->getParam();
-            if ($this->noParams() > 1) {
-                $range = $this->getParam(1);
-            }
+        return true;
+        //Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
 
-            if (array_key_exists($city, $this->choices)) {
-                if (isset($range)) {
-                    if (array_key_exists($range, $this->choices[$city])) {
-                        $this->choice = $this->choices[$city][$range];
-                    } else {
-                        Telegram::talk($this->Message->Chat->id, "can't find that range, fam\nusually there's `128km`, `256km` or `512km` available");
-                        return false;
-                    }
-                } else {
-                    $this->choice = reset($this->choices[$city]);
+        $Radar = new \GroupBot\Brains\Weather\Radar\Radar($this->Message->Chat->id, $this->db);
+
+        $radar_code = 70;
+        $image_radius_code = 3;
+
+        if ($this->Message->isCallback())
+        {
+            $key = $this->getParam();
+            $radar_code = Radar_Codes::$radar_codes[$key][0];
+            if (!$radar_code) {
+                Telegram::edit_inline_message($this->Message->Chat->id, $this->Message->message_id, "Something went wrong!", []);
+                return false;
+            }
+            Telegram::edit_inline_message($this->Message->Chat->id, $this->Message->message_id, "Showing $radar_code", []);
+        }
+        elseif ($this->isParam())
+        {
+            if (!($radar_code = $Radar->getRadarCodeFromString($this->getParam()))) {
+                Telegram::talk($this->Message->Chat->id, "Can't find that location, fam");
+                return false;
+            }
+            if (is_array($radar_code)) {
+                $keyboard = [];
+                $row = [];
+                foreach ($radar_code as $name) {
+                    $row[] = [
+                        'text' => $name[0] . " (" . $name[2] . ")",
+                        'callback_data' => "/radar $name[2]"
+                    ];
                 }
-            } else {
-                Telegram::talk($this->Message->Chat->id, "can't find that city, fam\ntry using lower case");
+                $keyboard[] = $row;
+                Telegram::talk_inline_keyboard($this->Message->Chat->id, "Did you mean one of these?", $keyboard);
+                return false;
+            }
+            if ($this->noParams() > 1 && !($image_radius_code = $Radar->getImageRangeFromString($this->getParam(1)))) {
+                Telegram::talk($this->Message->Chat->id, "can't find that range, fam\nusually there's `128km`, `256km` or `512km` available");
                 return false;
             }
         }
@@ -159,7 +77,7 @@ class radar extends Command
         }
 
         // Payload
-        $this->sendMovingGIF();
+        $Radar->createAndSendRadarGIF($radar_code, $image_radius_code);
 
         // Release lock
         fclose($fp);

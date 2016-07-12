@@ -5,15 +5,17 @@
  * Date: 7/11/2015
  * Time: 3:12 AM
  */
-namespace GroupBot\Command;
+namespace GroupBot\Command\misc;
 
 use GroupBot\Brains\PhotoCache;
+use GroupBot\Telegram;
 use GroupBot\Types\Command;
 
-class t_photo extends Command
+class photo extends Command
 {
-    public function t_photo()
+    public function main()
     {
+        Telegram::sendChatSendingPhotoStatus($this->Message->Chat->id);
         $local_path = random_pic(PHOTO_DIR);
         PhotoCache::SendPhotoByPath($this->db, $local_path, $this->Message->Chat->id);
     }

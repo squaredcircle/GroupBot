@@ -40,7 +40,7 @@ class Talk
         return isset($this->Message->text) && (stripos($this->Message->text, BOT_FRIENDLY_NAME) !== false);
     }
 
-    private function dictMatch($phrases, $exclusions = NULL)
+    private function dictMatch($phrases, $exclusions = NULL, $is_command = false)
     {
         foreach (array_keys($phrases) as $phrase) {
             if (stripos($this->Message->text, $phrase) !== false)
@@ -60,7 +60,14 @@ class Talk
                         }
                     }
                 }
-                Telegram::talk($this->Message->Chat->id, $phrases[$phrase]);
+                if ($is_command) {
+                    $class = "GroupBot\\Command\\" . $phrases[$phrase];
+                    /** @var Command $obj */
+                    $obj = new $class($this->Message, $this->db);
+                    $obj->main();
+                } else {
+                    Telegram::talk($this->Message->Chat->id, $phrases[$phrase]);
+                }
                 return true;
             }
         }
@@ -220,6 +227,7 @@ class Talk
         if ($this->greetUser()) return true;
 
         if (!$this->Message->Chat->no_spam_mode && $this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
+        if ($this->dictMatch($this->dict->interjection_commands, $this->dict->interjections_exclusions, true)) return true;
         if (!$this->Message->isNormalMessage()) $this->processChannelChange();
 
         if ($this->sed()) return true;

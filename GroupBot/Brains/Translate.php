@@ -115,9 +115,13 @@ class Translate
 
     public function detectLanguage($text)
     {
-        $data = $this->execute('detect', array(
-            'text' => $text
-        ));
+        try {
+            $data = $this->execute('detect', array(
+                'text' => $text
+            ));
+        } catch (\Exception $e) {
+            return false;
+        }
         return isset($this->languages[$data['lang']]) ? $this->languages[$data['lang']] : false;
     }
 

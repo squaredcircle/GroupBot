@@ -177,6 +177,7 @@ class Talk
         $Translate = new Translate();
         if ($this->validateText($Translate, $this->Message->text)) {
             $lang = $Translate->detectLanguage($this->Message->text);
+            if (!$lang) return false;
             if ($lang != 'English') {
                 $translation = $Translate->translate($this->Message->text, 'English');
                 Telegram::talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");

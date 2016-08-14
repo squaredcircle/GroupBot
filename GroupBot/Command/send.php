@@ -14,9 +14,9 @@ use GroupBot\Brains\Coin\Enums\TransactionType;
 use GroupBot\Brains\Coin\Types\Transaction;
 use GroupBot\Types\Command;
 
-class i_send extends Command
+class send extends Command
 {
-    public function i_send()
+    public function main()
     {
         $Transact = new Transact($this->db);
 
@@ -38,12 +38,19 @@ class i_send extends Command
             $Transact->performTransaction($Transaction);
 
             if ($Feedback = $Transact->Feedback->getFeedback()) {
-                Telegram::talk($this->Message->Chat->id, emoji("0x1F4E2") . " " . $Feedback);
+                $out = emoji("0x1F4E2") . " " . $Feedback
+                    . "\n`   `• `" . $user_receiving->getName() . "` now has 💰*" . $user_receiving->getBalance() . "*"
+                    . "\n`   `• `You've` got 💰*" . $this->Message->User->getBalance() . "* left.";
+
+                if ($user_receiving->user_id != -1) $out .=
+                    "\n`   `• `The Bank` took 2%, or 💰*" . round($this->getParam(1) * 0.02,2) . "*";
+
+                Telegram::talk($this->Message->Chat->id, $out);
             } else {
                 Telegram::talk($this->Message->Chat->id, "I'm so sorry brah...");
             }
         } else {
-            Telegram::talk($this->Message->Chat->id, "Like this fam " . emoji("0x1F449") . "  /send alex 10");
+            Telegram::talk($this->Message->Chat->id, "Like this fam " . emoji("0x1F449") . "  /send richardstallman 10");
         }
         return true;
     }

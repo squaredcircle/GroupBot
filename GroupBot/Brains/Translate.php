@@ -36,7 +36,7 @@ class Translate
         'el' => 'Greek',
         'ka' => 'Georgian',
         'da' => 'Danish',
-        'he' => 'Jewish',
+        'he' => 'Oy Vey!',
         'id' => 'Indonesian',
         'ga' => 'Irish',
         'it' => 'Italian',

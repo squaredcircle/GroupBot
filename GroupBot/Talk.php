@@ -147,18 +147,22 @@ class Talk
         if (isset($message)) Telegram::talk($this->Message->Chat->id, $message);
     }
 
+    private function longestWordLength($text)
+    {
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+        $words  = mb_split(' ', $text);
+        $l = 0;
+        foreach ($words as $word) {
+            if (mb_strlen($word) > $l) {
+                $l = mb_strlen($word);
+            }
+        }
+        return $l;
+    }
+
     private function validateText(Translate $translate, $text)
     {
-        return
-            (
-                (
-                    count(mb_split(" ", $text)) > 3
-                    && strlen(array_reduce(str_word_count($text, 1), function ($v, $p) {
-                        return strlen($v) > strlen($p) ? $v : $p;
-                    })) > 1 // Longest word must be over 1 char long
-                )
-                || $translate->isJapanese($text)
-            );
+        return ((count(mb_split(" ", $text)) > 3 && $this->longestWordLength($text) > 1) || $translate->isJapanese($text));
     }
 
     private function translate()

@@ -1,7 +1,5 @@
 <?php
 
-require(__DIR__ . '/GroupBot/Settings.php');
-
 function apiRequestWebhook($method, $parameters)
 {
     if (!is_string($method)) {
@@ -36,10 +34,11 @@ function emoji($string)
 function processMessage($message)
 {
     $chat_id = $message['chat']['id'];
-    $text = $message['text'];
+    if (isset($message['text'])) $text = $message['text'];
+    else return;
 
     if (isset($text) && (stripos($text, 'shitbot') !== false)) {
-        talk($chat_id, emoji(0x1F527) . " Upgrading fam, go away\nTry talking to Blimpbot instead");
+        talk($chat_id, emoji(0x1F527) . " My head hurts.");
     } elseif ($text[0] == '/') {
         if ($text == '/roll') {
             t_roll($text, $chat_id);

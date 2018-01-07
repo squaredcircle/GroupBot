@@ -49,6 +49,9 @@ class User
     /** @var  string */
     public $timezone;
 
+    /** @var  string */
+    public $location;
+
     public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {
         if (isset($user_update['username']) &&  strcmp($user_update['username'], BOT_FULL_USER_NAME) === 0) {
@@ -106,6 +109,13 @@ class User
     {
         $userSQL = new \GroupBot\Database\User($db);
         return $userSQL->updateUser($this);
+    }
+
+    public function getLocation()
+    {
+        $loc = new Location();
+        $loc->createFromSQL($this->location);
+        return $loc;
     }
 
     public function getName()

@@ -164,7 +164,7 @@ class vote extends Command
     private function keyboard()
     {
         $DbUser = new \GroupBot\Database\User($this->db);
-        $chats = $DbUser->getActiveChatsByUser($this->Message->User);
+
         $keyboard =
             [
                 [
@@ -184,6 +184,10 @@ class vote extends Command
                     ]
                 ]
             ];
+
+        $chats = $DbUser->getActiveChatsByUser($this->Message->User);
+        if (!$chats) return $keyboard;
+
         $index = 0;
         foreach ($chats as $chat) {
             if ($index++ > 3)
@@ -192,6 +196,7 @@ class vote extends Command
                 'text' => $chat->title,
                 'callback_data' => '/vote _view_chat ' . $chat->id
             ];
+            $index++;
         }
         return $keyboard;
     }

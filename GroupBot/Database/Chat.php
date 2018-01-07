@@ -9,6 +9,8 @@
 namespace GroupBot\Database;
 
 
+use Carbon\Carbon;
+
 class Chat extends DbConnection
 {
     /**
@@ -72,6 +74,26 @@ class Chat extends DbConnection
                 $chat->id = $chat->chat_id;
                 return $chat;
             }
+        }
+        return false;
+    }
+
+    /**
+     * @param $chat_id
+     * @return bool|string
+     */
+    public function getChatLastPostDate($chat_id)
+    {
+        $sql = 'SELECT lastpost_date FROM stats WHERE chat_id = :chat_id
+              ORDER BY lastpost_date DESC LIMIT 1';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':chat_id', $chat_id);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            $date = $query->fetch();
+            return $date[0];
         }
         return false;
     }

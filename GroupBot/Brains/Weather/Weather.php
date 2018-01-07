@@ -12,6 +12,7 @@ namespace GroupBot\Brains\Weather;
 use GroupBot\Brains\Weather\Types\Realtime;
 use GroupBot\Brains\Weather\Types\Sunrise;
 use GroupBot\Brains\Weather\Types\UV;
+use Carbon\Carbon;
 
 class Weather
 {
@@ -131,7 +132,7 @@ class Weather
                 if (++$index > 5) break;
 
                 $start_time = (string)$forecast_period['start-time-local'];
-                $dayOfWeek = \GroupBot\Libraries\Carbon::parse($start_time)->format('l');
+                $dayOfWeek = Carbon::parse($start_time)->format('l');
 
                 if ($area['aac'] == self::$forecast_subcodes[$selection][0] || $area['aac'] == self::$forecast_subcodes[$selection][1]) {
                     foreach ($forecast_period->element as $value) {

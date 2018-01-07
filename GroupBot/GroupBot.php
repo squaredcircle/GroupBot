@@ -1,5 +1,24 @@
 <?php
 
+/*
+Groupbot Commands for Botfather:
+
+help- You're confused.
+blackjack- You like to gamble.
+vote- You wanna be popular.
+level- You want to be powerful.
+leaderboard- You want to see your power.
+income- You want money.
+reload- You're done with it all.
+roll- You want a good time.
+click- You've simple tastes.
+decide- You need help.
+minesweeper- You're nostalgic.
+rate- You need an expert opinion.
+send- You're feeling generous.
+
+ */
+
 namespace GroupBot;
 
 use GroupBot\Database\User;

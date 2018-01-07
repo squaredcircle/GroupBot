@@ -82,7 +82,7 @@ class Transact
 
 		if ($this->removeMoney($Transaction->user_sending, $Transaction->amount) && $this->addMoney($Transaction->user_receiving, $amount_adj)) {
             $bank = $this->getBank($Transaction);
-            $this->payTransactionTax($Transaction, $bank);
+            if ($Transaction->user_sending->user_id != $bank->user_id) $this->payTransactionTax($Transaction, $bank);
             $this->maintainFixedLevel($bank);
 
 			$Transaction->amount = $amount_adj;
@@ -150,7 +150,7 @@ class Transact
 	public function maintainFixedLevel(User $bank)
 	{
 		$total_money = $this->CoinSQL->getTotalCoinExisting(true);
-		$total_money_target = 10000;
+		$total_money_target = 100000;
 
 		if ($total_money < $total_money_target)
 		{

@@ -179,7 +179,7 @@ class Talk
             $lang = $Translate->detectLanguage($this->Message->text);
             if (!$lang) return false;
             if ($lang != 'English') {
-                $translation = $Translate->translate($this->Message->text, 'English');
+                $translation = $Translate->translate($this->Message->text, 'en');
                 Telegram::talk($this->Message->Chat->id, "_(" . $translation['lang_source'] . ")_* " . $translation['result'][0] . "*");
             }
         }
@@ -191,10 +191,9 @@ class Talk
         if ($this->Message->Chat->no_spam_mode) return false;
         if ($this->Message->User->welcome_sent) return false;
         Telegram::talk($this->Message->Chat->id,
-            emoji(0x1F4EF) . " Arise, *" . $this->Message->User->getName(). "*."
-            . "\n\nYou have risen from squalor to become a " . $this->Message->User->getLevelAndTitle() . "."
-            . "\nYou find *" . $this->Message->User->getBalance() . " " . COIN_CURRENCY_NAME . "* in a money bag on your person."
-            . "\n\nBest of luck, brave traveller. Use /help to get started.");
+            emoji(0x1F4EF) . " Nice to meet you, *" . $this->Message->User->getName(). "*!"
+            . "\nYou're now a " . $this->Message->User->getLevelAndTitle() . " with *" . $this->Message->User->getBalance() . " " .  COIN_CURRENCY_NAME . "*."
+            . "\nBest of luck! Use /help to get started.");
         $this->Message->User->welcome_sent = true;
         $this->Message->User->save($this->db);
         return true;
@@ -223,9 +222,19 @@ class Talk
         return false;
     }
 
+    private function location()
+    {
+        $loc = $this->Message->Content();
+
+        Telegram::talk($this->Message->Chat->id, "🌏 Location: `$loc`");
+        return true;
+    }
+
     public function processMessage()
     {
         if ($this->greetUser()) return true;
+
+        if ($this->Message->isLocation()) return $this->location();
 
         if (!$this->Message->Chat->no_spam_mode && $this->dictMatch($this->dict->interjections, $this->dict->interjections_exclusions)) return true;
         if ($this->dictMatch($this->dict->interjection_commands, $this->dict->interjections_exclusions, true)) return true;

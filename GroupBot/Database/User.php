@@ -23,9 +23,9 @@ class User extends DbConnection
     {
         $sql = "
             INSERT INTO users
-              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference, welcome_sent, timezone)
+              (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference, welcome_sent, timezone, location)
             VALUES
-              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today, :handle_preference, :welcome_sent, :timezone)
+              (:user_id, :first_name, :user_name, :last_name, :balance, :level, :last_activity, :received_income_today, :free_bets_today, :handle_preference, :welcome_sent, :timezone, :location)
               ON DUPLICATE KEY UPDATE
               first_name = VALUES(first_name),
               user_name = VALUES(user_name),
@@ -37,7 +37,8 @@ class User extends DbConnection
               free_bets_today = VALUES(free_bets_today),
               handle_preference = VALUES(handle_preference),
               welcome_sent = VALUES(welcome_sent),
-              timezone = VALUES(timezone)
+              timezone = VALUES(timezone),
+              location = VALUES(location)
         ";
 
         $query = $this->db->prepare($sql);
@@ -53,6 +54,7 @@ class User extends DbConnection
         $query->bindValue(':handle_preference', $user->handle_preference);
         $query->bindValue(':welcome_sent', $user->welcome_sent);
         $query->bindValue(':timezone', $user->timezone);
+        $query->bindValue(':location', $user->location);
         return $query->execute();
 
         //return $this->updateObject('users', $user);
@@ -205,7 +207,7 @@ class User extends DbConnection
     /**
      * @param Chat $chat
      * @param int $weeks_since_last_post
-     * @return \GroupBot\Types\User[]
+     * @return \GroupBot\Types\User[] | bool
      */
     public function getActiveUsersInChat(Chat $chat, $weeks_since_last_post = 4)
     {
@@ -228,8 +230,9 @@ class User extends DbConnection
     }
 
     /**
-     * @param Chat $chat
-     * @return \GroupBot\Types\User[]
+     * @param $chat_id
+     * @return bool|\GroupBot\Types\User[]
+     * @internal param Chat $chat
      */
     public function getAllUsersInChat($chat_id)
     {

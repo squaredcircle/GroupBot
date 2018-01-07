@@ -16,6 +16,9 @@ use GroupBot\Types\User;
 class leaderboard extends Command
 {
     private $global = false;
+
+    private $chat_leaderboard = false;
+
     /** @var  \GroupBot\Types\Chat */
     private $chat;
 
@@ -51,8 +54,7 @@ class leaderboard extends Command
     /**
      * @return User[]|bool
      */
-    private
-    function getUsers()
+    private function getUsers()
     {
         $ascending = false;
         $no_users = 10;
@@ -65,6 +67,11 @@ class leaderboard extends Command
             if ($this->contains($this->getAllParams(), ['bottom', 'last'])) {
                 $ascending = true;
             }
+            if ($this->contains($this->getAllParams(), ['chat', 'chats'])) {
+                $this->chat_leaderboard = true;
+                $this->global = false;
+                return Query::getChatsByScore($this->db);
+            }
         }
         return Query::getUsersByLevel($this->db, $this->chat, true, $ascending, $no_users);
         //return Query::getUsersByMoneyAndLevel($this->db, $this->chat, true, $ascending, $no_users);
@@ -74,8 +81,7 @@ class leaderboard extends Command
      * @param User[] $users
      * @return string
      */
-    private
-    function getTextLeaderboard($users)
+    private function getTextLeaderboard($users)
     {
         $out = "";
         $index = 1;
@@ -105,10 +111,38 @@ class leaderboard extends Command
         return $out;
     }
 
+    private function getChatsLeaderboard($chats)
+    {
+        $out = "";
+        $index = 1;
+
+        foreach ($chats as $chat) {
+            $out .= "`" . addOrdinalNumberSuffix($index);
+            if ($index == 10) {
+                $out .= " `";
+            } else {
+                $out .= "  `";
+            }
+            $out .= "_Lvl " . $chat[1];
+            if ($chat[1] >= 10) {
+                $out .= " _ * ";
+            } else {
+                $out .= "   _ * ";
+            }
+
+            $out .= $chat[0]->title . "*\n";
+            $index++;
+            if ($index > 10)
+                break;
+        }
+
+        return $out;
+    }
+
     private function keyboard()
     {
         $DbUser = new \GroupBot\Database\User($this->db);
-        $chats = $DbUser->getActiveChatsByUser($this->Message->User);
+
         $keyboard =
             [
                 [
@@ -128,6 +162,10 @@ class leaderboard extends Command
                     ]
                 ]
             ];
+
+        $chats = $DbUser->getActiveChatsByUser($this->Message->User);
+        if (!$chats) return $keyboard;
+
         $index = 0;
         foreach ($chats as $chat) {
             if ($index++ > 3)
@@ -136,6 +174,7 @@ class leaderboard extends Command
                 'text' => $chat->title,
                 'callback_data' => '/leaderboard ' . $chat->id
             ];
+            $index++;
         }
         return $keyboard;
     }
@@ -148,6 +187,9 @@ class leaderboard extends Command
             if ($this->global) {
                 $out = "*Global* leaderboard:\n";
                 $out .= $this->getTextLeaderboard($users);
+            } elseif ($this->chat_leaderboard) {
+                $out = "*Group Chat* leaderboard:\n";
+                $out .= $this->getChatsLeaderboard($users);
             } else {
                 $out = "Leaderboard for *" . $this->chat->title . "*:\n";
                 $out .= $this->getTextLeaderboard($users);

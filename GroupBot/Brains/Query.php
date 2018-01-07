@@ -9,6 +9,7 @@
 namespace GroupBot\Brains;
 
 
+use Carbon\Carbon;
 use GroupBot\Database\User;
 use GroupBot\Types\Chat;
 
@@ -48,6 +49,61 @@ class Query
             return $out;
         }
         return $user_receiving[0];
+    }
+
+    public static function getChatsByScore(\PDO $db)
+    {
+        $sql = 'SELECT *
+                FROM chats
+                WHERE type = 2 OR type = 3         
+        ';
+
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            /** @var Chat[] $chats */
+            $chats = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat');
+            foreach ($chats as $chat) {
+                $chat->id = $chat->chat_id;
+            }
+        } else {
+            return false;
+        }
+
+        $DbUser = new User($db);
+        $DbChat = new \GroupBot\Database\Chat($db);
+        $out = array();
+
+        foreach ($chats as $chat)
+        {
+            $users = $DbUser->getAllUsersInChat($chat->id);
+            $no_users = count($users);
+            $lastpost = $DbChat->getChatLastPostDate($chat->id);
+
+            $date = Carbon::parse($lastpost);
+
+            if ($date->lt(Carbon::now()->subWeek())) continue;
+            if ($no_users < 5) continue;
+
+            $avg_level = array_reduce($users, function($i, $user)
+            {
+                return $i += $user->level;
+            });
+
+            $avg_level = $avg_level != null ? round($avg_level / count($users),0) : '0';
+
+            $out[] = [$chat, $avg_level];
+        }
+
+        usort($out, function($a, $b)
+        {
+            if ($a[1] == $b[1]) return 0;
+            if ($a[1] < $b[1]) return 1;
+            return -1;
+        });
+
+        return $out;
     }
 
     public static function getUsersByLevel(\PDO $db, Chat $chat = NULL, $include_bank = true, $ascending = true, $no_users = NULL)

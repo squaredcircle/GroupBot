@@ -61,6 +61,14 @@ class Telegram
 		));
 	}
 
+    public static function talk_no_markdown($chat_id, $text)
+    {
+        self::apiRequestWebhook("sendMessage", array(
+            'chat_id' => $chat_id,
+            "text" => $text
+        ));
+    }
+
 	public static function talkForced($chat_id, $text)
 	{
 		self::apiRequest("sendMessage", array('chat_id' => $chat_id, "text" => $text, "parse_mode" => "Markdown"));

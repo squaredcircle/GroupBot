@@ -94,6 +94,11 @@ class Message
         return isset($this->callback);
     }
 
+    public function isLocation()
+    {
+        return ($this->MessageContent == MessageContent::Location);
+    }
+
     public function Content()
     {
         switch ($this->MessageContent) {
@@ -127,7 +132,7 @@ class Message
 
         return true;
     }
-    
+
     private function determineMessageEntities($message)
     {
         if (isset($message['entities'])) {
@@ -155,6 +160,10 @@ class Message
             $this->MessageContent = new MessageContent(MessageContent::Contact);
         } elseif (isset($message['location'])) {
             $this->MessageContent = new MessageContent(MessageContent::Location);
+            $loc = new Location();
+            $loc->latitude = $message['location']['latitude'];
+            $loc->longitude = $message['location']['longitude'];
+            $this->Location = $loc->getSQLString();
         } elseif (isset($message['text'])) {
             $this->MessageContent = new MessageContent(MessageContent::Text);
         } else {

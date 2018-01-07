@@ -24,6 +24,16 @@ class send extends Command
         {
             $user_receiving = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam());
 
+            if (strcmp($this->getParam(1), 'love') === 0) {
+                Telegram::talk($this->Message->Chat->id, "❤ love is all you need, fam");
+                return false;
+            }
+
+            if (strcmp($this->getParam(1), 'ree') === 0) {
+                Telegram::talk($this->Message->Chat->id, "REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+                return false;
+            }
+
             if (is_string($user_receiving)) {
                 Telegram::talk($this->Message->Chat->id, $user_receiving);
                 return false;

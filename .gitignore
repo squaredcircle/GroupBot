@@ -2,10 +2,7 @@
 GroupBot/Settings.php
 GroupBot/Libraries/Dictionary.php
 GroupBot/Libraries/jokes_christmas
-GroupBot/Libraries/mysql_setup.php
-test.php
-test2.php
-test3.php
+debug.php
 
 ### PhpStorm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
@@ -19,6 +16,7 @@ test3.php
 .idea/jsLibraryMappings.xml
 
 # Sensitive or high-churn files:
+.idea/webServers.xml
 .idea/dataSources.ids
 .idea/dataSources.xml
 .idea/dataSources.local.xml
@@ -52,3 +50,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Composer
+/vendor

@@ -206,37 +206,37 @@ class Bets
 
     private function bet_invalid()
     {
-        $this->addMessage(emoji(0x1F44E) . " Please enter a valid bet.");
+        $this->addMessage("👎 Please enter a valid bet.");
     }
 
     private function bet_invalid_notation()
     {
-        $this->addMessage(emoji(0x1F44E) . " Your bet doesn't make sense. You can use the word `all` in a sensible equation to calculate your bet.");
+        $this->addMessage("👎 Your bet doesn't make sense. You can use the word `all` in a sensible equation to calculate your bet.");
     }
 
     private function bet_invalid_calculation()
     {
-        $this->addMessage(emoji(0x1F44E) . " Sorry, that calculates to an amount you cannot bet.");
+        $this->addMessage("👎 Sorry, that calculates to an amount you cannot bet.");
     }
 
     private function bet_mandatory()
     {
-        $this->addMessage("You are betting with the mandatory bet of 1 Coin.");
+        $this->addMessage("📝 You are betting with the mandatory bet of 1 Coin.");
     }
 
     private function bet_mandatory_failed()
     {
-        $this->addMessage(COIN_TAXATION_BODY . " can't accept the mandatory bet of 1 Coin right now. You are betting 0 Coin.");
+        $this->addMessage("📝 " . COIN_TAXATION_BODY . " can't accept the mandatory bet of 1 Coin right now. You are betting 0 Coin.");
     }
 
     private function bet_limit()
     {
-        $this->addMessage(emoji(0x1F449) . " The betting limit per game is " . CASINO_BETTING_MAX . ". Your bet has been adjusted.");
+        $this->addMessage("👉 The betting limit per game is " . CASINO_BETTING_MAX . ". Your bet has been adjusted.");
     }
 
     private function bet_too_high($balance)
     {
-        $out = emoji(0x1F44E) . " You don't have that much Coin to bet.";
+        $out = "👎 You don't have that much Coin to bet.";
         if ($balance < 1)
         {
             $out .= "\nHowever, " . COIN_TAXATION_BODY . " can give you a free bet of 1 Coin if you wish.";
@@ -246,22 +246,22 @@ class Bets
 
     private function bet_too_high_for_dealer()
     {
-        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
+        $this->addMessage("👎 " . COIN_TAXATION_BODY . " can't accept a bet that high right now.");
     }
 
     private function bet_calculation($value)
     {
-        $this->addMessage(emoji(0x1F4DD) . " Okay, you've placed a bet of " . $value . " Coin.");
+        $this->addMessage("📝 Okay, you've placed a bet of " . $value . " Coin.");
     }
 
     private function bet_free($free_bets_today)
     {
-        $this->addMessage("You've less than 1 Coin, so " . COIN_TAXATION_BODY . " has given you a free bet of 1 Coin (*" . (CASINO_DAILY_FREE_BETS - $free_bets_today - 1) . "* left today). Welcome back!");
+        $this->addMessage("💉 " . COIN_TAXATION_BODY . " has given you a free bet of 💰1 (*" . (CASINO_DAILY_FREE_BETS - $free_bets_today - 1) . "* left today). Welcome back!");
     }
 
     private function bet_free_failed()
     {
-        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
+        $this->addMessage("👎 " . COIN_TAXATION_BODY . " isn't able to give you a free bet at the moment, sorry.");
     }
 
     private function bet_free_too_many()
@@ -271,46 +271,45 @@ class Bets
         $interval = $future_date->diff($now);
         $time = $interval->format("*%h hours* and *%i minutes*");
 
-        $this->addMessage(emoji(0x1F44E) . " Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!\n($time to go)");
+        $this->addMessage("👎 Sorry - you only get " . CASINO_DAILY_FREE_BETS . " free bets per day. Come back tomorrow!\n($time to go)");
     }
 
     private function pay_bet_failed_return()
     {
-        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, but it can at least return your bet.");
+        $this->addMessage("👎 " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, but it can at least return your bet.");
     }
 
     private function pay_bet_failed()
     {
-        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
+        $this->addMessage("👎 " . COIN_TAXATION_BODY . " doesn't have enough money to pay you, fam...\nsorry.");
     }
 
     private function pay_bet_failed_repay()
     {
-        $this->addMessage(emoji(0x1F44E) . " " . COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
+        $this->addMessage("👎 " . COIN_TAXATION_BODY . " doesn't have enough money to repay you, fam...\nsorry.");
     }
 
     public function player_result(User $user, $bet, $multiplier, $free_bet)
     {
-        $out = emoji(0x1F4B0);
         if ($multiplier > 0)
         {
-            $out .= "*" . $user->getName() . "* wins " . ($multiplier * $bet + 0) . " coin!";
+            $out = "💰 *" . $user->getName() . "* wins " . ($multiplier * $bet + 0) . " coin!";
         }
         elseif ($multiplier == 0)
         {
             if ($free_bet)
             {
-                $out .= "*" . $user->getName() . "* cannot regain a free bet";
+                $out = "💰 *" . $user->getName() . "* cannot regain a free bet";
             }
             else
             {
-                $out .= "*" . $user->getName() . "* regains their bet of " . ($bet + 0);
+                $out = "💰 *" . $user->getName() . "* regains their bet of " . ($bet + 0);
             }
         }
         elseif ($multiplier < 0)
         {
             $free = $free_bet ? " free " : " ";
-            $out .= "*" . $user->getName() . "* loses their" . $free . "bet of " . ($bet + 0);
+            $out = "💰 *" . $user->getName() . "* loses their" . $free . "bet of " . ($bet + 0);
         }
 
         $out .= " (`" . $user->getBalance() . "`)";

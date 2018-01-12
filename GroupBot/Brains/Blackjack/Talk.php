@@ -101,21 +101,11 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             [
                 [
                     [
-                        'text' => emoji(0x1F4B5) . " Join game - default bet",
+                        'text' => "💰 Join with 1",
                         'callback_data' => '/blackjack'
                     ],
                     [
-                        'text' => emoji(0x1F4B0) . " Join game - bet double",
-                        'callback_data' => '/blackjack ' . 2 * $player->bet
-                    ],
-                ],
-                [
-                    [
-                        'text' => emoji(0x1F4B0) . " Join game - bet half",
-                        'callback_data' => '/blackjack all/2'
-                    ],
-                    [
-                        'text' => emoji(0x1F4B0) . " Join game - bet all",
+                        'text' => "💰 Join with all",
                         'callback_data' => '/blackjack all'
                     ]
                 ],

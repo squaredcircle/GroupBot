@@ -199,12 +199,14 @@ class todo extends Command
         return $keyboard;
     }
 
-    private function checkVote($vote)
+    private function checkVote($id, $vote)
     {
         return (
-            strcmp($vote, 'up') === 0 ||
-            strcmp($vote, 'down') === 0 ||
-            strcmp($vote, 'neutral') === 0
+            is_int($id) && (
+                strcmp($vote, 'up') === 0 ||
+                strcmp($vote, 'down') === 0 ||
+                strcmp($vote, 'neutral') === 0
+            )
         );
     }
 
@@ -214,7 +216,7 @@ class todo extends Command
 
         if ($this->noParams() == 2 &&
             $this->Todo->SQL->check_if_todo_exists($this->getParam()) &&
-            $this->checkVote($this->getParam(1))
+            $this->checkVote($this->getParam(0), $this->getParam(1))
         ) {
             $out = $this->performVote($this->getParam(), $this->getParam(1), $this->Message->User);
         } elseif ($this->noParams() > 3) {
@@ -227,7 +229,7 @@ class todo extends Command
         if ($this->Message->Chat->isPrivate()) {
             if ($this->Message->isCallback())
                 Telegram::edit_inline_message($this->Message->Chat->id, $this->Message->message_id, $out, $this->keyboard);
-            else Telegram::talk_inline_keyboard($this->Message->Chat->id, $out, $this->keyboard);
+            else Telegram::talk($this->Message->Chat->id, $out);
         } else {
             Telegram::talk($this->Message->Chat->id, $out);
         }

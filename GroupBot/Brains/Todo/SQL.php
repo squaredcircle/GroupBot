@@ -71,7 +71,7 @@ class SQL extends DbConnection
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':user_id', $item->owner->user_id);
-        $query->bindValue(':todo_id', $item->id);
+        $query->bindValue(':description', $item->description);
         $query->execute();
         return $this->db->lastInsertId();
     }

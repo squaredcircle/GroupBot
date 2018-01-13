@@ -167,8 +167,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         $Player = $game->getCurrentPlayer();
 
         if ($Player->State == PlayerState::Join && $Player->Hand->canSplit()) {
-            $this->addMessage(emoji(0x1F449) . " You can `hit`, `stand`, `split`, `double down` or `surrender`.");
-            $this->keyboard = [
+             $this->keyboard = [
                 [
                     [
                         'text' => "Hit",
@@ -195,7 +194,6 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                 ]
             ];
         } elseif ($Player->State == PlayerState::Join) {
-            $this->addMessage(emoji(0x1F449) . " You can `hit`, `stand`, `double down` or `surrender`.");
             $this->keyboard = [
                 [
                     [
@@ -219,7 +217,6 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
                 ]
             ];
         } else {
-            $this->addMessage(emoji(0x1F449) . " You can `hit`, `stand` or `double down`.");
             $this->keyboard = [
                 [
                     [

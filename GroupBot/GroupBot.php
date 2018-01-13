@@ -121,7 +121,7 @@ class GroupBot
         $Dictionary = new Dictionary();
         if (in_array($cmd, $Dictionary->spam_commands) && $this->Message->Chat->no_spam_mode) return false;
 
-        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder'] as $folder) {
+        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder', 'todo b'] as $folder) {
             if (is_null($folder)) {
                 $class = "GroupBot\\Command\\$cmd";
                 $class_staging = "GroupBot\\CommandStaging\\$cmd";

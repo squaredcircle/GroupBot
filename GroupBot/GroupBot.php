@@ -104,11 +104,11 @@ class GroupBot
 
     private function duplicateCommand($class)
     {
-        if (strcmp($class, "GroupBot\\Command\\c_surrender") === 0) {
+        if (strcmp($class, "GroupBot\\Command\\surrender") === 0) {
             $SQL = new \GroupBot\Brains\Blackjack\SQL($this->db);
             if ($SQL->select_game($this->Message->Chat->id))
                 return true;
-        } elseif (strcmp($class, "GroupBot\\Command\\b_surrender") === 0) {
+        } elseif (strcmp($class, "GroupBot\\Command\\surrender") === 0) {
             $SQL = new \GroupBot\Brains\Casinowar\SQL($this->db);
             if ($SQL->select_game($this->Message->Chat->id))
                 return true;
@@ -121,7 +121,7 @@ class GroupBot
         $Dictionary = new Dictionary();
         if (in_array($cmd, $Dictionary->spam_commands) && $this->Message->Chat->no_spam_mode) return false;
 
-        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder', 'todo b'] as $folder) {
+        foreach ([NULL, 'coin', 'blackjack', 'casinowars', 'level', 'vote', 'russianroulette', 'misc', 'reminder', 'todo'] as $folder) {
             if (is_null($folder)) {
                 $class = "GroupBot\\Command\\$cmd";
                 $class_staging = "GroupBot\\CommandStaging\\$cmd";

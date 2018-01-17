@@ -93,7 +93,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         } else {
             $out .= ".";
         }
-        $out .= "\nOthers can join the game with the buttons below.";
+        $out .= "\n💬 Others can join the game with the buttons below.";
 
         $this->addMessage($out);
 

@@ -47,8 +47,8 @@ class send extends Command
             );
             $Transact->performTransaction($Transaction);
 
-            if ($Feedback = $Transact->Feedback->getFeedback()) {
-                $out = emoji("0x1F4E2") . " " . $Feedback
+            if (strcmp($Transact->Feedback->getFeedbackCodes(), '24') === 0) {
+                $out = emoji("0x1F4E2") . " " . $Transact->Feedback->getFeedback()
                     . "\n`   `• `" . $user_receiving->getName() . "` now has 💰*" . $user_receiving->getBalance() . "*"
                     . "\n`   `• `You've` got 💰*" . $this->Message->User->getBalance() . "* left.";
 
@@ -57,7 +57,7 @@ class send extends Command
 
                 Telegram::talk($this->Message->Chat->id, $out);
             } else {
-                Telegram::talk($this->Message->Chat->id, "I'm so sorry brah...");
+                Telegram::talk($this->Message->Chat->id, emoji("0x1F4E2") . " " . $Transact->Feedback->getFeedback());
             }
         } else {
             Telegram::talk($this->Message->Chat->id, "Like this fam " . emoji("0x1F449") . "  /send richardstallman 10");

@@ -31,6 +31,8 @@ class Control
     public function sendReminders()
     {
         $reminders = $this->SQL->select_reminders();
+        if (!isset($reminders)) return;
+
         $UserDb = new User($this->db);
 
         /** @var Reminder $reminder */

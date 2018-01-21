@@ -243,7 +243,7 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         } elseif ($Player->State == PlayerState::Bust) {
             $this->addMessage("☠ *" . $Player->user->getName() . "* is bust.");
         } elseif ($Player->State == PlayerState::TwentyOne) {
-            $this->addMessage("✌ *" . $Player->user->getName() . "* has twenty one! * They stand.");
+            $this->addMessage("✌ *" . $Player->user->getName() . "* has twenty one! They stand.");
         }
     }
 

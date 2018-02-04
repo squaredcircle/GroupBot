@@ -77,6 +77,25 @@ class SQL extends DbConnection
     }
 
     /**
+     * @param User $User
+     * @return bool|int
+     */
+    public function retrieveCoinTransferredToday(User $User)
+    {
+        $sql = 'SELECT SUM(amount) FROM coin_transactions 
+                WHERE type = 1 AND date >= CURDATE() AND user_sending = :user_id';
+
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_id', $User->user_id);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            return (int) $query->fetch()[0];
+        }
+        return false;
+    }
+
+    /**
      * @param $number
      * @return Transaction[]|bool
      */

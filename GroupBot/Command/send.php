@@ -24,6 +24,11 @@ class send extends Command
         {
             $user_receiving = Query::getUserMatchingStringOrErrorMessage($this->db, $this->Message->Chat, $this->getParam());
 
+            if ($this->Message->User->level < 5) {
+                Telegram::talk($this->Message->Chat->id, "❌ You need to be Level 5 to use /send.");
+                return false;
+            }
+
             if (strcmp($this->getParam(1), 'love') === 0) {
                 Telegram::talk($this->Message->Chat->id, "❤ love is all you need, fam");
                 return false;
@@ -37,6 +42,16 @@ class send extends Command
             if (is_string($user_receiving)) {
                 Telegram::talk($this->Message->Chat->id, $user_receiving);
                 return false;
+            }
+
+            if ($Transact->Validate->checkAmount($this->getParam(1)))
+            {
+                $transferred_today = $Transact->CoinSQL->retrieveCoinTransferredToday($this->Message->User);
+                if (!is_bool($transferred_today) && $transferred_today + $this->getParam(1) > $this->Message->User->level)
+                {
+                    Telegram::talk($this->Message->Chat->id, "❌ As you're *Level " . $this->Message->User->level . "*, you can only send a maximum of `" . $this->Message->User->level . "` coin per day. Rise in level to increase this limit.");
+                    return false;
+                }
             }
 
             $Transaction = new Transaction(

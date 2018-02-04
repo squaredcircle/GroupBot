@@ -35,7 +35,7 @@ class Validate
         return $Transaction;
     }
 
-    private function checkAmount($amount)
+    public function checkAmount($amount)
     {
         if (is_numeric($amount) && $amount + 0 > 0 && $amount >= 0.01) {
             return true;

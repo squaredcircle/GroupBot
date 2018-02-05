@@ -44,15 +44,15 @@ class send extends Command
                 return false;
             }
 
-            if ($Transact->Validate->checkAmount($this->getParam(1)))
-            {
-                $transferred_today = $Transact->CoinSQL->retrieveCoinTransferredToday($this->Message->User);
-                if (!is_bool($transferred_today) && $transferred_today + $this->getParam(1) > $this->Message->User->level)
-                {
-                    Telegram::talk($this->Message->Chat->id, "❌ As you're *Level " . $this->Message->User->level . "*, you can only send a maximum of `" . $this->Message->User->level . "` coin per day. Rise in level to increase this limit.");
-                    return false;
-                }
-            }
+//            if ($Transact->Validate->checkAmount($this->getParam(1)))
+//            {
+//                $transferred_today = $Transact->CoinSQL->retrieveCoinTransferredToday($this->Message->User);
+//                if (!is_bool($transferred_today) && $transferred_today + $this->getParam(1) > $this->Message->User->level)
+//                {
+//                    Telegram::talk($this->Message->Chat->id, "❌ As you're *Level " . $this->Message->User->level . "*, you can only send a maximum of `" . $this->Message->User->level . "` coin per day. Rise in level to increase this limit.");
+//                    return false;
+//                }
+//            }
 
             $Transaction = new Transaction(
                 $this->Message->User,

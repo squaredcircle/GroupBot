@@ -190,6 +190,35 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
         return false;
     }
 
+    public function select_global_stats()
+    {
+        $sql = 'SELECT 
+                  SUM(games_played) AS games_played, 
+                  SUM(wins) AS wins, 
+                  SUM(losses) AS losses, 
+                  SUM(draws) AS draws,
+                  SUM(hits) AS hits, 
+                  SUM(stands) AS stands , 
+                  SUM(blackjacks) AS blackjacks, 
+                  SUM(splits) AS splits, 
+                  SUM(doubledowns) AS doubledowns, 
+                  SUM(surrenders) AS surrenders, 
+                  SUM(total_coin_bet) AS total_coin_bet, 
+                  SUM(coin_won) AS coin_won, 
+                  SUM(coin_lost) AS coin_lost, 
+                  SUM(free_bets) AS free_bets 
+                FROM bj_stats';
+
+        $query = $this->db->prepare($sql);
+        $query->execute();
+
+        if ($query->rowCount()) {
+            $query->setFetchMode(\PDO::FETCH_CLASS, 'GroupBot\Brains\Blackjack\Types\Stats');
+            return $query->fetch();
+        }
+        return false;
+    }
+
     /**
      * @param Player $player
      * @return bool

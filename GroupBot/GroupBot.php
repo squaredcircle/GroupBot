@@ -60,6 +60,9 @@ class GroupBot
         if (!$update)
             return false;
 
+        $this->db = $this->createPDO();
+        $this->logMessage($update);
+
 //        Telegram::talkForced('56390227', print_r($update, true));
 //        return true;
 
@@ -79,9 +82,19 @@ class GroupBot
         return true;
     }
 
+    private function logMessage($message_update)
+    {
+        $sql = 'REPLACE INTO circular_log_table
+                SET row_id = (SELECT COALESCE(MAX(log_id), 0) % 10 + 1
+                FROM circular_log_table AS t),
+                payload = :payload';
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':payload', print_r($message_update,true));
+        $query->execute();
+    }
+
     private function processMessage($message_update)
     {
-        $this->db = $this->createPDO();
         $this->Message = new Message($message_update, $this->db);
 
         if ($this->Message->isCommand()) {

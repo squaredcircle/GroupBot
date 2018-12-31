@@ -45,7 +45,7 @@ class time extends Command
                 $timezones[$user->timezone][] = $user->getName();
             }
         }
-        $timezones['Australia/Perth'][] = 'ShitBot';
+        $timezones['Australia/Sydney'][] = 'ShitBot';
         return $timezones;
     }
 

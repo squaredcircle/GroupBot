@@ -15,12 +15,26 @@ use GroupBot\Types\UserPostStats;
 
 class User extends DbConnection
 {
+    private function removeDuplicateUsername($user_id, $user_name)
+    {
+        $user = $this->getUserFromUserName($user_name);
+        if (!$user) return false;
+        if ($user->user_id == $user_id) return false;
+
+        $sql = 'UPDATE users SET user_name = null WHERE user_name = :user_name';
+        $query = $this->db->prepare($sql);
+        $query->bindValue(':user_name', $user->user_name);
+        return $query->execute();
+    }
+
     /**
      * @param \GroupBot\Types\User $user
      * @return bool
      */
     public function updateUser(\GroupBot\Types\User $user)
     {
+        $this->removeDuplicateUsername($user->user_id, $user->user_name);
+
         $sql = "
             INSERT INTO users
               (user_id, first_name, user_name, last_name, balance, level, last_activity, received_income_today, free_bets_today, handle_preference, welcome_sent, timezone, location)

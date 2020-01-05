@@ -81,8 +81,10 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
             }
             $out .= "\n🃏 *" . $player->user->getName() . "*: " . $player->Hand->getHandString() . " _(" . $state . ", " . emoji(0x1F4B0) . "_`" . $player->bet . "`_)_";
         }
-        $out .= "\n" . emoji(0x1F449) . "It is now " . $game->getCurrentPlayer()->user->getName() . "'s turn.";
+        $out .= "\n" . emoji(0x1F449) . " It is now " . $game->getCurrentPlayer()->user->getName() . "'s turn.";
         $this->addMessage($out);
+
+        $this->next_turn_options($game);
     }
 
     public function join_game(\GroupBot\Brains\CardGame\Types\Player $player)

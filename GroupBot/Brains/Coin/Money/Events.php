@@ -46,6 +46,7 @@ class Events
     public function addIncome(User $user)
     {
         if ($user->received_income_today) return false;
+        $user->received_income_today = true;
 
         $status = $this->Transact->transactFromBank(new BankTransaction(
             $user,
@@ -53,7 +54,7 @@ class Events
             new TransactionType(TransactionType::DailyIncome)
         ));
 
-        $user->received_income_today = true;
+
         return $status;
     }
 

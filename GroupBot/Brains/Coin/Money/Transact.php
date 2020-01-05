@@ -66,11 +66,11 @@ class Transact
 		if ($this->Validate->checkTransaction($Transaction))
 		{
 			$Transaction = $this->Validate->parseTransaction($Transaction);
-			$this->transferMoney($Transaction);
+			$status = $this->transferMoney($Transaction);
 
             $Transaction->user_receiving->save($this->db);
             $Transaction->user_sending->save($this->db);
-			return true;
+			return $status;
 		}
 		return false;
 	}
@@ -120,8 +120,13 @@ class Transact
 			$User->balance = $new_balance;
 			return true;
 		} else {
-			$this->Feedback->addFeedbackCode(27); // You don't have enough Coin!
-			return false;
+		    if ($User->user_id == COIN_BANK_ID) {
+                $this->Feedback->addFeedbackCode(30);
+            }
+		    else {
+                $this->Feedback->addFeedbackCode(27); // You don't have enough Coin!
+            }
+		    return false;
 		}
 	}
 

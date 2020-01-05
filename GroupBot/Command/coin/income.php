@@ -21,16 +21,22 @@ class income extends Command
         if ($Events->addIncome($this->Message->User)) {
             Telegram::talk($this->Message->Chat->id, emoji(0x1F4B8) . " " .  $this->Message->User->getNameLevelAndTitle() . ", you received your daily allowance of `" . Level::getDailyAllowance($this->Message->User->level) . "` coin. You now have `" . $this->Message->User->getBalance() . "` coin.");
         } else {
-            $now = new \DateTime();
-            $future_date = new \DateTime('tomorrow');
-            $interval = $future_date->diff($now);
-            $time = $interval->format("*%h hours* and *%i minutes*");
+            if ($Events->Transact->Feedback->isFeedback()) {
+                $out = emoji("0x1F4E2") . " " . $Events->Transact->Feedback->getFeedback();
+            }
+            else {
+                $now = new \DateTime();
+                $future_date = new \DateTime('tomorrow');
+                $interval = $future_date->diff($now);
+                $time = $interval->format("*%h hours* and *%i minutes*");
 
-            $out = emoji(0x1F4E2) . " " . $this->Message->User->getNameLevelAndTitle() . "..."
-                . "\n\n" . emoji(0x1F44E) . " You must wait $time until you can add to your collection of `" .$this->Message->User->getBalance() . "` coin.";
+                $out = emoji(0x1F4E2) . " " . $this->Message->User->getNameLevelAndTitle() . "..."
+                    . "\n\n" . emoji(0x1F44E) . " You must wait $time until you can add to your collection of `" . $this->Message->User->getBalance() . "` coin.";
 
-            //$out = emoji(0x1F44E) . " You've already received your allowance today!"
-            //     . "\nThere's still $time to go until tomorrow";
+                //$out = emoji(0x1F44E) . " You've already received your allowance today!"
+                //     . "\nThere's still $time to go until tomorrow";
+            }
+
             Telegram::talk($this->Message->Chat->id, $out);
         }
     }

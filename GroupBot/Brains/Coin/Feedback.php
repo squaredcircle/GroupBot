@@ -15,6 +15,7 @@ class Feedback
 		26 => "Transfer failed.",
 		27 => "You don't have enough " . COIN_CURRENCY_NAME . "!",
 		28 => "Couldn't retrieve " . COIN_CURRENCY_NAME . " balance.",
+		30 => "*" . COIN_TAXATION_BODY . "* doesn't have enough *" . COIN_CURRENCY_NAME . "* to pay you.",
 		40 => "Special error."
 	);
 
@@ -30,7 +31,7 @@ class Feedback
 			}
 		}
     }
-	
+
 	public function isFeedback()
 	{
 		return !empty($this->feedbackCodes);

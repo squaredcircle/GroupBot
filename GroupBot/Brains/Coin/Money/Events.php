@@ -26,10 +26,10 @@ class Events
     private $UserSQL;
 
     /** @var Feedback  */
-    private $Feedback;
+    public $Feedback;
 
     /** @var Transact  */
-    private $Transact;
+    public $Transact;
 
     /** @var Validate  */
     private $Validate;
@@ -46,12 +46,15 @@ class Events
     public function addIncome(User $user)
     {
         if ($user->received_income_today) return false;
-        $user->received_income_today = true;
-        return $this->Transact->transactFromBank(new BankTransaction(
+
+        $status = $this->Transact->transactFromBank(new BankTransaction(
             $user,
             Level::getDailyAllowance($user->level),
             new TransactionType(TransactionType::DailyIncome)
         ));
+
+        if ($status) $user->received_income_today = true;
+        return $status;
     }
 
     private function weightedRandom($array)

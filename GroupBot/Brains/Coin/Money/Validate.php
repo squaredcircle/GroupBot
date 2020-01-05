@@ -22,6 +22,11 @@ class Validate
         $this->Feedback = $Feedback;
     }
 
+    public function checkBankFunds(Transaction $transaction)
+    {
+        return $transaction->user_sending->getBalance(true) >= $transaction->amount;
+    }
+
     public function checkTransaction(Transaction $Transaction)
     {
         return ($this->checkAmount($Transaction->amount) &&

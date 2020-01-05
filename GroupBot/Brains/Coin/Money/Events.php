@@ -53,7 +53,7 @@ class Events
             new TransactionType(TransactionType::DailyIncome)
         ));
 
-        if ($status) $user->received_income_today = true;
+        $user->received_income_today = true;
         return $status;
     }
 

@@ -37,7 +37,7 @@ abstract class Talk
         if ($this->keyboard) {
             return $this->keyboard;
         }
-        return false;
+        return NULL;
     }
 
     abstract public function turn_expired(Player $player);
@@ -46,6 +46,12 @@ abstract class Talk
     abstract public function join_game(Player $player);
     abstract public function start_game(Game $game);
     abstract public function next_turn(Game $game);
+
+    public function no_game_exists()
+    {
+        $out = "📢 There isn't a game running.";
+        $this->addMessage($out);
+    }
 
     public function player_result(Player $Player, $multiplier)
     {

@@ -73,6 +73,10 @@ abstract class CardGame
         $this->Transact = new Transact($db);
         $this->Bets = new Bets($this->Talk, $db);
 
+        if (!$this->checkIfGameExists() && $Move != PlayerMove::JoinGame && $Move != PlayerMove::StartGame) {
+            $this->Talk->no_game_exists();
+            return false;
+        }
         if (!$this->Game = $this->loadOrCreateGame($Move)) return false;
         $this->processPlayerMove($Move);
         return true;
@@ -96,6 +100,14 @@ abstract class CardGame
      */
     abstract protected function newPlayerMove($playerMove);
 
+
+    /**
+     * @return bool
+     */
+    private function checkIfGameExists()
+    {
+        return !($this->SQL->select_game($this->chat->id) === false);
+    }
 
     /**
      * @param PlayerMove $Move

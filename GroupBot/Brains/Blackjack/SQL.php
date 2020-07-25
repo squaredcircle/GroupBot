@@ -290,16 +290,16 @@ class SQL extends \GroupBot\Brains\CardGame\SQL
                   total_coin_bet = total_coin_bet + :bet,
                   free_bets = free_bets + :free_bets,
                   coin_won = coin_won + :coin_won,
-                  coin_lost = coin_lost + :coin_lost;';
+                  coin_lost = coin_lost + :coin_lost';
         switch ($player->game_result) {
             case GameResult::Win:
-                $sql .= 'wins = wins + 1';
+                $sql .= ', wins = wins + 1';
                 break;
             case GameResult::Loss:
-                $sql .= 'losses = losses + 1';
+                $sql .= ', losses = losses + 1';
                 break;
             case GameResult::Draw:
-                $sql .= 'draws = draws + 1';
+                $sql .= ', draws = draws + 1';
                 break;
         }
 

@@ -111,7 +111,7 @@ class GroupBot
     {
         $pdo = new \PDO('mysql:host=' . BOT_DB_HOST . ';dbname=' . BOT_DB_NAME . ';charset=utf8', BOT_DB_USER, BOT_DB_PASSWORD);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+        $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
         return $pdo;
     }
 

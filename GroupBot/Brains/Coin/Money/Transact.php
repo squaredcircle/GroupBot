@@ -141,7 +141,7 @@ class Transact
 
 	private function payTransactionTax(Transaction $Transaction, User $bank)
 	{
-		if (($Transaction->user_sending->user_id == COIN_BANK_ID) && ($Transaction->user_receiving->user_id != COIN_BANK_ID)) {
+		if (($Transaction->user_sending->user_id != COIN_BANK_ID) && ($Transaction->user_receiving->user_id != COIN_BANK_ID)) {
 			$this->addMoney($bank, COIN_TRANSACTION_TAX * $Transaction->amount);
 			$this->CoinSQL->AddTransactionLog(new Transaction(
 				$Transaction->user_sending,

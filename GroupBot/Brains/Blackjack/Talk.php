@@ -351,6 +351,51 @@ class Talk extends \GroupBot\Brains\CardGame\Talk
         $this->next_turn_options($Game);
     }
 
+    public function all_players_bust()
+    {
+        $this->addMessage("💬 All players are bust.");
+
+        if ($this->chat->isPrivate()) {
+            $this->keyboard =
+                [
+                    [
+                        [
+                            'text' => "💰 Again - bet 1",
+                            'callback_data' => '/bjstart'
+                        ],
+                        [
+                            'text' => "💰 Again - bet all",
+                            'callback_data' => '/bjstart all'
+                        ],
+                    ],
+                    [
+                        [
+                            'text' => emoji(0x1F3AE) . ' Back to games menu',
+                            'callback_data' => '/help games'
+                        ],
+                        [
+                            'text' => emoji(0x1F6AA) . ' Main menu',
+                            'callback_data' => '/help'
+                        ]
+                    ]
+                ];
+        } else {
+            $this->keyboard =
+                [
+                    [
+                        [
+                            'text' => "💰 Again - bet 1",
+                            'callback_data' => '/blackjack'
+                        ],
+                        [
+                            'text' => "💰 Again - bet all",
+                            'callback_data' => '/blackjack all'
+                        ],
+                    ],
+                ];
+        }
+    }
+
     public function dealer_done(Game $Game, Player $Dealer)
     {
         if ($Game->getNumberOfPlayers() > 1) {

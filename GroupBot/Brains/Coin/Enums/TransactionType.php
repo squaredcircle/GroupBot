@@ -9,33 +9,33 @@
 namespace GroupBot\Brains\Coin\Enums;
 
 
-class TransactionType extends \SplEnum
+enum TransactionType
 {
-    const __default = self::Unspecified;
+    case __default = self::Unspecified;
 
-    const Unspecified = 0;
-    const Manual = 1;
-    const TransactionTax = 2;
+    case Unspecified = 0;
+    case Manual = 1;
+    case TransactionTax = 2;
 
-    const BlackjackBet = 10;
-    const BlackjackWin = 11;
-    const CasinoWarBet = 12;
-    const CasinoWarWin = 13;
+    case BlackjackBet = 10;
+    case BlackjackWin = 11;
+    case CasinoWarBet = 12;
+    case CasinoWarWin = 13;
 
-    const AllTax = 20;
-    const WealthyTax = 21;
-    const PoorTax = 22;
-    const RedistributionTax = 23;
-    const RedistributeWealthiest = 24;
-    const IncreaseValue = 25;
-    const DecreaseValue = 26;
-    const RandomBonus = 27;
-    const WealthyBonus = 28;
-    const PoorBonus = 29;
+    case AllTax = 20;
+    case WealthyTax = 21;
+    case PoorTax = 22;
+    case RedistributionTax = 23;
+    case RedistributeWealthiest = 24;
+    case IncreaseValue = 25;
+    case DecreaseValue = 26;
+    case RandomBonus = 27;
+    case WealthyBonus = 28;
+    case PoorBonus = 29;
 
-    const DailyIncome = 40;
+    case DailyIncome = 40;
 
-    const LevelPurchase = 50;
+    case LevelPurchase = 50;
 
-    const Apocalypse = 60;
+    case Apocalypse = 60;
 }

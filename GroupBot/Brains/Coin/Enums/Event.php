@@ -9,18 +9,18 @@
 namespace GroupBot\Brains\Coin\Enums;
 
 
-class Event extends \SplEnum
+enum Event
 {
-    const __default = self::AllTax;
+    case __default = self::AllTax;
 
-    const AllTax = 1;
-    const WealthyTax = 2;
-    const PoorTax = 3;
-    const RedistributeTax = 4;
-    const RedistributeWealthiest = 5;
-    const IncreaseValue = 6;
-    const DecreaseValue = 7;
-    const RandomBonuses = 8;
-    const WealthyBonuses = 9;
-    const PoorBonuses = 10;
+    case AllTax = 1;
+    case WealthyTax = 2;
+    case PoorTax = 3;
+    case RedistributeTax = 4;
+    case RedistributeWealthiest = 5;
+    case IncreaseValue = 6;
+    case DecreaseValue = 7;
+    case RandomBonuses = 8;
+    case WealthyBonuses = 9;
+    case PoorBonuses = 10;
 }

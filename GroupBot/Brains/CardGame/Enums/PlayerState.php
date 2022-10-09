@@ -9,8 +9,8 @@
 namespace GroupBot\Brains\CardGame\Enums;
 
 
-abstract class PlayerState extends \SplEnum
+abstract enum PlayerState
 {
-    const Dealer = 1;
-    const Join = 2;
+    case Dealer = 1;
+    case Join = 2;
 }

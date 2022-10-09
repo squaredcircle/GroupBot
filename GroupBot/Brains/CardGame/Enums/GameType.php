@@ -9,8 +9,8 @@
 namespace GroupBot\Brains\CardGame\Enums;
 
 
-class GameType extends \SplEnum
+enum GameType
 {
-    const Blackjack = 1;
-    const Casinowar = 2;
+    case Blackjack = 1;
+    case Casinowar = 2;
 }

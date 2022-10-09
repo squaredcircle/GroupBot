@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Alexander
@@ -8,19 +9,18 @@
 
 namespace GroupBot\Enums;
 
-
-class MessageEntityType extends \SplEnum
+enum MessageEntityType
 {
-    const __default = self::mention;
+    case __default = self::mention;
 
-    const mention = 1;
-    const hashtag = 2;
-    const bot_command = 3;
-    const url = 4;
-    const email = 5;
-    const bold = 6;
-    const italic = 7;
-    const code = 8;
-    const pre = 9;
-    const text_link = 10;
+    case mention = 1;
+    case hashtag = 2;
+    case bot_command = 3;
+    case url = 4;
+    case email = 5;
+    case bold = 6;
+    case italic = 7;
+    case code = 8;
+    case pre = 9;
+    case text_link = 10;
 }

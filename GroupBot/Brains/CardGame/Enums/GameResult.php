@@ -8,10 +8,9 @@
 
 namespace GroupBot\Brains\CardGame\Enums;
 
-
-class GameResult extends \SplEnum
+enum GameResult
 {
-    const Win = 1;
-    const Loss = 2;
-    const Draw = 3;
+    case Win = 1;
+    case Loss = 2;
+    case Draw = 3;
 }

@@ -8,13 +8,12 @@
  */
 
 namespace GroupBot\Brains\Vote\Enums;
-use SplEnum;
 
-class VoteType extends SplEnum
+enum VoteType
 {
-    const __default = self::Neutral;
+    case __default = self::Neutral;
 
-    const Down = -1;
-    const Neutral = 0;
-    const Up = 1;
+    case Down = -1;
+    case Neutral = 0;
+    case Up = 1;
 }

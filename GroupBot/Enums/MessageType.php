@@ -9,21 +9,19 @@
 
 namespace GroupBot\Enums;
 
-use SplEnum;
-
-class MessageType extends SplEnum
+enum MessageType
 {
-    const __default = self::Regular;
+    case __default = self::Regular;
 
-    const Regular = 1;
-    const Reply = 2;
-    const Forward = 3;
-    const NewChatParticipant = 4;
-    const LeftChatParticipant = 5;
-    const NewChatTitle = 6;
-    const NewChatPhoto = 7;
-    const DeleteChatPhoto = 8;
-    const GroupChatCreated = 9;
-    const SuperGroupChatCreated = 10;
-    const ChannelChatCreated = 11;
+    case Regular = 1;
+    case Reply = 2;
+    case Forward = 3;
+    case NewChatParticipant = 4;
+    case LeftChatParticipant = 5;
+    case NewChatTitle = 6;
+    case NewChatPhoto = 7;
+    case DeleteChatPhoto = 8;
+    case GroupChatCreated = 9;
+    case SuperGroupChatCreated = 10;
+    case ChannelChatCreated = 11;
 }

@@ -9,10 +9,10 @@
 namespace GroupBot\Brains\Minesweeper\Enums;
 
 
-class GameState extends \SplEnum
+enum GameState
 {
-    const Reveal = 1;
-    const Flag = 2;
-    const Win = 3;
-    const Lose = 4;
+    case Reveal = 1;
+    case Flag = 2;
+    case Win = 3;
+    case Lose = 4;
 }

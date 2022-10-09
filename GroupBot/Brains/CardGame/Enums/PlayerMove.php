@@ -9,10 +9,10 @@
 namespace GroupBot\Brains\CardGame\Enums;
 
 
-abstract class PlayerMove extends \SplEnum
+abstract enum PlayerMove
 {
-    const JoinGame = 1;
-    const StartGame = 2;
-    const QuitGame = 3;
-    const DefaultMove = 4;
+    case JoinGame = 1;
+    case StartGame = 2;
+    case QuitGame = 3;
+    case DefaultMove = 4;
 }

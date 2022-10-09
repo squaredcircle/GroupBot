@@ -8,14 +8,13 @@
  */
 
 namespace GroupBot\Enums;
-use SplEnum;
 
-class ChatType extends SplEnum
+enum ChatType
 {
-    const __default = self::Individual;
+    case __default = self::Individual;
 
-    const Individual = 1;
-    const Group = 2;
-    const SuperGroup = 3;
-    const Channel = 4;
+    case Individual = 1;
+    case Group = 2;
+    case SuperGroup = 3;
+    case Channel = 4;
 }

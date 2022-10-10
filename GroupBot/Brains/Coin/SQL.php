@@ -137,7 +137,7 @@ class SQL extends DbConnection
         $query->bindValue(':user_sending', $Transaction->user_sending->user_id);
         $query->bindValue(':user_receiving', $Transaction->user_receiving->user_id);
         $query->bindValue(':amount', $Transaction->amount);
-        $query->bindValue(':type', $Transaction->type);
+        $query->bindValue(':type', $Transaction->type->value);
 
         return $query->execute();
     }

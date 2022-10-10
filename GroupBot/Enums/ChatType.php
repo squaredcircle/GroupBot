@@ -9,9 +9,9 @@
 
 namespace GroupBot\Enums;
 
-enum ChatType
+enum ChatType: int
 {
-    case __default = self::Individual;
+    // case __default = self::Individual;
 
     case Individual = 1;
     case Group = 2;

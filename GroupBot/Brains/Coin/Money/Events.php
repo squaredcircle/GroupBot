@@ -51,7 +51,7 @@ class Events
         $status = $this->Transact->transactFromBank(new BankTransaction(
             $user,
             Level::getDailyAllowance($user->level),
-            new TransactionType(TransactionType::DailyIncome)
+            TransactionType::DailyIncome
         ));
 
 
@@ -204,7 +204,7 @@ class Events
                 $bank,
                 NULL,
                 $to_collect,
-                new TransactionType(TransactionType::RedistributionTax)
+                TransactionType::RedistributionTax
             ));
 
             Telegram::customShitpostingMessage(emoji(0x1F4E2) . COIN_REDISTRIBUTION_BODY . " has redistributed " . round($to_collect, 2) . " of " . COIN_TAXATION_BODY . "'s wealth to the community!");
@@ -228,7 +228,7 @@ class Events
             NULL,
             $bank,
             $to_collect,
-            new TransactionType(TransactionType::AllTax)
+            TransactionType::AllTax
         ));
 
         $this->Transact->maintainFixedLevel($bank);

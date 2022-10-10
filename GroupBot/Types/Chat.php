@@ -130,16 +130,16 @@ class Chat
     {
         switch ($chat_type['type']) {
             case 'private':
-                return new ChatType(ChatType::Individual);
+                return ChatType::Individual;
                 break;
             case 'group':
-                return new ChatType(ChatType::Group);
+                return ChatType::Group;
                 break;
             case 'supergroup':
-                return new ChatType(ChatType::SuperGroup);
+                return ChatType::SuperGroup;
                 break;
             case 'channel':
-                return new ChatType(ChatType::Channel);
+                return ChatType::Channel;
                 break;
         }
         return false;

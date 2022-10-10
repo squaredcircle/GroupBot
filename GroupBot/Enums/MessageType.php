@@ -9,9 +9,9 @@
 
 namespace GroupBot\Enums;
 
-enum MessageType
+enum MessageType: int
 {
-    case __default = self::Regular;
+    //case __default = self::Regular;
 
     case Regular = 1;
     case Reply = 2;

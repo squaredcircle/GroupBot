@@ -9,9 +9,9 @@
 
 namespace GroupBot\Enums;
 
-enum MessageEntityType
+enum MessageEntityType: int
 {
-    case __default = self::mention;
+    //case __default = self::mention;
 
     case mention = 1;
     case hashtag = 2;

@@ -145,62 +145,62 @@ class Message
     private function determineMessageContent($message)
     {
         if (isset($message['audio'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Audio);
+            $this->MessageContent = MessageContent::Audio;
         } elseif (isset($message['document'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Document);
+            $this->MessageContent = MessageContent::Document;
         } elseif (isset($message['photo'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Photo);
+            $this->MessageContent = MessageContent::Photo;
         } elseif (isset($message['sticker'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Sticker);
+            $this->MessageContent = MessageContent::Sticker;
         } elseif (isset($message['video'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Video);
+            $this->MessageContent = MessageContent::Video;
         } elseif (isset($message['voice'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Voice);
+            $this->MessageContent = MessageContent::Voice;
         } elseif (isset($message['contact'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Contact);
+            $this->MessageContent = MessageContent::Contact;
         } elseif (isset($message['location'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Location);
+            $this->MessageContent = MessageContent::Location;
             $loc = new Location();
             $loc->latitude = $message['location']['latitude'];
             $loc->longitude = $message['location']['longitude'];
             $this->Location = $loc->getSQLString();
         } elseif (isset($message['text'])) {
-            $this->MessageContent = new MessageContent(MessageContent::Text);
+            $this->MessageContent = MessageContent::Text;
         } else {
-            $this->MessageContent = new MessageContent(MessageContent::Unknown);
+            $this->MessageContent = MessageContent::Unknown;
         }
     }
 
     private function determineMessageType($message)
     {
         if (isset($message['reply_to_message'])) {
-            $this->MessageType = new MessageType(MessageType::Reply);
+            $this->MessageType = MessageType::Reply;
             $this->reply_to_message = new Message($message['reply_to_message'], $this->db);
         } elseif (isset($message['forward_from'])) {
             $this->forward_from = new User();
             $this->forward_from->constructFromTelegramUpdate($message['forward_from'], $this->db);
-            $this->MessageType = new MessageType(MessageType::Forward);
+            $this->MessageType = MessageType::Forward;
         } elseif (isset($message['new_chat_participant'])) {
-            $this->MessageType = new MessageType(MessageType::NewChatParticipant);
+            $this->MessageType = MessageType::NewChatParticipant;
             $this->new_chat_participant = User::constructFromTelegramUpdate($message['new_chat_participant'], $this->db);
         } elseif (isset($message['left_chat_participant'])) {
-            $this->MessageType = new MessageType(MessageType::LeftChatParticipant);
+            $this->MessageType = MessageType::LeftChatParticipant;
         } elseif (isset($message['new_chat_title'])) {
-            $this->MessageType = new MessageType(MessageType::NewChatTitle);
+            $this->MessageType = MessageType::NewChatTitle;
             $this->new_chat_title = $message['new_chat_title'];
         } elseif (isset($message['new_chat_photo'])) {
-            $this->MessageType = new MessageType(MessageType::NewChatPhoto);
+            $this->MessageType = MessageType::NewChatPhoto;
             $this->new_chat_photo = $message['new_chat_photo'];
         } elseif (isset($message['delete_chat_photo'])) {
-            $this->MessageType = new MessageType(MessageType::DeleteChatPhoto);
+            $this->MessageType = MessageType::DeleteChatPhoto;
         } elseif (isset($message['group_chat_created'])) {
-            $this->MessageType = new MessageType(MessageType::GroupChatCreated);
+            $this->MessageType = MessageType::GroupChatCreated;
         } elseif (isset($message['supergroup_chat_created'])) {
-            $this->MessageType = new MessageType(MessageType::SuperGroupChatCreated);
+            $this->MessageType = MessageType::SuperGroupChatCreated;
         } elseif (isset($message['channel_chat_created'])) {
-            $this->MessageType = new MessageType(MessageType::ChannelChatCreated);
+            $this->MessageType = MessageType::ChannelChatCreated;
         } else {
-            $this->MessageType = new MessageType(MessageType::Regular);
+            $this->MessageType = MessageType::Regular;
         }
     }
 

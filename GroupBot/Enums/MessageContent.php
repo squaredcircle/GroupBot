@@ -9,9 +9,9 @@
 
 namespace GroupBot\Enums;
 
-enum MessageContent
+enum MessageContent: int
 {
-    case __default = self::Text;
+    //case __default = self::Text;
 
     case Text = 1;
     case Audio = 2;

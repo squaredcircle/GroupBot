@@ -9,9 +9,9 @@
 namespace GroupBot\Brains\Coin\Enums;
 
 
-enum TransactionType
+enum TransactionType: int
 {
-    case __default = self::Unspecified;
+    // case __default = self::Unspecified;
 
     case Unspecified = 0;
     case Manual = 1;

@@ -9,7 +9,7 @@
 namespace GroupBot\Brains\CardGame\Enums;
 
 
-enum GameType
+enum GameType: int
 {
     case Blackjack = 1;
     case Casinowar = 2;

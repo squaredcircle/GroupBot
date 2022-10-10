@@ -37,34 +37,34 @@ class MessageEntity
     {
         switch ($type) {
             case 'mention':
-                return new MessageEntityType(MessageEntityType::mention);
+                return MessageEntityType::mention;
                 break;
             case 'hashtag':
-                return new MessageEntityType(MessageEntityType::hashtag);
+                return MessageEntityType::hashtag;
                 break;
             case 'bot_command':
-                return new MessageEntityType(MessageEntityType::bot_command);
+                return MessageEntityType::bot_command;
                 break;
             case 'url':
-                return new MessageEntityType(MessageEntityType::url);
+                return MessageEntityType::url;
                 break;
             case 'email':
-                return new MessageEntityType(MessageEntityType::email);
+                return MessageEntityType::email;
                 break;
             case 'bold':
-                return new MessageEntityType(MessageEntityType::bold);
+                return MessageEntityType::bold;
                 break;
             case 'italic':
-                return new MessageEntityType(MessageEntityType::italic);
+                return MessageEntityType::italic;
                 break;
             case 'code':
-                return new MessageEntityType(MessageEntityType::code);
+                return MessageEntityType::code;
                 break;
             case 'pre':
-                return new MessageEntityType(MessageEntityType::pre);
+                return MessageEntityType::pre;
                 break;
             case 'text_link':
-                return new MessageEntityType(MessageEntityType::text_link);
+                return MessageEntityType::text_link;
                 break;
         }
         return NULL;

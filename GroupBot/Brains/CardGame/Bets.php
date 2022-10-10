@@ -138,7 +138,7 @@ class Bets
                 $this->Talk->pay_bet_failed();
                 $player->bet_result = (-1) * $player->bet;
             }
-            $player->game_result = new GameResult(GameResult::Win);
+            $player->game_result = GameResult::Win;
         } elseif ($multiplier == 0) {
             if (!$player->free_bet) {
                 if ($bank->getBalance() > abs($player->bet)) {
@@ -147,10 +147,10 @@ class Bets
                     $this->Talk->pay_bet_failed_repay();
                 }
             }
-            $player->game_result = new GameResult(GameResult::Draw);
+            $player->game_result = GameResult::Draw;
         } else {
             if (!$player->free_bet) $player->bet_result = $multiplier * $player->bet;
-            $player->game_result = new GameResult(GameResult::Loss);
+            $player->game_result = GameResult::Loss;
         }
 
         $this->Talk->player_result($player, $multiplier);
@@ -180,7 +180,7 @@ class Bets
         return $this->Transact->transactFromBank(new BankTransaction(
             $Player->user,
             $amount,
-            new TransactionType(TransactionType::BlackjackWin)
+            TransactionType::BlackjackWin
         ));
     }
 }

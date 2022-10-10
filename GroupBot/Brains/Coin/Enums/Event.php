@@ -9,9 +9,9 @@
 namespace GroupBot\Brains\Coin\Enums;
 
 
-enum Event
+enum Event: int
 {
-    case __default = self::AllTax;
+    //case __default = self::AllTax;
 
     case AllTax = 1;
     case WealthyTax = 2;

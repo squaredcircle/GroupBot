@@ -20,11 +20,11 @@ class User
     /** @var  string */
     public string $first_name;
     
-    /** @var  string */
-    public string $user_name;
+    /** @var  string|null */
+    public ?string $user_name;
     
-    /** @var  string */
-    public string $last_name;
+    /** @var  string|null */
+    public ?string $last_name;
 
     /** @var  float */
     public float $balance;
@@ -46,11 +46,11 @@ class User
     /** @var  boolean */
     public bool $welcome_sent;
 
-    /** @var  string */
-    public string $timezone;
+    /** @var  string|null */
+    public ?string $timezone;
 
-    /** @var  string */
-    public string $location;
+    /** @var  string|null */
+    public ?string $location;
 
     public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {

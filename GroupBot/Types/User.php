@@ -15,42 +15,42 @@ use GroupBot\Libraries\Dictionary;
 class User
 {
     /** @var  integer */
-    public $user_id;
+    public int $user_id;
     
     /** @var  string */
-    public $first_name;
+    public string $first_name;
     
     /** @var  string */
-    public $user_name;
+    public string $user_name;
     
     /** @var  string */
-    public $last_name;
+    public string $last_name;
 
     /** @var  float */
-    public $balance;
+    public float $balance;
     
     /** @var  integer */
-    public $level;
+    public int $level;
     
     public $last_activity;
 
     /** @var  boolean */
-    public $received_income_today;
+    public bool $received_income_today;
 
     /** @var  integer */
-    public $free_bets_today;
+    public int $free_bets_today;
 
     /** @var  string */
-    public $handle_preference;
+    public string $handle_preference;
 
     /** @var  boolean */
-    public $welcome_sent;
+    public bool $welcome_sent;
 
     /** @var  string */
-    public $timezone;
+    public string $timezone;
 
     /** @var  string */
-    public $location;
+    public string $location;
 
     public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {

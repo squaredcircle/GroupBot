@@ -66,7 +66,7 @@ class User extends DbConnection
         $query->bindValue(':received_income_today', $user->received_income_today);
         $query->bindValue(':free_bets_today', $user->free_bets_today);
         $query->bindValue(':handle_preference', $user->handle_preference);
-        $query->bindValue(':welcome_sent', $user->welcome_sent);
+        $query->bindValue(':welcome_sent', (int)$user->welcome_sent, \PDO::PARAM_INT);
         $query->bindValue(':timezone', $user->timezone);
         $query->bindValue(':location', $user->location);
         return $query->execute();

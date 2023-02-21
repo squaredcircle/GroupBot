@@ -47,10 +47,10 @@ class User
     public bool $welcome_sent;
 
     /** @var  string|null */
-    public ?string $timezone;
+    public ?string $timezone = null;
 
     /** @var  string|null */
-    public ?string $location;
+    public ?string $location = null;
 
     public static function constructFromTelegramUpdate($user_update, \PDO $db)
     {

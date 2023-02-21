@@ -63,7 +63,7 @@ class User extends DbConnection
         $query->bindValue(':balance', $user->balance);
         $query->bindValue(':level', $user->level);
         $query->bindValue(':last_activity', $user->last_activity);
-        $query->bindValue(':received_income_today', $user->received_income_today);
+        $query->bindValue(':received_income_today', $user->received_income_today, \PDO::PARAM_INT);
         $query->bindValue(':free_bets_today', $user->free_bets_today);
         $query->bindValue(':handle_preference', $user->handle_preference);
         $query->bindValue(':welcome_sent', (int)$user->welcome_sent, \PDO::PARAM_INT);

@@ -21,10 +21,10 @@ class User
     public string $first_name;
     
     /** @var  string|null */
-    public ?string $user_name;
+    public ?string $user_name = null;
     
     /** @var  string|null */
-    public ?string $last_name;
+    public ?string $last_name = null;
 
     /** @var  float */
     public float $balance;

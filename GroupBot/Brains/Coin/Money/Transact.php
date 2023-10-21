@@ -147,7 +147,7 @@ class Transact
 				$Transaction->user_sending,
 				$bank,
 				COIN_TRANSACTION_TAX * $Transaction->amount,
-				new TransactionType(TransactionType::TransactionTax)
+				TransactionType::TransactionTax
 			));
 		}
 	}

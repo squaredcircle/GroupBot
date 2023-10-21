@@ -40,7 +40,7 @@ class Level
             if ($Transact->transactToBank(new BankTransaction(
                 $user,
                 $price,
-                new TransactionType(TransactionType::LevelPurchase)
+                TransactionType::LevelPurchase
             ))) {
                 $user->level++;
                 $user->save($db);

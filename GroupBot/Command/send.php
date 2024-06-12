@@ -58,8 +58,9 @@ class send extends Command
                 $this->Message->User,
                 $user_receiving,
                 $this->getParam(1),
-                new TransactionType(TransactionType::Manual)
+                TransactionType::Manual
             );
+
             $Transact->performTransaction($Transaction);
 
             if (strcmp($Transact->Feedback->getFeedbackCodes(), '24') === 0) {

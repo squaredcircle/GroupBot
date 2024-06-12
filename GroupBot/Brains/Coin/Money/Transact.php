@@ -155,7 +155,7 @@ class Transact
 	public function maintainFixedLevel(User $bank)
 	{
 		$total_money = $this->CoinSQL->getTotalCoinExisting(true);
-		$total_money_target = 100000;
+		$total_money_target = 200000;
 
 		if ($total_money < $total_money_target)
 		{

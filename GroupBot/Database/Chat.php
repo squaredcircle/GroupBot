@@ -17,7 +17,7 @@ class Chat extends DbConnection
      * @param \GroupBot\Types\Chat $chat
      * @return bool
      */
-    public function updateChat(\GroupBot\Types\Chat $chat)
+    public function updateChat(\GroupBot\Types\Chat $chat): bool
     {
         $sql = "INSERT INTO chats 
                   (chat_id, type, title, messages_sent_last_min, admin_user_id, banker_name, currency_name, welcome_enabled, no_spam_mode, yandex_api_key, yandex_enabled, yandex_language, yandex_min_words, bot_kick_mode) 
@@ -46,13 +46,13 @@ class Chat extends DbConnection
         $query->bindValue(':admin_user_id', $chat->admin_user_id);
         $query->bindValue(':banker_name', $chat->banker_name);
         $query->bindValue(':currency_name', $chat->currency_name);
-        $query->bindValue(':welcome_enabled', $chat->welcome_enabled);
-        $query->bindValue(':no_spam_mode', (int)$chat->no_spam_mode);
+        $query->bindValue(':welcome_enabled', (int)$chat->welcome_enabled, \PDO::PARAM_INT);
+        $query->bindValue(':no_spam_mode', (int)$chat->no_spam_mode, \PDO::PARAM_INT);
         $query->bindValue(':yandex_api_key', $chat->yandex_api_key);
-        $query->bindValue(':yandex_enabled', $chat->yandex_enabled);
+        $query->bindValue(':yandex_enabled', (int)$chat->yandex_enabled, \PDO::PARAM_INT);
         $query->bindValue(':yandex_language', $chat->yandex_language);
         $query->bindValue(':yandex_min_words', $chat->yandex_min_words);
-        $query->bindValue(':bot_kick_mode', $chat->bot_kick_mode);
+        $query->bindValue(':bot_kick_mode', (int)$chat->bot_kick_mode, \PDO::PARAM_INT);
         return $query->execute();
     }
 

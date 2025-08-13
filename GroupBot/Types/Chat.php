@@ -81,7 +81,7 @@ class Chat
         return $chat;
     }
 
-    public function save(\PDO $db)
+    public function save(\PDO $db): bool
     {
         $userSQL = new \GroupBot\Database\Chat($db);
         return $userSQL->updateChat($this);

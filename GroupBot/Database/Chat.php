@@ -47,7 +47,7 @@ class Chat extends DbConnection
         $query->bindValue(':banker_name', $chat->banker_name);
         $query->bindValue(':currency_name', $chat->currency_name);
         $query->bindValue(':welcome_enabled', $chat->welcome_enabled);
-        $query->bindValue(':no_spam_mode', $chat->no_spam_mode);
+        $query->bindValue(':no_spam_mode', (int)$chat->no_spam_mode);
         $query->bindValue(':yandex_api_key', $chat->yandex_api_key);
         $query->bindValue(':yandex_enabled', $chat->yandex_enabled);
         $query->bindValue(':yandex_language', $chat->yandex_language);

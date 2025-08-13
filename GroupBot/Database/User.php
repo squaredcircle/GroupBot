@@ -288,12 +288,12 @@ class User extends DbConnection
      * @param bool $user_in_chat
      * @return bool
      */
-    public function updateWhetherUserIsInChat(Chat $chat, \GroupBot\Types\User $user, $user_in_chat)
+    public function updateWhetherUserIsInChat(Chat $chat, \GroupBot\Types\User $user, bool $user_in_chat)
     {
         $sql = 'UPDATE stats SET user_in_chat = :user_in_chat WHERE user_id = :user_id AND chat_id = :chat_id';
 
         $query = $this->db->prepare($sql);
-        $query->bindValue(':user_in_chat', $user_in_chat);
+        $query->bindValue(':user_in_chat', (int)$user_in_chat);
         $query->bindValue(':chat_id', $chat->id);
         $query->bindValue(':user_id', $user->user_id);
         return $query->execute();

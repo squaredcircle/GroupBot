@@ -126,7 +126,7 @@ class Chat
      * @param string $chat_type
      * @return bool|ChatType
      */
-    private function determineChatType($chat_type)
+    private function determineChatType($chat_type): bool|ChatType
     {
         switch ($chat_type['type']) {
             case 'private':

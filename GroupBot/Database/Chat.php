@@ -40,7 +40,7 @@ class Chat extends DbConnection
 
         $query = $this->db->prepare($sql);
         $query->bindValue(':chat_id', $chat->id);
-        $query->bindValue(':type', $chat->type);
+        $query->bindValue(':type', $chat->type->value);
         $query->bindValue(':title', $chat->title);
         $query->bindValue(':messages_sent_last_min', $chat->messages_sent_last_min);
         $query->bindValue(':admin_user_id', $chat->admin_user_id);

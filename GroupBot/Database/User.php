@@ -31,7 +31,7 @@ class User extends DbConnection
      * @param \GroupBot\Types\User $user
      * @return bool
      */
-    public function updateUser(\GroupBot\Types\User $user)
+    public function updateUser(\GroupBot\Types\User $user): bool
     {
         $this->removeDuplicateUsername($user->user_id, $user->user_name);
 
@@ -78,21 +78,21 @@ class User extends DbConnection
      * @param $user_id
      * @return bool
      */
-    public function doesUserExistById($user_id)
+    public function doesUserExistById($user_id): bool
     {
         return $this->doesItemExist('users', 'user_id', $user_id);
     }
 
-    public function doesUserExistByUserName($user_name)
+    public function doesUserExistByUserName($user_name): bool
     {
         return $this->doesItemExist('users', 'user_name ', $user_name );
     }
 
     /**
      * @param $user_id
-     * @return \GroupBot\Types\User
+     * @return bool|\GroupBot\Types\User
      */
-    public function getUserFromId($user_id)
+    public function getUserFromId($user_id): bool|\GroupBot\Types\User
     {
         $sql = 'SELECT * FROM users
         WHERE user_id = :user_id';
@@ -113,7 +113,7 @@ class User extends DbConnection
      * @param $name
      * @return \GroupBot\Types\User[]|bool
      */
-    public function getUsersInChatWithName(Chat $chat, $name)
+    public function getUsersInChatWithName(Chat $chat, $name): array|bool
     {
         $sql = 'SELECT
                   u.*
@@ -137,7 +137,7 @@ class User extends DbConnection
      * @param $name
      * @return \GroupBot\Types\User[]|bool
      */
-    public function getUsersWithName($name)
+    public function getUsersWithName($name): array|bool
     {
         $sql = 'SELECT * FROM users
         WHERE :name IN (last_name, first_name, user_name)';
@@ -156,7 +156,7 @@ class User extends DbConnection
      * @param $user_name
      * @return \GroupBot\Types\User
      */
-    public function getUserFromUserName($user_name)
+    public function getUserFromUserName($user_name): bool|\GroupBot\Types\User
     {
         $sql = 'SELECT * FROM users
         WHERE user_name = :user_name';
@@ -175,7 +175,7 @@ class User extends DbConnection
     /**
      * @return \GroupBot\Types\User[]|bool
      */
-    public function getAllUsers($include_bank)
+    public function getAllUsers($include_bank): array|bool
     {
         $sql = 'SELECT * FROM users';
         if (!$include_bank) $sql .= ' WHERE user_name != "'. COIN_TAXATION_BODY . '"';
@@ -193,7 +193,7 @@ class User extends DbConnection
      * @param \GroupBot\Types\User $user
      * @return Chat[]|bool
      */
-    public function getActiveChatsByUser(\GroupBot\Types\User $user)
+    public function getActiveChatsByUser(\GroupBot\Types\User $user): bool|array
     {
         $sql = 'SELECT chats.* 
                 FROM stats
@@ -208,12 +208,18 @@ class User extends DbConnection
         $query->execute();
 
         if ($query->rowCount()) {
-            if ($chats = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat')) {
+//            if ($chats = $query->fetchAll(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat')) {
+            if ($chats = $query->fetchAll(\PDO::FETCH_ASSOC)) {
+                $chat_classes = [];
                 foreach ($chats as $chat) {
-                    $chat->id = $chat->chat_id;
+                    $chat_class = new Chat();
+                    $chat_class->construct(...$chat);
+                    $chat_class->id = $chat_class->chat_id;
+                    $chat_classes[] = $chat_class;
                 }
+                return $chat_classes;
             }
-            return $chats;
+            return false;
         }
         return false;
     }

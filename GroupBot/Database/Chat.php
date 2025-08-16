@@ -60,7 +60,7 @@ class Chat extends DbConnection
      * @param $chat_id
      * @return bool|\GroupBot\Types\Chat
      */
-    public function getChatById($chat_id)
+    public function getChatById($chat_id): \GroupBot\Types\Chat|bool
     {
         $sql = 'SELECT * FROM chats WHERE chat_id = :chat_id';
 
@@ -69,10 +69,14 @@ class Chat extends DbConnection
         $query->execute();
 
         if ($query->rowCount()) {
-            $query->setFetchMode(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat');
+//            $query->setFetchMode(\PDO::FETCH_CLASS, 'GroupBot\Types\Chat');
+            $query->setFetchMode(\PDO::FETCH_ASSOC);
             if ($chat = $query->fetch()) {
-                $chat->id = $chat->chat_id;
-                return $chat;
+
+                $chat_class = new \GroupBot\Types\Chat();
+                $chat_class->construct(...$chat);
+                $chat_class->id = $chat_class->chat_id;
+                return $chat_class;
             }
         }
         return false;
@@ -82,7 +86,7 @@ class Chat extends DbConnection
      * @param $chat_id
      * @return bool|string
      */
-    public function getChatLastPostDate($chat_id)
+    public function getChatLastPostDate($chat_id): bool|string
     {
         $sql = 'SELECT lastpost_date FROM stats WHERE chat_id = :chat_id
               ORDER BY lastpost_date DESC LIMIT 1';
@@ -98,7 +102,7 @@ class Chat extends DbConnection
         return false;
     }
 
-    public function getChatsByAdmin($admin_user_id)
+    public function getChatsByAdmin($admin_user_id): bool|array
     {
         $sql = 'SELECT * FROM chats WHERE admin_user_id = :admin_user_id';
 
@@ -117,7 +121,7 @@ class Chat extends DbConnection
         return false;
     }
 
-    public function getNoChats()
+    public function getNoChats(): int
     {
         $sql = 'SELECT chat_id FROM chats';
 

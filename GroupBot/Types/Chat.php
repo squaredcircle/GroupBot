@@ -12,49 +12,24 @@ use GroupBot\Enums\ChatType;
 
 class Chat
 {
-    /** @var  integer */
-    public $id;
+    public int $id;
+    public int|null $chat_id;
+    public ChatType $type;
+    public string $title;
+    public int $messages_sent_last_min;
+    public int|null $admin_user_id;
+    public string $banker_name;
+    public string $currency_name;
+    public bool $welcome_enabled;
+    public bool $no_spam_mode;
+    public string|null $yandex_api_key;
+    public bool $yandex_enabled;
+    public string $yandex_language;
+    public int $yandex_min_words;
+    public bool $bot_kick_mode;
 
-    /** @var  ChatType */
-    public $type;
 
-    /** @var  string */
-    public $title;
-
-    /** @var  integer */
-    public $messages_sent_last_min;
-
-    /** @var  integer */
-    public $admin_user_id;
-
-    /** @var  string */
-    public $banker_name;
-
-    /** @var  string */
-    public $currency_name;
-
-    /** @var  boolean */
-    public $welcome_enabled;
-
-    /** @var  boolean */
-    public $no_spam_mode;
-
-    /** @var  string */
-    public $yandex_api_key;
-
-    /** @var  boolean */
-    public $yandex_enabled;
-
-    /** @var  string */
-    public $yandex_language;
-
-    /** @var  integer */
-    public $yandex_min_words;
-
-    /** @var  boolean */
-    public $bot_kick_mode;
-
-    public static function constructFromTelegramUpdate($chat_update, \PDO $db)
+    public static function constructFromTelegramUpdate($chat_update, \PDO $db): Chat|bool
     {
         $changed = false;
 
@@ -64,14 +39,14 @@ class Chat
                 $chat->title = $chat_update['title'];
                 $changed = true;
             }
-            $chat->id = $chat->chat_id;
+            $chat->id = $chat->chat_id ?? $chat_update['id'];
             unset($chat->chat_id);
         } else {
             $chat = new Chat();
             $chat->construct(
                 $chat_update['id'],
                 $chat->determineChatType($chat_update),
-                isset($chat_update['title']) ? $chat_update['title'] : NULL,
+                $chat_update['title'] ?? NULL,
                 0
             );
             $changed = true;
@@ -87,10 +62,27 @@ class Chat
         return $userSQL->updateChat($this);
     }
 
-    public function construct($id, ChatType $type, $title, $messages_sent_last_min, $admin_user_id = NULL, $banker_name = "The Bank", $currency_name = "Coin", $welcome_enabled = true, $no_spam_mode = false, $yandex_api_key = NULL, $yandex_enabled = true, $yandex_language = "English", $yandex_min_words = 4, $bot_kick_mode = false)
+    public function construct(
+        int $id,
+        int $type,
+        string $title,
+        int $messages_sent_last_min,
+        int|null $chat_id = NULL,
+        int|null $admin_user_id = NULL,
+        string $banker_name = "The Bank",
+        string $currency_name = "Coin",
+        bool $no_spam_mode = false,
+        bool $welcome_enabled = true,
+        string|null $yandex_api_key = NULL,
+        bool $yandex_enabled = true,
+        string $yandex_language = "en",
+        int $yandex_min_words = 4,
+        bool $bot_kick_mode = false
+        ): void
     {
         $this->id = $id;
-        $this->type = $type;
+        $this->chat_id = $chat_id;
+        $this->type = ChatType::from($type);
         $this->title = $title;
         $this->messages_sent_last_min = $messages_sent_last_min;
         $this->admin_user_id =$admin_user_id;
@@ -105,7 +97,7 @@ class Chat
         $this->bot_kick_mode = $bot_kick_mode;
     }
 
-    public function waitBeforeSend()
+    public function waitBeforeSend(): int
     {
         if ($this->type == ChatType::Group || $this->type == ChatType::SuperGroup) {
             if ($this->messages_sent_last_min <= 10) return 0;
@@ -123,26 +115,18 @@ class Chat
     }
 
     /**
-     * @param string $chat_type
+     * @param $chat_type
      * @return bool|ChatType
      */
     private function determineChatType($chat_type): bool|ChatType
     {
-        switch ($chat_type['type']) {
-            case 'private':
-                return ChatType::Individual;
-                break;
-            case 'group':
-                return ChatType::Group;
-                break;
-            case 'supergroup':
-                return ChatType::SuperGroup;
-                break;
-            case 'channel':
-                return ChatType::Channel;
-                break;
-        }
-        return false;
+        return match ($chat_type['type']) {
+            'private' => ChatType::Individual,
+            'group' => ChatType::Group,
+            'supergroup' => ChatType::SuperGroup,
+            'channel' => ChatType::Channel,
+            default => false,
+        };
     }
 
     public function isPrivate()

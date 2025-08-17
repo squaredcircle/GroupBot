@@ -15,7 +15,7 @@ class Chat
     public int $id;
     public int|null $chat_id;
     public ChatType $type;
-    public string $title;
+    public string|null $title;
     public int $messages_sent_last_min;
     public int|null $admin_user_id;
     public string $banker_name;

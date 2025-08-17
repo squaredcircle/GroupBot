@@ -65,7 +65,7 @@ class Chat
     public function construct(
         int $id,
         int $type,
-        string $title,
+        string|null $title,
         int $messages_sent_last_min,
         int|null $chat_id = NULL,
         int|null $admin_user_id = NULL,
